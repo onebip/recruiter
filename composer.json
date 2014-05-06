@@ -1,0 +1,29 @@
+{
+  "name": "gabrielelana/recruiter",
+  "description": "Job Queue Manager: high performance, high volume, persistent, fault tolerant. 100% PHP/MongoDB, 100% Awesome",
+  "type": "project",
+  "version": "0.0.1",
+  "keywords": ["job", "jobs", "deferred", "offline", "delay", "background", "queue", "manager", "mongodb"],
+  "homepage": "https://github.com/gabrielelana/recruiter",
+  "license": "MIT",
+  "authors": [{
+    "name": "gabriele.lana",
+    "email": "gabriele.lana@cleancode.it"
+  }],
+  "require": {
+    "php": ">=5.4.0",
+    "psr/log": "1.0.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~4.0"
+  },
+  "bin": [
+		"bin/recruiter",
+    "bin/worker"
+	],
+	"autoload": {
+		"psr-0": {
+			"Recruiter": "lib"
+		}
+	}
+}
