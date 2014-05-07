@@ -13,6 +13,12 @@ class Recruiter
         $this->db = $db;
         $this->scheduledJobCollection = $db->selectCollection('scheduled');
         $this->archiveJobCollection = $db->selectCollection('archive');
+        $this->rosterCollection = $db->selectCollection('roster');
+    }
+
+    public function meet(Worker $worker)
+    {
+        $worker->addTo($this->rosterCollection);
     }
 
     public function jobOf(Doable $doable)
