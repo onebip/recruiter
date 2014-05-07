@@ -21,9 +21,9 @@
 		"bin/recruiter",
     "bin/worker"
 	],
-	"autoload": {
-		"psr-0": {
-			"Recruiter": "lib"
-		}
-	}
+  "autoload": {
+    "psr-4": {
+      "Recruiter\\": "src/Recruiter"
+    }
+  }
 }

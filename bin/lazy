@@ -1,0 +1,16 @@
+#!/usr/bin/env php
+<?php
+
+// NOTE: This is intended as example, I will keep it in bin/ directory only for now
+
+require __DIR__ . '/../vendor/autoload.php';
+
+use Recruiter\Recruiter;
+use Recruiter\LazyBones;
+
+$recruiter = new Recruiter((new MongoClient())->selectDB('recruiter'));
+
+LazyBones::waitFor(3)
+    ->asJobOf($recruiter)
+    ->scheduleTo()
+    ->execute();
