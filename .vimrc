@@ -5,8 +5,10 @@
 let g:syntastic_php_checkers = ['php']
 let g:syntastic_mode_map = {'mode': 'active'}
 
-
 let g:ctrlp_custom_ignore = '\.git$\|\.tmp$\|\.work$\|vendor$'
+
+" open current files's directory
+nnoremap <Leader>d :e <C-R>=expand('%:p:h') . '/'<CR><CR>
 
 autocmd Filetype php nnoremap <silent> <buffer> <Leader>a :!vendor/bin/phpunit<CR>
 autocmd Filetype php nnoremap <silent> <buffer> <Leader>o :call OpenCurrentTest()<CR>
