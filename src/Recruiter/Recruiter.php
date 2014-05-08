@@ -16,7 +16,7 @@ class Recruiter
         $this->rosterCollection = $db->selectCollection('roster');
     }
 
-    public function meet(Worker $worker)
+    public function hire(Worker $worker)
     {
         $worker->addTo($this->rosterCollection);
     }

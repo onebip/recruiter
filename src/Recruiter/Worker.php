@@ -20,7 +20,7 @@ class Worker
     {
         $this->status = $status;
         $this->recruiter = $recruiter;
-        $recruiter->meet($this);
+        $recruiter->hire($this);
     }
 
     public function addTo(MongoCollection $roster)
