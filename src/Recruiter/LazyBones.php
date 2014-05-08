@@ -2,7 +2,7 @@
 
 namespace Recruiter;
 
-class LazyBones implements Doable
+class LazyBones implements Workable
 {
     use Recruitable;
 

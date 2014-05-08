@@ -2,7 +2,7 @@
 
 namespace Recruiter;
 
-interface Doable extends Persistable
+interface Workable extends Persistable
 {
     public function asJobOf(Recruiter $recruiter);
 }

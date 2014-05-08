@@ -13,7 +13,7 @@ class Job
     private $document;
     private $instantiatedAt;
 
-    public static function around(Doable $toDo, Recruiter $recruiter)
+    public static function around(Workable $toDo, Recruiter $recruiter)
     {
         $baseDocumentForJob = [
             'active' => true,
@@ -29,7 +29,7 @@ class Job
         return new self($baseDocumentForJob, $toDo, $recruiter);
     }
 
-    public function __construct($document, Doable $toDo, Recruiter $recruiter)
+    public function __construct($document, Workable $toDo, Recruiter $recruiter)
     {
         $this->toDo = $toDo;
         $this->document = $document;

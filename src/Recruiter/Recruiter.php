@@ -21,7 +21,7 @@ class Recruiter
         $worker->addTo($this->rosterCollection);
     }
 
-    public function jobOf(Doable $doable)
+    public function jobOf(Workable $doable)
     {
         return Job::around($doable, $this);
     }
