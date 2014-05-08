@@ -7,4 +7,4 @@ use Recruiter\Recruiter;
 use Recruiter\Worker;
 
 $recruiter = new Recruiter((new MongoClient())->selectDB('recruiter'));
-$worker = Worker::workFor($recruiter);
+$worker = $recruiter->hire();

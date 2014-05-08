@@ -2,31 +2,31 @@
 
 namespace Recruiter;
 
+use MongoDB;
 use MongoDate;
-use MongoCollection;
 
 class Worker
 {
+    private $db;
     private $status;
     private $recruiter;
+    private $scheduled;
     private $roster;
 
-    public static function workFor(Recruiter $recruiter)
+    public static function workFor(Recruiter $recruiter, MongoDB $db)
     {
-        return new self(self::initialize(), $recruiter);
+        $worker = new self(self::initialize(), $recruiter, $db);
+        $worker->update();
+        return $worker;
     }
 
-    public function __construct($status, Recruiter $recruiter)
+    public function __construct($status, Recruiter $recruiter, MongoDB $db)
     {
+        $this->db = $db;
         $this->status = $status;
         $this->recruiter = $recruiter;
-        $recruiter->hire($this);
-    }
-
-    public function addTo(MongoCollection $roster)
-    {
-        $this->roster = $roster;
-        $this->update();
+        $this->scheduled = $db->selectCollection('scheduled');
+        $this->roster = $db->selectCollection('roster');
     }
 
     public function work()

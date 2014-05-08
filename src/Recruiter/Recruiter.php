@@ -7,18 +7,21 @@ use MongoDB;
 class Recruiter
 {
     private $db;
+    private $scheduled;
+    private $archived;
+    private $roster;
 
     public function __construct(MongoDB $db)
     {
         $this->db = $db;
-        $this->scheduledJobCollection = $db->selectCollection('scheduled');
-        $this->archiveJobCollection = $db->selectCollection('archive');
-        $this->rosterCollection = $db->selectCollection('roster');
+        $this->scheduled = $db->selectCollection('scheduled');
+        $this->archived = $db->selectCollection('archived');
+        $this->roster = $db->selectCollection('roster');
     }
 
-    public function hire(Worker $worker)
+    public function hire()
     {
-        $worker->addTo($this->rosterCollection);
+        return Worker::workFor($this, $this->db);
     }
 
     public function jobOf(Workable $doable)
@@ -37,13 +40,13 @@ class Recruiter
 
     public function schedule(Job $job)
     {
-        $this->scheduledJobCollection->save($job->export());
+        $this->scheduled->save($job->export());
     }
 
     public function archive(Job $job)
     {
         $document = $job->export();
-        $this->scheduledJobCollection->remove(array('_id' => $document['_id']));
-        $this->archiveJobCollection->save($document);
+        $this->scheduled->remove(array('_id' => $document['_id']));
+        $this->archived->save($document);
     }
 }
