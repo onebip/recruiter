@@ -6,5 +6,33 @@ require __DIR__ . '/../vendor/autoload.php';
 use Recruiter\Recruiter;
 use Recruiter\Worker;
 
-$recruiter = new Recruiter((new MongoClient())->selectDB('recruiter'));
+$pid = posix_getpid();
+$askedToStop = false;
+foreach (array(SIGTERM, SIGQUIT, SIGINT) as $signo) {
+    pcntl_signal($signo, function($signo) use (&$askedToStop, $pid) {
+        $askedToStop = true;
+        printf(
+            '[WORKER][%d][%s] politely asked to stop' . PHP_EOL,
+            $pid, date('c')
+        );
+    });
+}
+
+$db = (new MongoClient())->selectDB('recruiter');
+$recruiter = new Recruiter($db);
 $worker = $recruiter->hire();
+
+/* while (!$askedToStop) { */
+    $doneSomeWork = false;
+    $jobs = $worker->workToDo();
+    foreach ($jobs as $job) {
+        /* $worker->workOn($job); */
+    }
+    /* usleep(1000 * 200); */
+    /* pcntl_signal_dispatch(); */
+/* } */
+
+printf(
+    '[WORKER][%d][%s] ok, see you space cowboy...' . PHP_EOL,
+    $pid, date('c')
+);

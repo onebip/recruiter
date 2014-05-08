@@ -5,6 +5,7 @@ namespace Recruiter;
 use MongoId;
 use MongoDate;
 use MongoInt32;
+use Exception;
 
 class Job
 {
@@ -20,12 +21,9 @@ class Job
             'done' => false,
             'created_at' => new MongoDate(),
             'attempts' => 0,
-            'method' => 'execute',
-            'class' => get_class($toDo),
             'locked' => false,
             'tags' => []
         ];
-
         return new self($baseDocumentForJob, $toDo, $recruiter);
     }
 
@@ -54,8 +52,12 @@ class Job
     public function export()
     {
         return array_merge(
-            $this->status,
-            ['attempts' => new MongoInt32($this->status['attempts'])]
+            $this->status, [
+                'attempts' => new MongoInt32($this->status['attempts']),
+                'workable_class' => get_class($this->toDo),
+                'workable_parameters' => $this->toDo->export(),
+                'workable_method' => 'execute',
+            ]
         );
     }
 
@@ -69,5 +71,23 @@ class Job
         return array_key_exists('scheduled_at', $this->status) &&
             ($this->instantiatedAt->sec <= $this->status['scheduled_at']->sec) &&
             ($this->instantiatedAt->usec <= $this->status['scheduled_at']->usec);
+    }
+
+    public static function import($document, $recruiter)
+    {
+        if (!array_key_exists('workable_class', $document)) {
+            throw new Exception('Unable to import Job without a class');
+        }
+        if (!class_exists($document['workable_class'])) {
+            throw new Exception('Unable to import Job with unknown Workable class');
+        }
+        if (!method_exists($document['workable_class'], 'import')) {
+            throw new Exception('Unable to import Workable without method import');
+        }
+        return new self(
+            $document,
+            $document['workable_class']::import($document['workable_parameters'], $recruiter),
+            $recruiter
+        );
     }
 }

@@ -33,8 +33,8 @@ $recruiter = new Recruiter((new MongoClient())->selectDB('recruiter'));
             $assignedWorkToSomeWorker = true;
         }
     }
-    usleep(1000 * 200);
-    pcntl_signal_dispatch();
+    /* usleep(1000 * 200); */
+    /* pcntl_signal_dispatch(); */
 /* } */
 
 printf(
