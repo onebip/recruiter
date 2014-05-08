@@ -21,13 +21,6 @@ class Worker
         return $worker;
     }
 
-    public static function load($id, Recruiter $recruiter, MongoDB $db)
-    {
-        return self::import(
-            $db->selectCollection('roster')->findOne(['_id' => $id]), $recruiter, $db
-        );
-    }
-
     public static function import($document, Recruiter $recruiter, MongoDB $db)
     {
         return new self(self::fromMongoDocumentToInternalStatus($document), $recruiter, $db);
