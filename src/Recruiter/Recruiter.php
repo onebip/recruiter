@@ -26,7 +26,7 @@ class Recruiter
         return Job::around($doable, $this);
     }
 
-    public function enqueue(Job $job)
+    public function accept(Job $job)
     {
         if ($job->isActive()) {
             $this->schedule($job);
