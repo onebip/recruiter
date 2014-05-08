@@ -59,8 +59,8 @@ class Recruiter
                 'available' => false,
                 'assigned_to' => $job['_id'],
                 'assigned_since' => new MongoDate()
-            ]],
-            ['$unset' => [
+            ],
+            '$unset' => [
                 'available_since' => true
             ]]
         );

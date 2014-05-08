@@ -45,6 +45,11 @@ class Job
         $this->instantiatedAt = new MongoDate();
     }
 
+    public function id()
+    {
+        return $this->status['_id'];
+    }
+
     public function scheduleTo()
     {
         $this->status['scheduled_at'] = new MongoDate();
@@ -139,6 +144,7 @@ class Job
     private static function initialize()
     {
         return [
+            '_id' => new MongoId(),
             'active' => true,
             'done' => false,
             'created_at' => new MongoDate(),

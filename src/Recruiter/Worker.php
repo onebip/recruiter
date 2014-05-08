@@ -57,7 +57,29 @@ class Worker
 
     public function workOn($job)
     {
+        $this->beforeExecutionOf($job);
         $job->execute();
+        $this->afterExecutionOf($job);
+    }
+
+    private function beforeExecutionOf($job)
+    {
+        $this->status['working'] = true;
+        $this->status['working_on'] = $job->id();
+        $this->status['working_since'] = new MongoDate();
+        $this->update();
+    }
+
+    private function afterExecutionOf($job)
+    {
+        $this->status['working'] = false;
+        $this->status['available'] = true;
+        $this->status['available_since'] = new MongoDate();
+        unset($this->status['working_on']);
+        unset($this->status['working_since']);
+        unset($this->status['assigned_to']);
+        unset($this->status['assigned_since']);
+        $this->update();
     }
 
     private function hasBeenAssignedToDoSomething()
@@ -93,6 +115,7 @@ class Worker
         return [
             'available' => true,
             'available_since' => new MongoDate(),
+            'created_at' => new MongoDate(),
             'working' => false,
             'pid' => getmypid()
         ];
