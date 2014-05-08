@@ -8,6 +8,8 @@ use Recruiter\LazyBones;
 use Recruiter\Worker;
 
 $db = (new MongoClient())->selectDB('recruiter');
+$db->drop();
+
 $recruiter = new Recruiter($db);
 
 LazyBones::waitFor(3)
@@ -29,5 +31,3 @@ $jobs = $worker->workToDo();
 foreach ($jobs as $job) {
     $worker->workOn($job);
 }
-
-$db->drop();
