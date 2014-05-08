@@ -29,6 +29,11 @@ class Recruiter
         return Job::around($doable, $this);
     }
 
+    public function workersAvailableToWork()
+    {
+        return $this->roster->find(['available' => true]);
+    }
+
     public function accept(Job $job)
     {
         if ($job->isActive()) {

@@ -1,0 +1,30 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__ . '/../vendor/autoload.php';
+
+use Recruiter\Recruiter;
+
+$pid = posix_getpid();
+$askedToStop = false;
+foreach (array(SIGTERM, SIGQUIT, SIGINT) as $signo) {
+    pcntl_signal($signo, function($signo) use (&$askedToStop, $pid) {
+        $askedToStop = true;
+        printf(
+            '[RECRUITER][%d][%s] politely asked to stop' . PHP_EOL,
+            $pid, date('c')
+        );
+    });
+}
+
+$recruiter = new Recruiter((new MongoClient())->selectDB('recruiter'));
+
+while (!$askedToStop) {
+    $workers = $recruiter->workersAvailableToWork();
+    printf(
+        '[RECRUITER][%d][%s] found %d workes available to work' . PHP_EOL,
+        $pid, date('c'), $workers->count()
+    );
+    usleep(1000 * 200);
+    pcntl_signal_dispatch();
+}
