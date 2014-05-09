@@ -23,7 +23,7 @@ $workers = $recruiter->workersAvailableToWork();
 foreach ($workers as $workerToAssignWorkTo) {
     $jobs = $recruiter->pickJobFor($workerToAssignWorkTo);
     foreach ($jobs as $job) {
-        $recruiter->assignJobTo($job, $workerToAssignWorkTo);
+        $job->assignTo($workerToAssignWorkTo);
     }
 }
 

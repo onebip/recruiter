@@ -55,8 +55,8 @@ class Job
 
     public function assignTo($worker)
     {
-        $this->status['locked'] = true;
-        $this->save();
+        $this->lock();
+        $worker->assignedTo($this);
     }
 
     public function updateWith($document)
@@ -93,6 +93,12 @@ class Job
     public function isActive()
     {
         return array_key_exists('active', $this->status) && $this->status['active'];
+    }
+
+    private function lock()
+    {
+        $this->status['locked'] = true;
+        $this->save();
     }
 
     private function isSheduledLater()

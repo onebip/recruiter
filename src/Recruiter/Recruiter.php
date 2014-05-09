@@ -42,10 +42,4 @@ class Recruiter
     {
         return $this->jobs->pickFor($worker);
     }
-
-    public function assignJobTo($job, $worker)
-    {
-        $job->assignTo($worker);
-        $worker->assignedTo($job); // TODO: move to Job::assignTo
-    }
 }
