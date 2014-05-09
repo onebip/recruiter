@@ -18,19 +18,14 @@ foreach (array(SIGTERM, SIGQUIT, SIGINT) as $signo) {
     });
 }
 
-$db = (new MongoClient())->selectDB('recruiter');
-$recruiter = new Recruiter($db);
+$recruiter = new Recruiter((new MongoClient())->selectDB('recruiter'));
 $worker = $recruiter->hire();
 
-/* while (!$askedToStop) { */
-    $doneSomeWork = false;
-    $jobs = $worker->workToDo();
-    foreach ($jobs as $job) {
-        /* $worker->workOn($job); */
-    }
-    /* usleep(1000 * 200); */
-    /* pcntl_signal_dispatch(); */
-/* } */
+while (!$askedToStop) {
+    $doneSomeWork = $worker->work();
+    if (!$doneSomeWork) usleep(1000 * 200);
+    pcntl_signal_dispatch();
+}
 
 printf(
     '[WORKER][%d][%s] ok, see you space cowboy...' . PHP_EOL,

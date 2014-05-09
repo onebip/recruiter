@@ -19,23 +19,27 @@ foreach (array(SIGTERM, SIGQUIT, SIGINT) as $signo) {
 
 $recruiter = new Recruiter((new MongoClient())->selectDB('recruiter'));
 
-/* while (!$askedToStop) { */
+while (!$askedToStop) {
     $workers = $recruiter->workersAvailableToWork();
     printf(
-        '[RECRUITER][%d][%s] found %d workes available to work' . PHP_EOL,
-        $pid, date('c'), $workers->count()
+        '[RECRUITER][%d][%s] found %d workers available to work' . PHP_EOL,
+        $pid, date('c'), count($workers)
     );
     $assignedWorkToSomeWorker = false;
     foreach ($workers as $worker) {
         $jobs = $recruiter->pickJobFor($worker);
         foreach ($jobs as $job) {
-            $recruiter->assignJobTo($job, $worker);
+            $job->assignTo($worker);
+            printf(
+                '[RECRUITER][%d][%s] assigned job %s to worker %s' . PHP_EOL,
+                $pid, date('c'), $job->id(), $worker->id()
+            );
             $assignedWorkToSomeWorker = true;
         }
     }
-    /* usleep(1000 * 200); */
-    /* pcntl_signal_dispatch(); */
-/* } */
+    if (!$assignedWorkToSomeWorker) usleep(1000 * 200);
+    pcntl_signal_dispatch();
+}
 
 printf(
     '[RECRUITER][%d][%s] ok, see you space cowboy...' . PHP_EOL,
