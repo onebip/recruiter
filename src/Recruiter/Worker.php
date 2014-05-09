@@ -44,7 +44,7 @@ class Worker
     public function assignedTo($job)
     {
         $this->status['available'] = false;
-        $this->status['assigned_to'] = $job['_id'];
+        $this->status['assigned_to'] = $job->id();
         $this->status['assigned_since'] = new MongoDate();
         unset($this->status['available_since']);
         $this->save();
@@ -55,7 +55,7 @@ class Worker
         $jobs = [];
         $this->refresh();
         if ($this->hasBeenAssignedToDoSomething()) {
-            $jobs[] = $this->recruiter->job($this->status['assigned_to']);
+            $jobs[] = $this->recruiter->scheduledJob($this->status['assigned_to']);
         }
         return $jobs;
     }

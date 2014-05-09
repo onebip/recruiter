@@ -8,15 +8,13 @@ use MongoDate;
 class Recruiter
 {
     private $db;
-    private $scheduled;
-    private $archived;
+    private $jobs;
     private $workers;
 
     public function __construct(MongoDB $db)
     {
         $this->db = $db;
-        $this->scheduled = $db->selectCollection('scheduled');
-        $this->archived = $db->selectCollection('archived');
+        $this->jobs = new Job\Repository($db, $this);
         $this->workers = new Worker\Repository($db, $this);
     }
 
@@ -27,7 +25,7 @@ class Recruiter
 
     public function jobOf(Workable $doable)
     {
-        return Job::around($doable, $this);
+        return Job::around($doable, $this, $this->jobs);
     }
 
     public function workersAvailableToWork()
@@ -35,52 +33,19 @@ class Recruiter
         return $this->workers->available();
     }
 
-    public function job($id)
+    public function scheduledJob($id)
     {
-        return Job::import(
-            $this->scheduled->findOne(['_id' => $id]), $this
-        );
+        return $this->jobs->scheduled($id);
     }
 
-    public function pickJobFor($woker)
+    public function pickJobFor($worker)
     {
-        return $this->scheduled
-            ->find([
-                'scheduled_at' => ['$lt' => new MongoDate()],
-                'active' => true,
-                'locked' => false
-            ])
-            ->sort(['scheduled_at' => 1])
-            ->limit(1);
+        return $this->jobs->pickFor($worker);
     }
 
     public function assignJobTo($job, $worker)
     {
-        $this->scheduled->update(
-            ['_id' => $job['_id']],
-            ['$set' => ['locked' => true]]
-        );
-        $worker->assignedTo($job);
-    }
-
-    public function accept(Job $job)
-    {
-        if ($job->isActive()) {
-            $this->schedule($job);
-        } else {
-            $this->archive($job);
-        }
-    }
-
-    public function schedule(Job $job)
-    {
-        $this->scheduled->save($job->export());
-    }
-
-    public function archive(Job $job)
-    {
-        $document = $job->export();
-        $this->scheduled->remove(array('_id' => $document['_id']));
-        $this->archived->save($document);
+        $job->assignTo($worker);
+        $worker->assignedTo($job); // TODO: move to Job::assignTo
     }
 }

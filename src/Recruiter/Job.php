@@ -6,6 +6,7 @@ use MongoId;
 use MongoDate;
 use MongoInt32;
 use Exception;
+use Recruiter\Job\Repository;
 
 class Job
 {
@@ -14,12 +15,12 @@ class Job
     private $instantiatedAt;
     private $status;
 
-    public static function around(Workable $toDo, Recruiter $recruiter)
+    public static function around(Workable $toDo, Recruiter $recruiter, Repository $repository)
     {
-        return new self(self::initialize(), $toDo, $recruiter);
+        return new self(self::initialize(), $toDo, $recruiter, $repository);
     }
 
-    public static function import($document, Recruiter $recruiter)
+    public static function import($document, Recruiter $recruiter, Repository $repository)
     {
         if (!array_key_exists('workable_class', $document)) {
             throw new Exception('Unable to import Job without a class');
@@ -33,21 +34,34 @@ class Job
         return new self(
             $document,
             $document['workable_class']::import($document['workable_parameters'], $recruiter),
-            $recruiter
+            $recruiter,
+            $repository
         );
     }
 
-    public function __construct($status, Workable $toDo, Recruiter $recruiter)
+    public function __construct($status, Workable $toDo, Recruiter $recruiter, Repository $repository)
     {
         $this->toDo = $toDo;
         $this->status = $status;
         $this->recruiter = $recruiter;
+        $this->repository = $repository;
         $this->instantiatedAt = new MongoDate();
     }
 
     public function id()
     {
         return $this->status['_id'];
+    }
+
+    public function assignTo($worker)
+    {
+        $this->status['locked'] = true;
+        $this->save();
+    }
+
+    public function updateWith($document)
+    {
+        $this->status = self::fromMongoDocumentToInternalStatus($document);
     }
 
     public function scheduleTo()
@@ -59,7 +73,7 @@ class Job
     public function execute()
     {
         if ($this->isSheduledLater()) {
-            return $this->recruiter->schedule($this);
+            return $this->schedule();
         }
         return $this->executeNow();
     }
@@ -114,7 +128,7 @@ class Job
             // TODO: informations on worker?
         ];
         unset($this->status['scheduled_at']);
-        $this->recruiter->accept($this);
+        $this->save();
     }
 
     private function afterExecution($result)
@@ -134,11 +148,31 @@ class Job
         $this->archive();
     }
 
+    private function schedule()
+    {
+        $this->repository->schedule($this);
+    }
+
     private function archive()
     {
         $this->status['active'] = false;
         $this->status['done'] = true;
-        $this->recruiter->archive($this);
+        $this->repository->archive($this);
+    }
+
+    private function refresh()
+    {
+        $this->repository->refresh($this);
+    }
+
+    private function save()
+    {
+        $this->repository->save($this);
+    }
+
+    private static function fromMongoDocumentToInternalStatus($document)
+    {
+        return $document;
     }
 
     private static function initialize()
