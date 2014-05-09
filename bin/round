@@ -27,7 +27,4 @@ foreach ($workers as $workerToAssignWorkTo) {
     }
 }
 
-$jobs = $worker->workToDo();
-foreach ($jobs as $job) {
-    $worker->workOn($job);
-}
+$worker->work();

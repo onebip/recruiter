@@ -50,14 +50,14 @@ class Worker
         $this->save();
     }
 
-    public function workToDo()
+    public function work()
     {
-        $jobs = [];
         $this->refresh();
         if ($this->hasBeenAssignedToDoSomething()) {
-            $jobs[] = $this->recruiter->scheduledJob($this->status['assigned_to']);
+            $this->workOn(
+                $this->recruiter->scheduledJob($this->status['assigned_to'])
+            );
         }
-        return $jobs;
     }
 
     public function workOn($job)
