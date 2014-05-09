@@ -41,7 +41,7 @@ class Job
 
     public function __construct($status, Workable $toDo, Recruiter $recruiter, Repository $repository)
     {
-        $this->toDo = $toDo;
+        $this->workable = $toDo;
         $this->status = $status;
         $this->recruiter = $recruiter;
         $this->repository = $repository;
@@ -83,8 +83,8 @@ class Job
         return array_merge(
             $this->status, [
                 'attempts' => new MongoInt32($this->status['attempts']),
-                'workable_class' => get_class($this->toDo),
-                'workable_parameters' => $this->toDo->export(),
+                'workable_class' => get_class($this->workable),
+                'workable_parameters' => $this->workable->export(),
                 'workable_method' => 'execute',
             ]
         );
@@ -104,13 +104,13 @@ class Job
 
     private function executeNow()
     {
-        $methodToCallOnWorkable = $this->status['workable_method'];
-        if (!method_exists($this->toDo, $methodToCallOnWorkable)) {
+        $methodToCall = $this->status['workable_method'];
+        if (!method_exists($this->workable, $methodToCall)) {
             throw new Exception('Unknown method on workable instance');
         }
         try {
             $this->beforeExecution();
-            $result = $this->toDo->$methodToCallOnWorkable();
+            $result = $this->workable->$methodToCall();
             $this->afterExecution($result);
             return $result;
 

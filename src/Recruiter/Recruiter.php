@@ -23,9 +23,9 @@ class Recruiter
         return Worker::workFor($this, $this->workers);
     }
 
-    public function jobOf(Workable $doable)
+    public function jobOf(Workable $workable)
     {
-        return Job::around($doable, $this, $this->jobs);
+        return Job::around($workable, $this, $this->jobs);
     }
 
     public function workersAvailableToWork()
