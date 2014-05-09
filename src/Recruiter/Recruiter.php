@@ -10,19 +10,19 @@ class Recruiter
     private $db;
     private $scheduled;
     private $archived;
-    private $roster;
+    private $workers;
 
     public function __construct(MongoDB $db)
     {
         $this->db = $db;
         $this->scheduled = $db->selectCollection('scheduled');
         $this->archived = $db->selectCollection('archived');
-        $this->roster = $db->selectCollection('roster');
+        $this->workers = new Worker\Repository($db, $this);
     }
 
     public function hire()
     {
-        return Worker::workFor($this, $this->db);
+        return Worker::workFor($this, $this->workers);
     }
 
     public function jobOf(Workable $doable)
@@ -32,7 +32,14 @@ class Recruiter
 
     public function workersAvailableToWork()
     {
-        return $this->roster->find(['available' => true]);
+        return $this->workers->available();
+    }
+
+    public function job($id)
+    {
+        return Job::import(
+            $this->scheduled->findOne(['_id' => $id]), $this
+        );
     }
 
     public function pickJobFor($woker)
@@ -53,17 +60,7 @@ class Recruiter
             ['_id' => $job['_id']],
             ['$set' => ['locked' => true]]
         );
-        $this->roster->update(
-            ['_id' => $worker['_id']],
-            ['$set' => [
-                'available' => false,
-                'assigned_to' => $job['_id'],
-                'assigned_since' => new MongoDate()
-            ],
-            '$unset' => [
-                'available_since' => true
-            ]]
-        );
+        $worker->assignedTo($job);
     }
 
     public function accept(Job $job)

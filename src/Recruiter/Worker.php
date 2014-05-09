@@ -5,34 +5,49 @@ namespace Recruiter;
 use MongoDB;
 use MongoId;
 use MongoDate;
+use Recruiter\Worker\Repository;
 
 class Worker
 {
     private $db;
     private $status;
     private $recruiter;
-    private $scheduled;
-    private $roster;
+    private $repository;
 
-    public static function workFor(Recruiter $recruiter, MongoDB $db)
+    public static function workFor(Recruiter $recruiter, Repository $repository)
     {
-        $worker = new self(self::initialize(), $recruiter, $db);
-        $worker->update();
+        $worker = new self(self::initialize(), $recruiter, $repository);
+        $worker->save();
         return $worker;
     }
 
-    public static function import($document, Recruiter $recruiter, MongoDB $db)
+    public static function import($document, Recruiter $recruiter, Repository $repository)
     {
-        return new self(self::fromMongoDocumentToInternalStatus($document), $recruiter, $db);
+        return new self(
+            self::fromMongoDocumentToInternalStatus($document),
+            $recruiter, $repository
+        );
     }
 
-    public function __construct($status, Recruiter $recruiter, MongoDB $db)
+    public function __construct($status, Recruiter $recruiter, Repository $repository)
     {
-        $this->db = $db;
         $this->status = $status;
         $this->recruiter = $recruiter;
-        $this->scheduled = $db->selectCollection('scheduled');
-        $this->roster = $db->selectCollection('roster');
+        $this->repository = $repository;
+    }
+
+    public function id()
+    {
+        return $this->status['_id'];
+    }
+
+    public function assignedTo($job)
+    {
+        $this->status['available'] = false;
+        $this->status['assigned_to'] = $job['_id'];
+        $this->status['assigned_since'] = new MongoDate();
+        unset($this->status['available_since']);
+        $this->save();
     }
 
     public function workToDo()
@@ -40,10 +55,7 @@ class Worker
         $jobs = [];
         $this->refresh();
         if ($this->hasBeenAssignedToDoSomething()) {
-            $jobs[] = Job::import(
-                $this->scheduled->findOne(['_id' => $this->status['assigned_to']]),
-                $this->recruiter
-            );
+            $jobs[] = $this->recruiter->job($this->status['assigned_to']);
         }
         return $jobs;
     }
@@ -55,12 +67,22 @@ class Worker
         $this->afterExecutionOf($job);
     }
 
+    public function export()
+    {
+        return $this->status;
+    }
+
+    public function updateWith($document)
+    {
+        $this->status = self::fromMongoDocumentToInternalStatus($document);
+    }
+
     private function beforeExecutionOf($job)
     {
         $this->status['working'] = true;
         $this->status['working_on'] = $job->id();
         $this->status['working_since'] = new MongoDate();
-        $this->update();
+        $this->save();
     }
 
     private function afterExecutionOf($job)
@@ -72,7 +94,7 @@ class Worker
         unset($this->status['working_since']);
         unset($this->status['assigned_to']);
         unset($this->status['assigned_since']);
-        $this->update();
+        $this->save();
     }
 
     private function hasBeenAssignedToDoSomething()
@@ -88,14 +110,12 @@ class Worker
 
     private function refresh()
     {
-        $this->status = self::fromMongoDocumentToInternalStatus(
-            $this->roster->findOne(['_id' => $this->status['_id']])
-        );
+        $this->repository->refresh($this);
     }
 
-    private function update()
+    private function save()
     {
-        $this->roster->save($this->status);
+        $this->repository->save($this);
     }
 
     private static function fromMongoDocumentToInternalStatus($document)
@@ -106,6 +126,7 @@ class Worker
     private static function initialize()
     {
         return [
+            '_id' => new MongoId(),
             'available' => true,
             'available_since' => new MongoDate(),
             'created_at' => new MongoDate(),
