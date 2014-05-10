@@ -59,10 +59,6 @@ class Worker
             );
             return true;
         }
-        printf(
-            '[WORKER][%d][%s] nothing to do? Ok, back to sleep ;-)' . PHP_EOL,
-            posix_getpid(), date('c')
-        );
         return false;
     }
 
