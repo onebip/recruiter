@@ -72,7 +72,7 @@ class Job
 
     public function execute()
     {
-        if ($this->isSheduledLater()) {
+        if ($this->isScheduledLater()) {
             return $this->schedule();
         }
         return $this->executeNow();
@@ -101,7 +101,7 @@ class Job
         $this->save();
     }
 
-    private function isSheduledLater()
+    private function isScheduledLater()
     {
         return array_key_exists('scheduled_at', $this->status) &&
             ($this->instantiatedAt->sec <= $this->status['scheduled_at']->sec) &&
