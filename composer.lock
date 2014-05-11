@@ -3,8 +3,57 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "69a9b3b31c79270b555f434bc13c4a3d",
+    "hash": "5aedc0e6b2a886ae21c05ffbc66c8287",
     "packages": [
+        {
+            "name": "gabrielelana/graceful-death",
+            "version": "0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/gabrielelana/graceful-death.git",
+                "reference": "c4454da7cfbb604ed162bcbdab3dc8d322be1ec7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/gabrielelana/graceful-death/zipball/c4454da7cfbb604ed162bcbdab3dc8d322be1ec7",
+                "reference": "c4454da7cfbb604ed162bcbdab3dc8d322be1ec7",
+                "shasum": ""
+            },
+            "require": {
+                "ext-pcntl": "*",
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "src"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Gabriele Lana",
+                    "email": "gabriele.lana@gmail.com"
+                }
+            ],
+            "description": "Library that let you catch fatal errors",
+            "homepage": "https://github.com/gabrielelana/graceful-death",
+            "keywords": [
+                "catch",
+                "cleanup",
+                "die",
+                "error",
+                "fatal",
+                "try"
+            ],
+            "time": "2014-05-06 15:52:33"
+        },
         {
             "name": "psr/log",
             "version": "1.0.0",
