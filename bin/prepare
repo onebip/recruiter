@@ -1,0 +1,18 @@
+#!/bin/zsh
+
+mongo recruiter --quiet --eval '
+db.dropDatabase()
+
+db.runCommand({collMod: "scheduled", usePowerOf2Sizes : true})
+db.scheduled.ensureIndex({
+  scheduled_at: 1,
+  active: 1,
+  locked: 1,
+  tags: 1
+})
+
+db.runCommand({collMod: "archived", usePowerOf2Sizes : true})
+db.archived.ensureIndex({
+  created_at: 1
+})
+'
