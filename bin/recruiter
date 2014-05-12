@@ -34,7 +34,7 @@ while (!$askedToStop) {
             $job->assignTo($worker);
             printf(
                 '[RECRUITER][%d][%s] picked job %s in %fms to worker %s' . PHP_EOL,
-                $pid, date('c'), $job->id(), ($pickEndAt - $pickStartAt), $worker->id()
+                $pid, date('c'), $job->id(), ($pickEndAt - $pickStartAt) * 1000, $worker->id()
             );
             $assignedWorkToSomeWorker = true;
         }
