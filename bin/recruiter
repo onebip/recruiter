@@ -27,12 +27,14 @@ while (!$askedToStop) {
     );
     $assignedWorkToSomeWorker = false;
     foreach ($workers as $worker) {
+        $pickStartAt = microtime(true);
         $jobs = $recruiter->pickJobFor($worker);
+        $pickEndAt = microtime(true);
         foreach ($jobs as $job) {
             $job->assignTo($worker);
             printf(
-                '[RECRUITER][%d][%s] assigned job %s to worker %s' . PHP_EOL,
-                $pid, date('c'), $job->id(), $worker->id()
+                '[RECRUITER][%d][%s] picked job %s in %fms to worker %s' . PHP_EOL,
+                $pid, date('c'), $job->id(), ($pickEndAt - $pickStartAt), $worker->id()
             );
             $assignedWorkToSomeWorker = true;
         }
