@@ -1,0 +1,30 @@
+#!/bin/zsh
+
+LOG_DIRECTORY=".log"
+WORKERS_PID_FILE="$LOG_DIRECTORY/workers.pid"
+mkdir -p $LOG_DIRECTORY && touch $WORKERS_PID_FILE
+
+HOW_MANY_WORKERS=$(cat $WORKERS_PID_FILE | wc -l)
+
+if [ $HOW_MANY_WORKERS -eq 0 ]; then
+  echo "NO ONE TO KILL BOSS, HAVE A GOOD DAY ;-)"
+  exit 0
+fi
+
+echo "KILLING $HOW_MANY_WORKERS WORKERS"
+for WORKER_PID in $(cat $WORKERS_PID_FILE | cut -f 2); do
+  if [ -d /proc/$WORKER_PID ]; then
+    echo "KILLING WORKER WITH PID $WORKER_PID"
+    kill -s SIGQUIT $WORKER_PID
+  fi
+  sleep .02
+done
+
+echo "GOING TO DISPOSE BODIES OF KILLED WORKERS..."
+for WORKER_PID in $(cat $WORKERS_PID_FILE | cut -f 2); do
+  if [ ! -d /proc/$WORKER_PID ]; then
+    sed -i "/[0-9]\+\t$WORKER_PID/d" $WORKERS_PID_FILE
+  fi
+done
+
+echo "ALL DONE BOSS, THEY WILL NEVER CATCH US ;-)"
