@@ -18,7 +18,10 @@ foreach (array(SIGTERM, SIGQUIT, SIGINT) as $signo) {
     });
 }
 
-$recruiter = new Recruiter((new MongoClient())->selectDB('recruiter'));
+$options = array_merge(['host' => 'localhost:27017'], getopt('', ['host:']));
+
+$db = (new MongoClient($options['host']))->selectDB('recruiter');
+$recruiter = new Recruiter($db);
 $worker = $recruiter->hire();
 
 printf('[WORKER][%d][%s] ready to work!' . PHP_EOL, $pid, date('c'));
