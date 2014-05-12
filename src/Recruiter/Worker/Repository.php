@@ -39,11 +39,10 @@ class Repository
 
     private function map($cursor)
     {
-        return array_map(
-            function($document) {
-                return Worker::import($document, $this->recruiter, $this);
-            },
-            iterator_to_array($cursor)
-        );
+        $workers = [];
+        while ($cursor->hasNext()) {
+            $workers[] = Worker::import($cursor->getNext(), $this->recruiter, $this);
+        }
+        return $workers;
     }
 }

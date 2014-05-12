@@ -72,11 +72,10 @@ class Repository
 
     private function map($cursor)
     {
-        return array_map(
-            function($document) {
-                return Job::import($document, $this->recruiter, $this);
-            },
-            iterator_to_array($cursor)
-        );
+        $jobs = [];
+        while ($cursor->hasNext()) {
+            $jobs[] = Job::import($cursor->getNext(), $this->recruiter, $this);
+        }
+        return $jobs;
     }
 }
