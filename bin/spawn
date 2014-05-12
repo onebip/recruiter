@@ -1,0 +1,15 @@
+#!/bin/zsh
+
+LOG_DIRECTORY=".log"
+WORKERS_TO_SPAWN=${1:-10}
+WORKERS_PID_FILE="$LOG_DIRECTORY/workers.pid"
+HOW_MANY_WORKERS=$(mkdir -p $LOG_DIRECTORY && ls -1 $LOG_DIRECTORY/*.log | wc -l)
+
+echo "SPAWN $WORKERS_TO_SPAWN PROCESSES"
+for counter in {1..$WORKERS_TO_SPAWN}; do
+  WORKER_ID=$(printf "%05d" $(($HOW_MANY_WORKERS + $counter)))
+  WORKER_LOG_FILE="$LOG_DIRECTORY/worker-$WORKER_ID.log"
+  echo "SPAWN WORKER WITH ID $WORKER_ID"
+  php bin/worker > $WORKER_LOG_FILE 2>&1 &
+  echo "$WORKER_ID\t$!" >> $WORKERS_PID_FILE
+done
