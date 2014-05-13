@@ -5,48 +5,55 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Recruiter\Recruiter;
 
-$pid = posix_getpid();
-$askedToStop = false;
-foreach (array(SIGTERM, SIGQUIT, SIGINT) as $signo) {
-    pcntl_signal($signo, function($signo) use (&$askedToStop, $pid) {
-        $askedToStop = true;
-        printf(
-            '[RECRUITER][%d][%s] politely asked to stop' . PHP_EOL,
-            $pid, date('c')
-        );
-    });
-}
+$signalsToCatch = [SIGTERM, SIGQUIT, SIGINT];
 
-$recruiter = new Recruiter((new MongoClient())->selectDB('recruiter'));
+GracefulDeath::around(function() use($signalsToCatch) {
 
-while (!$askedToStop) {
-    $workers = $recruiter->workersAvailableToWork();
-    printf(
-        '[RECRUITER][%d][%s] found %d workers available to work [%s/%s]' . PHP_EOL,
-        $pid, date('c'), count($workers), format(memory_get_usage()), format(memory_get_peak_usage())
-    );
-    $assignedWorkToSomeWorker = false;
-    foreach ($workers as $worker) {
-        $pickStartAt = microtime(true);
-        $jobs = $recruiter->pickJobFor($worker);
-        $pickEndAt = microtime(true);
-        foreach ($jobs as $job) {
-            $job->assignTo($worker);
+    $pid = posix_getpid();
+    $askedToStop = false;
+    foreach ($signalsToCatch as $signo) {
+        pcntl_signal($signo, function($signo) use (&$askedToStop, $pid) {
+            $askedToStop = true;
             printf(
-                '[RECRUITER][%d][%s] picked job %s in %fms to worker %s' . PHP_EOL,
-                $pid, date('c'), $job->id(), ($pickEndAt - $pickStartAt) * 1000, $worker->id()
+                '[RECRUITER][%d][%s] politely asked to stop' . PHP_EOL,
+                $pid, date('c')
             );
-            $assignedWorkToSomeWorker = true;
-        }
+        });
     }
-    if (!$assignedWorkToSomeWorker) usleep(1000 * 200);
-    pcntl_signal_dispatch();
-}
 
-printf(
-    '[RECRUITER][%d][%s] ok, see you space cowboy...' . PHP_EOL,
-    $pid, date('c')
-);
+    $recruiter = new Recruiter((new MongoClient())->selectDB('recruiter'));
+
+    while (!$askedToStop) {
+        $workers = $recruiter->workersAvailableToWork();
+        printf(
+            '[RECRUITER][%d][%s] found %d workers available to work [%s/%s]' . PHP_EOL,
+            $pid, date('c'), count($workers), format(memory_get_usage()), format(memory_get_peak_usage())
+        );
+        $assignedWorkToSomeWorker = false;
+        foreach ($workers as $worker) {
+            $pickStartAt = microtime(true);
+            $jobs = $recruiter->pickJobFor($worker);
+            $pickEndAt = microtime(true);
+            foreach ($jobs as $job) {
+                $job->assignTo($worker);
+                printf(
+                    '[RECRUITER][%d][%s] picked job %s in %fms to worker %s' . PHP_EOL,
+                    $pid, date('c'), $job->id(), ($pickEndAt - $pickStartAt) * 1000, $worker->id()
+                );
+                $assignedWorkToSomeWorker = true;
+            }
+        }
+        if (!$assignedWorkToSomeWorker) usleep(1000 * 200);
+        pcntl_signal_dispatch();
+    }
+
+    printf('[RECRUITER][%d][%s] ok, see you space cowboy...' . PHP_EOL, $pid, date('c'));
+
+})
+->doNotCaptureOutput()
+->catchAndIgnoreSignals($signalsToCatch)
+->run();
+
 
 function format($size) {
     $units = array( 'B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
