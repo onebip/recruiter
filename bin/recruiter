@@ -12,9 +12,10 @@ GracefulDeath::around(function($life) {
 
     while (!$life->askedToStop()) {
         $workers = $recruiter->workersAvailableToWork();
+        $currentMemoryUsage = memory_get_usage();
         printf(
-            '[RECRUITER][%d][%s] found %d workers available to work [%s/%s]' . PHP_EOL,
-            $pid, date('c'), count($workers), format(memory_get_usage()), format(memory_get_peak_usage())
+            '[RECRUITER][%d][%s] found %d workers available to work [%s]' . PHP_EOL,
+            $pid, date('c'), count($workers), format($currentMemoryUsage)
         );
         $assignedWorkToSomeWorker = false;
         foreach ($workers as $worker) {
@@ -30,6 +31,7 @@ GracefulDeath::around(function($life) {
                 $assignedWorkToSomeWorker = true;
             }
         }
+        if ($currentMemoryUsage > 314572800) exit(1);
         if (!$assignedWorkToSomeWorker) usleep(1000 * 200);
     }
 
