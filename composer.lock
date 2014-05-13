@@ -3,20 +3,20 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "5aedc0e6b2a886ae21c05ffbc66c8287",
+    "hash": "fa90cdbbfbaae2f4282c275a2507bad9",
     "packages": [
         {
             "name": "gabrielelana/graceful-death",
-            "version": "0.1.0",
+            "version": "0.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/gabrielelana/graceful-death.git",
-                "reference": "c4454da7cfbb604ed162bcbdab3dc8d322be1ec7"
+                "reference": "de7cf81074abc25d9f2fbea8add1155de9632178"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/gabrielelana/graceful-death/zipball/c4454da7cfbb604ed162bcbdab3dc8d322be1ec7",
-                "reference": "c4454da7cfbb604ed162bcbdab3dc8d322be1ec7",
+                "url": "https://api.github.com/repos/gabrielelana/graceful-death/zipball/de7cf81074abc25d9f2fbea8add1155de9632178",
+                "reference": "de7cf81074abc25d9f2fbea8add1155de9632178",
                 "shasum": ""
             },
             "require": {
@@ -50,9 +50,14 @@
                 "die",
                 "error",
                 "fatal",
+                "leak",
+                "long",
+                "memory",
+                "process",
+                "running",
                 "try"
             ],
-            "time": "2014-05-06 15:52:33"
+            "time": "2014-05-13 15:19:31"
         },
         {
             "name": "psr/log",

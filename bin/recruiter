@@ -5,25 +5,12 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Recruiter\Recruiter;
 
-$signalsToCatch = [SIGTERM, SIGQUIT, SIGINT];
-
-GracefulDeath::around(function() use($signalsToCatch) {
+GracefulDeath::around(function($life) {
 
     $pid = posix_getpid();
-    $askedToStop = false;
-    foreach ($signalsToCatch as $signo) {
-        pcntl_signal($signo, function($signo) use (&$askedToStop, $pid) {
-            $askedToStop = true;
-            printf(
-                '[RECRUITER][%d][%s] politely asked to stop' . PHP_EOL,
-                $pid, date('c')
-            );
-        });
-    }
-
     $recruiter = new Recruiter((new MongoClient())->selectDB('recruiter'));
 
-    while (!$askedToStop) {
+    while (!$life->askedToStop()) {
         $workers = $recruiter->workersAvailableToWork();
         printf(
             '[RECRUITER][%d][%s] found %d workers available to work [%s/%s]' . PHP_EOL,
@@ -44,14 +31,17 @@ GracefulDeath::around(function() use($signalsToCatch) {
             }
         }
         if (!$assignedWorkToSomeWorker) usleep(1000 * 200);
-        pcntl_signal_dispatch();
     }
 
     printf('[RECRUITER][%d][%s] ok, see you space cowboy...' . PHP_EOL, $pid, date('c'));
 
 })
 ->doNotCaptureOutput()
-->catchAndIgnoreSignals($signalsToCatch)
+->catchSignals([SIGTERM, SIGQUIT, SIGINT])
+->reanimationPolicy(function() {
+    printf('[RECRUITER-SUPERVISOR][%d][%s] respawn!'. PHP_EOL, posix_getpid(), date('c'));
+    return true;
+})
 ->run();
 
 
