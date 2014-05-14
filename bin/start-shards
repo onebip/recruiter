@@ -1,0 +1,102 @@
+#!/bin/zsh
+
+mkdir -p '.log'
+mkdir -p '.data/recruiter-C1'
+mkdir -p '.data/recruiter-C2'
+mkdir -p '.data/recruiter-C3'
+
+local -A SHARDS
+
+SHARDS[S1-R1-PORT]=30000
+SHARDS[S1-R2-PORT]=30001
+SHARDS[S1-R3-PORT]=30002
+SHARDS[S2-R1-PORT]=30010
+SHARDS[S2-R2-PORT]=30011
+SHARDS[S2-R3-PORT]=30012
+SHARDS[C1-PORT]=30100
+SHARDS[C2-PORT]=30101
+SHARDS[C3-PORT]=30102
+SHARDS[MS-PORT]=40000
+
+for SHARD in S1 S2; do
+  echo "START recruiter-$SHARD"
+  for REPLICA in R1 R2 R3; do
+    echo "START recruiter-${SHARD}-${REPLICA}"
+    mkdir -p ".data/recruiter-${SHARD}-${REPLICA}"
+    mongod --shardsvr --replSet "recruiter-$SHARD" \
+      --port $SHARDS[${SHARD}-${REPLICA}-PORT] \
+      --dbpath ".data/recruiter-$SHARD-${REPLICA}" \
+      --logpath ".log/recruiter-$SHARD-${REPLICA}.log" \
+      --fork --nojournal --noprealloc --quiet --smallfiles \
+      --oplogSize 128 >> ".log/startup"
+  done
+
+  mongo localhost:$SHARDS[${SHARD}-R1-PORT]/admin --quiet --eval "
+    print('CONFIGURE primary node of recruiter-$SHARD')
+    rs.initiate({
+      _id: 'recruiter-$SHARD',
+      members: [
+        {
+          _id: 0,
+          host: 'localhost:$SHARDS[${SHARD}-R1-PORT]'
+        }
+      ]
+    })
+
+    print('WAITING for primary election...')
+    while(rs.status().myState !== 1) sleep(1)
+
+    print('CONFIGURE recruiter-$SHARD replica set')
+    printjson([
+      rs.add('localhost:$SHARDS[${SHARD}-R2-PORT]'),
+      rs.add('localhost:$SHARDS[${SHARD}-R3-PORT]', {arbiterOnly: true})
+    ])
+  "
+done
+
+
+for CS in C1 C2 C3; do
+  echo "START recruiter-$CS"
+  mongod --configsvr --dbpath ".data/recruiter-$CS" --port $SHARDS[${CS}-PORT] \
+    --logpath ".log/recruiter-$CS.log" --fork --nojournal --noprealloc \
+    --quiet --smallfiles >> ".log/startup"
+done
+
+
+echo "START recruiter-MS"
+mongos --configdb localhost:$SHARDS[C1-PORT],localhost:$SHARDS[C2-PORT],localhost:$SHARDS[C3-PORT] \
+  --port $SHARDS[MS-PORT] --logpath ".log/mongos.log" --fork >> ".log/startup"
+
+
+mongo localhost:$SHARDS[MS-PORT] --eval "
+print('CONFIGURE shards')
+printjson([
+  sh.addShard('recruiter-S1/localhost:$SHARDS[S1-R1-PORT],localhost:$SHARDS[S1-R2-PORT]'),
+  sh.addShard('recruiter-S2/localhost:$SHARDS[S2-R1-PORT],localhost:$SHARDS[S2-R2-PORT]')
+])
+
+print('CHECK shards')
+printjson(
+  db.getSiblingDB('config').shards.find().toArray()
+)
+
+print('ENABLE sharding on recruiter DB')
+sh.enableSharding('recruiter')
+printjson(
+  db.getSiblingDB('config').databases.find().toArray()
+)
+
+print('PREPARE recruiter DB')
+sh.shardCollection('recruiter.roster', {_id: 1})
+sh.shardCollection('recruiter.scheduled', {_id: 1})
+sh.shardCollection('recruiter.archived', {_id: 1})
+
+db.getSiblingDB('recruiter').getCollection('scheduled').ensureIndex({
+  scheduled_at: 1,
+  active: 1,
+  locked: 1,
+  tags: 1
+})
+
+print('DONE!')
+"
