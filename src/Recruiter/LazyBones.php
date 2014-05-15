@@ -6,35 +6,43 @@ class LazyBones implements Workable
 {
     use Recruitable;
 
-    private $musToSleep;
+    private $usToSleep;
+    private $usOfDelta;
 
-    public static function waitFor($timeInSeconds)
+    public static function waitFor($timeInSeconds, $deltaInSeconds = 0)
     {
-        return new self($timeInSeconds * 1000 * 1000);
+        return new self($timeInSeconds * 1000000, $deltaInSeconds * 1000000);
     }
 
-    public static function waitForMs($timeInMs)
+    public static function waitForMs($timeInMs, $deltaInMs = 0)
     {
-        return new self($timeInMs * 1000);
+        return new self($timeInMs * 1000, $deltaInMs * 1000);
     }
 
-    public function __construct($musToSleep)
+    public function __construct($usToSleep, $usOfDelta)
     {
-        $this->musToSleep = $musToSleep;
+        $this->usToSleep = $usToSleep;
+        $this->usOfDelta = $usOfDelta;
     }
 
     public function execute()
     {
-        usleep($this->musToSleep);
+        usleep($this->usToSleep + (rand(-$this->usOfDelta, $this->usOfDelta)));
     }
 
     public function export()
     {
-        return ['mus_to_sleep' => $this->musToSleep];
+        return [
+            'us_to_sleep' => $this->usToSleep,
+            'us_of_delta' => $this->usOfDelta,
+        ];
     }
 
     public static function import($parameters)
     {
-        return new self($parameters['mus_to_sleep']);
+        return new self(
+            $parameters['us_to_sleep'],
+            $parameters['us_of_delta']
+        );
     }
 }

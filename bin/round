@@ -12,7 +12,7 @@ $db->drop();
 
 $recruiter = new Recruiter($db);
 
-LazyBones::waitFor(3)
+LazyBones::waitForMs(200, 100)
     ->asJobOf($recruiter)
     ->scheduleTo()
     ->execute();
