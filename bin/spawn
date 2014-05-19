@@ -4,7 +4,7 @@ LOG_DIRECTORY=".log"
 WORKERS_TO_SPAWN=${1:-10}
 MONGODB_TO_CONNECT_TO=${2:-"localhost:27017"}
 WORKERS_PID_FILE="$LOG_DIRECTORY/workers.pid"
-HOW_MANY_WORKERS=$(mkdir -p $LOG_DIRECTORY && ls -1 $LOG_DIRECTORY/*.log 2> /dev/null | wc -l)
+HOW_MANY_WORKERS=$(mkdir -p $LOG_DIRECTORY && ls -1 $LOG_DIRECTORY/worker-*.log 2> /dev/null | wc -l)
 
 echo "SPAWN $WORKERS_TO_SPAWN PROCESSES"
 for counter in {1..$WORKERS_TO_SPAWN}; do
