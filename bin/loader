@@ -10,9 +10,12 @@ GracefulDeath::around(function() {
 
     $howManyJobsInBatch = 100;
     $howManyJobsToKeepAsScheduled = 2000;
-    $db = (new MongoClient())->selectDB('recruiter');
-    $recruiter = new Recruiter($db);
+
     $pid = posix_getpid();
+    $options = array_merge(['host' => 'localhost:27017'], getopt('', ['host:']));
+
+    $db = (new MongoClient($options['host']))->selectDB('recruiter');
+    $recruiter = new Recruiter($db);
 
     while(true) {
         $howManyJobAreScheduled = $db->selectCollection('scheduled')->count();
