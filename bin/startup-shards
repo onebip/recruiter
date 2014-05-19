@@ -1,44 +1,32 @@
 #!/bin/zsh
 
-mkdir -p '.log'
-mkdir -p '.data/recruiter-C1'
-mkdir -p '.data/recruiter-C2'
-mkdir -p '.data/recruiter-C3'
+PROJECT_ROOT=$0:A:h:h
 
-local -A SHARDS
+source $PROJECT_ROOT/etc/configuration.sh
 
-SHARDS[S1-R1-PORT]=30000
-SHARDS[S1-R2-PORT]=30001
-SHARDS[S1-R3-PORT]=30002
-SHARDS[S2-R1-PORT]=30010
-SHARDS[S2-R2-PORT]=30011
-SHARDS[S2-R3-PORT]=30012
-SHARDS[C1-PORT]=30100
-SHARDS[C2-PORT]=30101
-SHARDS[C3-PORT]=30102
-SHARDS[MS-PORT]=40000
+mkdir -p $LOG_DIRECTORY
+mkdir -p $DATA_DIRECTORY
 
-for SHARD in S1 S2; do
+for SHARD in $SHARDS; do
   echo "START recruiter-$SHARD"
-  for REPLICA in R1 R2 R3; do
+  for REPLICA in $REPLICAS; do
     echo "START recruiter-${SHARD}-${REPLICA}"
-    mkdir -p ".data/recruiter-${SHARD}-${REPLICA}"
-    mongod --shardsvr --replSet "recruiter-$SHARD" \
-      --port $SHARDS[${SHARD}-${REPLICA}-PORT] \
-      --dbpath ".data/recruiter-$SHARD-${REPLICA}" \
-      --logpath ".log/recruiter-$SHARD-${REPLICA}.log" \
-      --fork --nojournal --noprealloc --quiet --smallfiles \
-      --oplogSize 128 >> ".log/startup"
+    mkdir -p "$DATA_DIRECTORY/recruiter-${SHARD}-${REPLICA}"
+    eval "$MONGOD --shardsvr --replSet \"recruiter-$SHARD\" \
+      --port $SERVICE_PORT_OF[${SHARD}-${REPLICA}] \
+      --dbpath \"$DATA_DIRECTORY/recruiter-${SHARD}-${REPLICA}\" \
+      --logpath \"$LOG_DIRECTORY/recruiter-${SHARD}-${REPLICA}.log\" \
+      $MONGOD_FLAGS --fork --quiet >> \"$LOG_DIRECTORY/startup\""
   done
 
-  mongo localhost:$SHARDS[${SHARD}-R1-PORT]/admin --quiet --eval "
+  $MONGO localhost:$SERVICE_PORT_OF[${SHARD}-R1]/admin --quiet --eval "
     print('CONFIGURE primary node of recruiter-$SHARD')
     rs.initiate({
       _id: 'recruiter-$SHARD',
       members: [
         {
           _id: 0,
-          host: 'localhost:$SHARDS[${SHARD}-R1-PORT]'
+          host: 'localhost:$SERVICE_PORT_OF[${SHARD}-R1]'
         }
       ]
     })
@@ -48,31 +36,36 @@ for SHARD in S1 S2; do
 
     print('CONFIGURE recruiter-$SHARD replica set')
     printjson([
-      rs.add('localhost:$SHARDS[${SHARD}-R2-PORT]'),
-      rs.add('localhost:$SHARDS[${SHARD}-R3-PORT]', {arbiterOnly: true})
+      rs.add('localhost:$SERVICE_PORT_OF[${SHARD}-R2]'),
+      rs.add('localhost:$SERVICE_PORT_OF[${SHARD}-R3]', {arbiterOnly: true})
     ])
   "
 done
 
 
-for CS in C1 C2 C3; do
+for CS in $CONFIGURATIONS; do
   echo "START recruiter-$CS"
-  mongod --configsvr --dbpath ".data/recruiter-$CS" --port $SHARDS[${CS}-PORT] \
-    --logpath ".log/recruiter-$CS.log" --fork --nojournal --noprealloc \
-    --quiet --smallfiles >> ".log/startup"
+  mkdir -p "$DATA_DIRECTORY/recruiter-${CS}"
+  eval "$MONGOD --configsvr --port $SERVICE_PORT_OF[$CS] \
+    --dbpath \"$DATA_DIRECTORY/recruiter-${CS}\" \
+    --logpath \"$LOG_DIRECTORY/recruiter-${CS}.log\" \
+    $MONGOD_FLAGS --fork --quiet >> \"$LOG_DIRECTORY/startup\""
 done
 
 
-echo "START recruiter-MS"
-mongos --configdb localhost:$SHARDS[C1-PORT],localhost:$SHARDS[C2-PORT],localhost:$SHARDS[C3-PORT] \
-  --port $SHARDS[MS-PORT] --logpath ".log/mongos.log" --fork >> ".log/startup"
+for MS in $ROUTERS; do
+  echo "START recruiter-$MS"
+  $MONGOS --configdb localhost:$SERVICE_PORT_OF[C1],localhost:$SERVICE_PORT_OF[C2],localhost:$SERVICE_PORT_OF[C3] \
+    --port $SERVICE_PORT_OF[$MS] --logpath "$LOG_DIRECTORY/mongos-${MS}.log" \
+    --fork --quiet >> "$LOG_DIRECTORY/startup"
+done
 
 
-mongo localhost:$SHARDS[MS-PORT] --eval "
+$MONGO localhost:$SERVICE_PORT_OF[M1] --eval "
 print('CONFIGURE shards')
 printjson([
-  sh.addShard('recruiter-S1/localhost:$SHARDS[S1-R1-PORT],localhost:$SHARDS[S1-R2-PORT]'),
-  sh.addShard('recruiter-S2/localhost:$SHARDS[S2-R1-PORT],localhost:$SHARDS[S2-R2-PORT]')
+  sh.addShard('recruiter-S1/localhost:$SERVICE_PORT_OF[S1-R1],localhost:$SERVICE_PORT_OF[S1-R2]'),
+  sh.addShard('recruiter-S2/localhost:$SERVICE_PORT_OF[S2-R1],localhost:$SERVICE_PORT_OF[S2-R2]')
 ])
 
 print('CHECK shards')

@@ -1,28 +1,36 @@
 #!/bin/zsh
 
+PROJECT_ROOT=$0:A:h:h
+
+source $PROJECT_ROOT/etc/configuration.sh
+
 # 1. stop ballancing
 
 # 2. shutdown mongoses services
-echo "SHUTDOWN mongos server at port $PORT"
-mongo localhost:40000 \
-  --eval 'db.getSiblingDB("admin").shutdownServer({force: true})' \
-  --quiet > /dev/null 2>&1
+for MS in $ROUTERS; do
+  echo "SHUTDOWN mongos server at port $SERVICE_PORT_OF[$MS]"
+  mongo localhost:$SERVICE_PORT_OF[$MS] \
+    --eval 'db.getSiblingDB("admin").shutdownServer({force: true})' \
+    --quiet > /dev/null 2>&1
+done
 
 # 3. shutdown config mongod services
-for PORT in 30100 30101 30102; do
-  echo "SHUTDOWN recruiter configuration server at port $PORT"
-  mongo localhost:$PORT \
+for CS in $CONFIGURATIONS; do
+  echo "SHUTDOWN recruiter configuration server at port $SERVICE_PORT_OF[$CS]"
+  mongo localhost:$SERVICE_PORT_OF[$CS] \
     --eval 'db.getSiblingDB("admin").shutdownServer({force: true})' \
     --quiet > /dev/null 2>&1
 done
 
 # 4. shutdown shards mongod services
-for PORT in 30000 30001 30002 30010 30011 30012; do
-  echo "SHUTDOWN recruiter shard at port $PORT"
-  mongo localhost:$PORT \
-    --eval 'db.getSiblingDB("admin").shutdownServer({force: true})' \
-    --quiet > /dev/null 2>&1
+for SHARD in $SHARDS; do
+  for REPLICA in $REPLICAS; do
+    echo "SHUTDOWN recruiter shard at port $SERVICE_PORT_OF[${SHARD}-${REPICA}]"
+    mongo localhost:$SERVICE_PORT_OF[${SHARD}-${REPLICA}] \
+      --eval 'db.getSiblingDB("admin").shutdownServer({force: true})' \
+      --quiet > /dev/null 2>&1
+  done
 done
 
-rm -rf '.log'
-rm -rf '.data'
+rm -rf $LOG_DIRECTORY
+rm -rf $DATA_DIRECTORY
