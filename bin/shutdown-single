@@ -1,0 +1,13 @@
+#!/bin/zsh
+
+PROJECT_ROOT=$0:A:h:h
+
+source $PROJECT_ROOT/etc/configuration.sh
+
+echo "SHUTDOWN recruiter at port $SERVICE_PORT_OF[SS]"
+mongo localhost:$SERVICE_PORT_OF[SS] \
+  --eval 'db.getSiblingDB("admin").shutdownServer({force: true})' \
+  --quiet > /dev/null 2>&1
+
+rm -rf $LOG_DIRECTORY
+rm -rf $DATA_DIRECTORY

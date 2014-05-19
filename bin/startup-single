@@ -1,0 +1,33 @@
+#!/bin/zsh
+
+PROJECT_ROOT=$0:A:h:h
+
+source $PROJECT_ROOT/etc/configuration.sh
+
+mkdir -p $LOG_DIRECTORY
+mkdir -p $DATA_DIRECTORY
+
+echo "START recruiter"
+mkdir -p "$DATA_DIRECTORY/recruiter-single"
+eval "$MONGOD \
+  --port $SERVICE_PORT_OF[SS] \
+  --dbpath \"$DATA_DIRECTORY/recruiter-single\" \
+  --logpath \"$LOG_DIRECTORY/recruiter-single.log\" \
+  $MONGOD_FLAGS --fork --quiet >> \"$LOG_DIRECTORY/startup\""
+
+$MONGO localhost:$SERVICE_PORT_OF[SS]/recruiter --quiet --eval "
+print('PREPARE recruiter DB')
+
+db.runCommand({collMod: 'scheduled', usePowerOf2Sizes : true})
+db.scheduled.ensureIndex({
+  scheduled_at: 1,
+  active: 1,
+  locked: 1,
+  tags: 1
+})
+
+db.runCommand({collMod: 'archived', usePowerOf2Sizes : true})
+db.archived.ensureIndex({
+  created_at: 1
+})
+"
