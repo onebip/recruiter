@@ -8,7 +8,10 @@ use Recruiter\Recruiter;
 GracefulDeath::around(function($life) {
 
     $pid = posix_getpid();
-    $recruiter = new Recruiter((new MongoClient())->selectDB('recruiter'));
+    $options = array_merge(['host' => 'localhost:27017'], getopt('', ['host:']));
+
+    $db = (new MongoClient($options['host']))->selectDB('recruiter');
+    $recruiter = new Recruiter($db);
 
     while (!$life->askedToStop()) {
         $workers = $recruiter->workersAvailableToWork();
