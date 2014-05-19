@@ -31,7 +31,7 @@ GracefulDeath::around(function() {
                 $pid, date('c'), $howManyJobsToCreate, $howManyJobAreScheduled
             );
             for ($counter=0; $counter<$howManyJobsToCreate; $counter++) {
-                LazyBones::waitFor(3)
+                LazyBones::waitForMs(200, 100)
                     ->asJobOf($recruiter)
                     ->scheduleTo()
                     ->execute();
