@@ -84,6 +84,9 @@ sh.shardCollection('recruiter.roster', {_id: 1})
 sh.shardCollection('recruiter.scheduled', {_id: 1})
 sh.shardCollection('recruiter.archived', {_id: 1})
 
+db.runCommand({collMod: 'scheduled', usePowerOf2Sizes : true})
+db.runCommand({collMod: 'archived', usePowerOf2Sizes : true})
+
 db.getSiblingDB('recruiter').getCollection('scheduled').ensureIndex({
   scheduled_at: 1,
   active: 1,
