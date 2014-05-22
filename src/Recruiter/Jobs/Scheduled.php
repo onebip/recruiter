@@ -26,7 +26,11 @@ class Scheduled
                     '_id' => true
                 ])
                 ->sort(['scheduled_at' => 1])
-                ->limit($howMany),
+                // XXX:
+                // if you limit at 0 then all results
+                // are returned so we are limiting for 1
+                // to have something to do iterator_to_array on
+                ->limit(max(1, $howMany)),
             $this->scheduled
         );
     }

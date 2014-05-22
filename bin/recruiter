@@ -15,26 +15,23 @@ GracefulDeath::around(function($life) {
 
     while (!$life->askedToStop()) {
         $workers = $recruiter->workersAvailableToWork();
-        $currentMemoryUsage = memory_get_usage();
-        printf(
-            '[RECRUITER][%d][%s] found %d workers available to work [%s]' . PHP_EOL,
-            $pid, date('c'), count($workers), format($currentMemoryUsage)
-        );
         $assignedWorkToSomeWorker = false;
-        foreach ($workers as $worker) {
+        foreach ($workers->groupByWhatTheyCanDo() as $unit) {
             $pickStartAt = microtime(true);
-            $jobs = $recruiter->pickJobFor($worker);
+            $contract = $recruiter->signContractOf(
+                $unit
+                    ->pickFrom($recruiter->jobsReadyToBeDone())
+                    ->assignTo($unit)
+            );
             $pickEndAt = microtime(true);
-            foreach ($jobs as $job) {
-                $job->assignTo($worker);
-                printf(
-                    '[RECRUITER][%d][%s] picked job %s in %fms to worker %s' . PHP_EOL,
-                    $pid, date('c'), $job->id(), ($pickEndAt - $pickStartAt) * 1000, $worker->id()
-                );
-                $assignedWorkToSomeWorker = true;
-            }
+            $numberOfWorkers = count($contract['assignments']);
+            $assignedWorkToSomeWorker = $numberOfWorkers > 0;
+            $currentMemoryUsage = memory_get_usage();
+            printf(
+                '[RECRUITER][%d][%s][%s] picked jobs for %d workers in %fms' . PHP_EOL,
+                $pid, date('c'), format($currentMemoryUsage), $numberOfWorkers, ($pickEndAt - $pickStartAt) * 1000
+            );
         }
-        // TODO: quit when $currentMemoryUsage > ($maxMemoryUsage * 0.8)
         if ($currentMemoryUsage > 314572800) exit(1);
         if (!$assignedWorkToSomeWorker) usleep(1000 * 200);
     }

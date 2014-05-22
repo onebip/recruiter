@@ -20,6 +20,11 @@ class AvailableToWork
         $this->roster = $roster;
     }
 
+    public function count()
+    {
+        return count($this->idsAndSkills);
+    }
+
     public function groupByWhatTheyCanDo()
     {
         return [

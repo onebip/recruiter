@@ -47,7 +47,11 @@ class Recruiter
 
     public function signContractOf($contract)
     {
-        $this->db->selectCollection('contracts')->save($contract);
+        // TODO: Recruiter\Contract
+        if (count($contract['assignments']) > 0) {
+            $this->db->selectCollection('contracts')->save($contract);
+        }
+        return $contract;
     }
 
     public function assignedJobTo($contractId, $workerId)

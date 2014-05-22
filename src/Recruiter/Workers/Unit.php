@@ -18,7 +18,6 @@ class Unit
 
     public function pickFrom($jobs)
     {
-        var_dump('Unit::pickFrom ready jobs');
         return $jobs
             ->pick($skills = null, count($this->ids))
             ->lock();
@@ -26,13 +25,16 @@ class Unit
 
     public function combineWith($jobIds)
     {
+        $numberOfPossibleAssignments = min(count($jobIds), count($this->ids));
+        $jobIds = array_slice($jobIds, 0, $numberOfPossibleAssignments);
+        $workerIds = array_slice($this->ids, 0, $numberOfPossibleAssignments);
         $contract = [
             '_id' => new MongoId(),
             'created_at' => new MongoDate(),
-            'assignments' => array_combine($this->ids, $jobIds)
+            'assignments' => array_combine($workerIds, $jobIds)
         ];
         $this->roster->update(
-            ['_id' => ['$in' => $this->ids]],
+            ['_id' => ['$in' => $workerIds]],
             [
                 '$set' => [
                     'available' => false,

@@ -15,7 +15,6 @@ class Locked
 
     public function assignTo($unit)
     {
-        var_dump('Jobs\Locked::assignTo worker unit');
         return $unit->combineWith($this->ids);
     }
 }
