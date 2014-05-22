@@ -20,11 +20,12 @@ LazyBones::waitForMs(200, 100)
 $worker = $recruiter->hire();
 
 $workers = $recruiter->workersAvailableToWork();
-foreach ($workers as $workerToAssignWorkTo) {
-    $jobs = $recruiter->pickJobFor($workerToAssignWorkTo);
-    foreach ($jobs as $job) {
-        $job->assignTo($workerToAssignWorkTo);
-    }
+foreach ($workers->groupByWhatTheyCanDo() as $unit) {
+    $recruiter->signContractOf(
+        $unit
+            ->pickFrom($recruiter->jobsReadyToBeDone())
+            ->assignTo($unit)
+    );
 }
 
 $worker->work();

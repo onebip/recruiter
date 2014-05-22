@@ -53,12 +53,12 @@ class Job
         return $this->status['_id'];
     }
 
-    public function assignTo($worker)
-    {
-        $this->status['worker_was_available_since'] = $worker->availableSince();
-        $worker->assignedTo($this);
-        $this->lock();
-    }
+    /* public function assignTo($worker) */
+    /* { */
+    /*     $this->status['worker_was_available_since'] = $worker->availableSince(); */
+    /*     $worker->assignedTo($this); */
+    /*     $this->lock(); */
+    /* } */
 
     public function updateWith($document)
     {
@@ -96,11 +96,11 @@ class Job
         return array_key_exists('active', $this->status) && $this->status['active'];
     }
 
-    private function lock()
-    {
-        $this->status['locked'] = true;
-        $this->save();
-    }
+    /* private function lock() */
+    /* { */
+    /*     $this->status['locked'] = true; */
+    /*     $this->save(); */
+    /* } */
 
     private function isScheduledLater()
     {
@@ -130,13 +130,13 @@ class Job
     {
         $this->status['attempts'] += 1;
         $this->status['last_execution'] = [
-            'worker_was_idle_for_ms' => $this->msSince($this->status['worker_was_available_since']),
+            /* 'worker_was_idle_for_ms' => $this->msSince($this->status['worker_was_available_since']), */
             'scheduled_at' => $this->status['scheduled_at'],
             'started_at' => new MongoDate(),
             // TODO: informations on worker?
         ];
         unset($this->status['scheduled_at']);
-        unset($this->status['worker_was_available_since']);
+        /* unset($this->status['worker_was_available_since']); */
         $this->save();
     }
 

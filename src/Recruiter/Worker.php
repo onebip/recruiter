@@ -46,21 +46,24 @@ class Worker
         return $this->status['available_since'];
     }
 
-    public function assignedTo($job)
-    {
-        $this->status['available'] = false;
-        $this->status['assigned_to'] = $job->id();
-        $this->status['assigned_since'] = new MongoDate();
-        unset($this->status['available_since']);
-        $this->save();
-    }
+/*     public function assignedTo($job) */
+/*     { */
+/*         $this->status['available'] = false; */
+/*         $this->status['assigned_to'] = $job->id(); */
+/*         $this->status['assigned_since'] = new MongoDate(); */
+/*         unset($this->status['available_since']); */
+/*         $this->save(); */
+/*     } */
 
     public function work()
     {
         $this->refresh();
         if ($this->hasBeenAssignedToDoSomething()) {
             $this->workOn(
-                $this->recruiter->scheduledJob($this->status['assigned_to'])
+                $this->recruiter->assignedJobTo(
+                    $this->status['bound_to'],
+                    $this->id()
+                )
             );
             return true;
         }
@@ -107,14 +110,14 @@ class Worker
         $this->status['available_since'] = new MongoDate();
         unset($this->status['working_on']);
         unset($this->status['working_since']);
-        unset($this->status['assigned_to']);
-        unset($this->status['assigned_since']);
+        unset($this->status['bound_to']);
+        unset($this->status['bound_since']);
         $this->save();
     }
 
     private function hasBeenAssignedToDoSomething()
     {
-        return array_key_exists('assigned_to', $this->status);
+        return array_key_exists('bound_to', $this->status);
     }
 
     private function availableToWork()

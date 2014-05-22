@@ -5,6 +5,7 @@ namespace Recruiter\Worker;
 use MongoDB;
 use MongoCollection;
 use Recruiter\Recruiter;
+use Recruiter\Workers;
 use Recruiter\Worker;
 
 class Repository
@@ -20,8 +21,9 @@ class Repository
 
     public function available()
     {
-        return $this->map(
-            $this->roster->find(['available' => true])
+        return Workers\AvailableToWork::from(
+            $this->roster->find(['available' => true], ['_id' => true, 'skills' => true]),
+            $this
         );
     }
 

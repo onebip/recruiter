@@ -13,7 +13,8 @@
   "require": {
     "php": ">=5.4.0",
     "psr/log": "1.0.0",
-    "gabrielelana/graceful-death": "0.5.0"
+    "gabrielelana/graceful-death": "0.5.0",
+    "lstrojny/functional-php": "dev-master"
   },
   "require-dev": {
     "phpunit/phpunit": "~4.0"
