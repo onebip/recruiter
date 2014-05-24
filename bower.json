@@ -1,0 +1,17 @@
+{
+  "name": "recruiter",
+  "version": "0.0.0",
+  "homepage": "https://github.com/gabrielelana/recruiter",
+  "authors": [
+    "gabriele.lana <gabriele.lana@cleancode.it>"
+  ],
+  "description": "Recruiter Dashboard",
+  "keywords": [
+    "dashboard"
+  ],
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "d3": "~3.4.8"
+  }
+}
