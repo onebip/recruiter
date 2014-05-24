@@ -12,6 +12,7 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "d3": "~3.4.8"
+    "d3": "~3.4.8",
+    "bootstrap": "~3.1.1"
   }
 }

@@ -13,9 +13,17 @@ module.exports = function(grunt) {
       }
     },
     copy: {
-      build: {
+      html: {
         src: 'dashboard/index.html',
         dest: '.public/index.html'
+      },
+      css: {
+        src: 'bower_components/bootstrap/dist/css/bootstrap.css',
+        dest: '.public/css/bootstrap.css'
+      },
+      fonts: {
+        src: 'bower_components/bootstrap/dist/fonts/glyphicons-halflings-regular.ttf',
+        dest: '.public/fonts/glyphicons-halflings-regular.ttf'
       }
     },
     clean: ['.work', '.public']
@@ -26,6 +34,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-copy');
 
-  grunt.registerTask('build', ['clean', 'copy:build', 'bower_concat', 'concat']);
+  grunt.registerTask('build', ['clean', 'copy:html', 'copy:css', 'copy:fonts', 'bower_concat', 'concat']);
 
 };
