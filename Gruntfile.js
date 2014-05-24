@@ -18,8 +18,10 @@ module.exports = function(grunt) {
         dest: '.public/index.html'
       },
       css: {
-        src: 'bower_components/bootstrap/dist/css/bootstrap.css',
-        dest: '.public/css/bootstrap.css'
+        flatten: true,
+        expand: true,
+        src: ['bower_components/bootstrap/dist/css/bootstrap.css', 'dashboard/css/recruiter.css'],
+        dest: '.public/css/'
       },
       fonts: {
         src: 'bower_components/bootstrap/dist/fonts/glyphicons-halflings-regular.ttf',
