@@ -2,3 +2,4 @@
 composer.phar
 vendor/
 bower_components/
+node_modules/
