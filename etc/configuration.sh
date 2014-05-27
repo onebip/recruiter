@@ -1,4 +1,4 @@
-MONGODB_ROOT=$PROJECT_ROOT/.opt/mongodb-2.2
+MONGODB_ROOT=$PROJECT_ROOT/.opt/mongodb-2.4
 [ ! -d $MONGODB_ROOT ] && \
   echo "ERROR: $MONGODB_ROOT directory do not exists. I need all MongoDB executables in $MONGODB_ROOT/bin You can download them from http://www.mongodb.org/downloads" 1>&2 && \
   exit 1

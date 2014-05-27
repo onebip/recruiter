@@ -41,11 +41,6 @@ class Worker
         return $this->status['_id'];
     }
 
-    public function availableSince()
-    {
-        return $this->status['available_since'];
-    }
-
     public function assignedTo($job)
     {
         $this->status['available'] = false;

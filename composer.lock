@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "80d9322150a50906c9c8b15144ec4c32",
+    "hash": "1777ad7e0580132189d38b1ee4d2ad5e",
     "packages": [
         {
             "name": "gabrielelana/graceful-death",
@@ -58,6 +58,58 @@
                 "try"
             ],
             "time": "2014-05-17 10:29:01"
+        },
+        {
+            "name": "lstrojny/functional-php",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/lstrojny/functional-php.git",
+                "reference": "370561b41b80bdf6c2864d52b587b28184fe76c0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/lstrojny/functional-php/zipball/370561b41b80bdf6c2864d52b587b28184fe76c0",
+                "reference": "370561b41b80bdf6c2864d52b587b28184fe76c0",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/Functional/_import.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Lars Strojny",
+                    "email": "lstrojny@php.net",
+                    "homepage": "http://usrportage.de"
+                },
+                {
+                    "name": "Max Beutel",
+                    "email": "nash12@gmail.com"
+                }
+            ],
+            "description": "Functional primitives for PHP",
+            "keywords": [
+                "functional"
+            ],
+            "time": "2014-04-28 13:15:17"
         },
         {
             "name": "psr/log",
@@ -799,9 +851,9 @@
 
     ],
     "minimum-stability": "stable",
-    "stability-flags": [
-
-    ],
+    "stability-flags": {
+        "lstrojny/functional-php": 20
+    },
     "platform": {
         "php": ">=5.4.0"
     },

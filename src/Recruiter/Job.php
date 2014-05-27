@@ -55,7 +55,6 @@ class Job
 
     public function assignTo($worker)
     {
-        $this->status['worker_was_available_since'] = $worker->availableSince();
         $worker->assignedTo($this);
         $this->lock();
     }
@@ -130,13 +129,11 @@ class Job
     {
         $this->status['attempts'] += 1;
         $this->status['last_execution'] = [
-            'worker_was_idle_for_ms' => $this->msSince($this->status['worker_was_available_since']),
             'scheduled_at' => $this->status['scheduled_at'],
             'started_at' => new MongoDate(),
             // TODO: informations on worker?
         ];
         unset($this->status['scheduled_at']);
-        unset($this->status['worker_was_available_since']);
         $this->save();
     }
 
@@ -155,16 +152,6 @@ class Job
     {
         // TODO: apply retry policy
         $this->archive();
-    }
-
-    private function msSince(MongoDate $from)
-    {
-        $to = new MongoDate();
-        $fromUSec = floatval("{$from->sec}.{$from->usec}");
-        $toUSec = floatval("{$to->sec}.{$to->usec}");
-        $diffUSec = $toUSec - $fromUSec;
-        $diffMSec = round($diffUSec * 1000);
-        return $diffMSec;
     }
 
     private function schedule()

@@ -15,4 +15,9 @@ db.runCommand({collMod: "archived", usePowerOf2Sizes : true})
 db.archived.ensureIndex({
   created_at: 1
 })
+
+db.runCommand({collMod: "roster", usePowerOf2Sizes : true})
+db.roster.ensureIndex({
+  available: 1
+})
 '
