@@ -9,7 +9,12 @@ use Rych\ByteSize\ByteSize;
 GracefulDeath::around(function($life) {
 
     $pid = posix_getpid();
-    $options = array_merge(['host' => 'localhost:27017'], getopt('', ['host:']));
+    $options = array_merge([
+            'host' => 'localhost:27017',
+            'memory-limit' => 33554432, // 32MB
+        ],
+        getopt('', ['host:', 'memory-limit:'])
+    );
 
     $db = (new MongoClient($options['host']))->selectDB('recruiter');
     $recruiter = new Recruiter($db);
@@ -24,8 +29,7 @@ GracefulDeath::around(function($life) {
             $pid, date('c'), ByteSize::formatMetric($currentMemoryUsage),
             $numberOfAssignments, ($pickEndAt - $pickStartAt) * 1000
         );
-        // TODO: quit when $currentMemoryUsage > ($maxMemoryUsage * 0.8)
-        if ($currentMemoryUsage > 314572800) exit(1);
+        if ($currentMemoryUsage > (int)$options['memory-limit']) exit(1);
         if ($numberOfAssignments === 0) usleep(1000 * 200);
     }
 
