@@ -18,15 +18,5 @@ LazyBones::waitForMs(200, 100)
     ->execute();
 
 $worker = $recruiter->hire();
-
-$assigned = $recruiter->assignJobsToWorkers();
-
-/* $workers = $recruiter->workersAvailableToWork(); */
-/* foreach ($workers as $workerToAssignWorkTo) { */
-/*     $jobs = $recruiter->pickJobFor($workerToAssignWorkTo); */
-/*     foreach ($jobs as $job) { */
-/*         $job->assignTo($workerToAssignWorkTo); */
-/*     } */
-/* } */
-
+$assignments = $recruiter->assignJobsToWorkers();
 $worker->work();

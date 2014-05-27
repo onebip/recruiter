@@ -53,17 +53,6 @@ class Job
         return $this->status['_id'];
     }
 
-    public function assignTo($worker)
-    {
-        $worker->assignedTo($this);
-        $this->lock();
-    }
-
-    public function updateWith($document)
-    {
-        $this->status = self::fromMongoDocumentToInternalStatus($document);
-    }
-
     public function scheduleTo()
     {
         $this->status['scheduled_at'] = new MongoDate();
@@ -93,12 +82,6 @@ class Job
     public function isActive()
     {
         return array_key_exists('active', $this->status) && $this->status['active'];
-    }
-
-    private function lock()
-    {
-        $this->status['locked'] = true;
-        $this->save();
     }
 
     private function isScheduledLater()

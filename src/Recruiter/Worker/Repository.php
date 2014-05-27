@@ -18,13 +18,6 @@ class Repository
         $this->recruiter = $recruiter;
     }
 
-    public function available()
-    {
-        return $this->map(
-            $this->roster->find(['available' => true])
-        );
-    }
-
     public function save($worker)
     {
         $this->roster->save($worker->export());
@@ -35,14 +28,5 @@ class Repository
         $worker->updateWith(
             $this->roster->findOne(['_id' => $worker->id()])
         );
-    }
-
-    private function map($cursor)
-    {
-        $workers = [];
-        while ($cursor->hasNext()) {
-            $workers[] = Worker::import($cursor->getNext(), $this->recruiter, $this);
-        }
-        return $workers;
     }
 }

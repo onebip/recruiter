@@ -14,38 +14,18 @@ GracefulDeath::around(function($life) {
     $recruiter = new Recruiter($db);
 
     while (!$life->askedToStop()) {
-        /* $workers = $recruiter->workersAvailableToWork(); */
         $currentMemoryUsage = memory_get_usage();
         $pickStartAt = microtime(true);
-        $assigned = $recruiter->assignJobsToWorkers();
+        $numberOfAssignments = $recruiter->assignJobsToWorkers();
         $pickEndAt = microtime(true);
         printf(
             '[RECRUITER][%d][%s][%s] picked jobs for %d workers in %fms' . PHP_EOL,
             $pid, date('c'), format($currentMemoryUsage),
-            $assigned, ($pickEndAt - $pickStartAt) * 1000
+            $numberOfAssignments, ($pickEndAt - $pickStartAt) * 1000
         );
-        /* printf( */
-        /*     '[RECRUITER][%d][%s] found %d workers available to work [%s]' . PHP_EOL, */
-        /*     $pid, date('c'), count($workers), format($currentMemoryUsage) */
-        /* ); */
-        /* $assignedWorkToSomeWorker = false; */
-        /* foreach ($workers as $worker) { */
-        /*     $pickStartAt = microtime(true); */
-        /*     $jobs = $recruiter->pickJobFor($worker); */
-        /*     $pickEndAt = microtime(true); */
-        /*     foreach ($jobs as $job) { */
-        /*         $job->assignTo($worker); */
-        /*         printf( */
-        /*             '[RECRUITER][%d][%s] picked job %s in %fms to worker %s' . PHP_EOL, */
-        /*             $pid, date('c'), $job->id(), ($pickEndAt - $pickStartAt) * 1000, $worker->id() */
-        /*         ); */
-        /*         $assignedWorkToSomeWorker = true; */
-        /*     } */
-        /* } */
-        /* if (!$assignedWorkToSomeWorker) usleep(1000 * 200); */
         // TODO: quit when $currentMemoryUsage > ($maxMemoryUsage * 0.8)
         if ($currentMemoryUsage > 314572800) exit(1);
-        if ($assigned === 0) usleep(1000 * 200);
+        if ($numberOfAssignments === 0) usleep(1000 * 200);
     }
 
     printf('[RECRUITER][%d][%s] ok, see you space cowboy...' . PHP_EOL, $pid, date('c'));

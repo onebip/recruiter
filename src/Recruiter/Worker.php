@@ -41,32 +41,18 @@ class Worker
         return $this->status['_id'];
     }
 
-    public function assignedTo($job)
-    {
-        $this->status['available'] = false;
-        $this->status['assigned_to'] = $job->id();
-        $this->status['assigned_since'] = new MongoDate();
-        unset($this->status['available_since']);
-        $this->save();
-    }
-
     public function work()
     {
         $this->refresh();
         if ($this->hasBeenAssignedToDoSomething()) {
             $this->workOn(
-                $this->recruiter->scheduledJob($this->status['assigned_to'])
+                $this->recruiter->scheduledJob(
+                    $this->status['assigned_to'][(string)$this->status['_id']]
+                )
             );
             return true;
         }
         return false;
-    }
-
-    public function workOn($job)
-    {
-        $this->beforeExecutionOf($job);
-        $job->execute();
-        $this->afterExecutionOf($job);
     }
 
     public function export()
@@ -77,6 +63,13 @@ class Worker
     public function updateWith($document)
     {
         $this->status = self::fromMongoDocumentToInternalStatus($document);
+    }
+
+    private function workOn($job)
+    {
+        $this->beforeExecutionOf($job);
+        $job->execute();
+        $this->afterExecutionOf($job);
     }
 
     private function beforeExecutionOf($job)
@@ -102,12 +95,6 @@ class Worker
     private function hasBeenAssignedToDoSomething()
     {
         return array_key_exists('assigned_to', $this->status);
-    }
-
-    private function availableToWork()
-    {
-        $this->status['available'] = true;
-        $this->status['available_since'] = new MongoDate();
     }
 
     private function refresh()
