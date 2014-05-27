@@ -10,14 +10,14 @@ use Recruiter\Job\Repository;
 
 class Job
 {
-    private $toDo;
+    private $status;
+    private $workable;
     private $recruiter;
     private $instantiatedAt;
-    private $status;
 
-    public static function around(Workable $toDo, Recruiter $recruiter, Repository $repository)
+    public static function around(Workable $workable, Recruiter $recruiter, Repository $repository)
     {
-        return new self(self::initialize(), $toDo, $recruiter, $repository);
+        return new self(self::initialize(), $workable, $recruiter, $repository);
     }
 
     public static function import($document, Recruiter $recruiter, Repository $repository)
@@ -39,10 +39,10 @@ class Job
         );
     }
 
-    public function __construct($status, Workable $toDo, Recruiter $recruiter, Repository $repository)
+    public function __construct($status, Workable $workable, Recruiter $recruiter, Repository $repository)
     {
-        $this->workable = $toDo;
         $this->status = $status;
+        $this->workable = $workable;
         $this->recruiter = $recruiter;
         $this->repository = $repository;
         $this->instantiatedAt = new MongoDate();
