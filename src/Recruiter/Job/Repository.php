@@ -23,11 +23,11 @@ class Repository
 
     public function scheduled($id)
     {
-        return array_shift(
-            $this->map(
-                $this->scheduled->find(['_id' => $id])
-            )
-        );
+        $found = $this->map($this->scheduled->find(['_id' => $id]));
+        if (count($found) === 1) {
+            return [];
+        }
+        return $found[0];
     }
 
     public function pickFor($worker)
