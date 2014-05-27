@@ -64,17 +64,9 @@ class Worker
 
     public function workOn($job)
     {
-        printf(
-            '[WORKER][%d][%s] start to work on job %s' . PHP_EOL,
-            posix_getpid(), date('c'), $job->id()
-        );
         $this->beforeExecutionOf($job);
         $job->execute();
         $this->afterExecutionOf($job);
-        printf(
-            '[WORKER][%d][%s] done to work on job %s' . PHP_EOL,
-            posix_getpid(), date('c'), $job->id()
-        );
     }
 
     public function export()
