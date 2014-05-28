@@ -10,9 +10,4 @@ trait Recruitable
     {
         return $recruiter->jobOf($this);
     }
-
-    public function retryWithPolicy()
-    {
-        return new RetryPolicy\DoNotItAgain();
-    }
 }

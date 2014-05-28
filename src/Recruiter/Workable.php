@@ -14,13 +14,6 @@ interface Workable
     public function asJobOf(Recruiter $recruiter);
 
     /**
-     * Returns the retry policy for this `Recruiter\Workable` instance
-     *
-     * @return Recruiter\RetryPolicy
-     */
-    public function retryWithPolicy();
-
-    /**
      * Export parameters that need to be persisted
      *
      * @return array
@@ -31,9 +24,8 @@ interface Workable
      * Import retry policy parameters
      *
      * @param array $parameters Previously exported parameters
-     * @param Recruiter\RetryPolicy $scheduler
      *
      * @return Recruiter\RetryPoicy
      */
-    public static function import($parameters, RetryPolicy $scheduler);
+    public static function import($parameters);
 }
