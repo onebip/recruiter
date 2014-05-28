@@ -52,6 +52,22 @@ class Job
         return $this;
     }
 
+    public function retryWithPolicy(RetryPolicy $retryPolicy)
+    {
+        $this->retryPolicy = $retryPolicy;
+        return $this;
+    }
+
+    public function numberOfAttempts()
+    {
+        return $this->status['attempts'];
+    }
+
+    public function scheduleAt(MongoDate $at)
+    {
+        $this->status['scheduled_at'] = $at;
+    }
+
     public function execute()
     {
         if ($this->isScheduledLater()) {
@@ -110,9 +126,10 @@ class Job
 
     private function afterFailure($exception)
     {
-        $this->traceLastExecution($result);
+        $this->traceLastExecution($exception);
         $this->retryPolicy->schedule($this);
-        if (!$this->isScheduledLater()) {
+        $this->save();
+        if (!array_key_exists('scheduled_at', $this->status)) {
             $this->archive(false);
         }
     }
