@@ -4,7 +4,7 @@
 require __DIR__ . '/../vendor/autoload.php';
 
 use Recruiter\Recruiter;
-use Recruiter\LazyBones;
+use Recruiter\AlwaysFail;
 use Recruiter\RetryPolicy;
 use Recruiter\Worker;
 
@@ -13,11 +13,17 @@ $db->drop();
 
 $recruiter = new Recruiter($db);
 
-LazyBones::waitForMs(200, 100)
+(new AlwaysFail())
     ->asJobOf($recruiter)
+    ->retryWithPolicy(new RetryPolicy\RetryManyTimes(5, 1))
     ->scheduleTo()
     ->execute();
 
 $worker = $recruiter->hire();
-$assignments = $recruiter->assignJobsToWorkers();
-$worker->work();
+while (true) {
+    printf("Try to do my work\n");
+    $assignments = $recruiter->assignJobsToWorkers();
+    if ($assignments === 0) break;
+    $worker->work();
+    usleep(1200 * 1000);
+}

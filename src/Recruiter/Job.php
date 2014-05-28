@@ -65,7 +65,9 @@ class Job
 
     public function scheduleAt(MongoDate $at)
     {
+        $this->status['locked'] = false;
         $this->status['scheduled_at'] = $at;
+        $this->save();
     }
 
     public function execute()
@@ -128,7 +130,6 @@ class Job
     {
         $this->traceLastExecution($exception);
         $this->retryPolicy->schedule($this);
-        $this->save();
         if (!array_key_exists('scheduled_at', $this->status)) {
             $this->archive(false);
         }
@@ -161,6 +162,7 @@ class Job
     private function archive($done)
     {
         $this->status['active'] = false;
+        $this->status['locked'] = false;
         $this->status['done'] = $done;
         $this->repository->archive($this);
     }
