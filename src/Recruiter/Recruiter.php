@@ -17,7 +17,7 @@ class Recruiter
     public function __construct(MongoDB $db)
     {
         $this->db = $db;
-        $this->jobs = new Job\Repository($db, $this);
+        $this->jobs = new Job\Repository($db);
         $this->workers = new Worker\Repository($db, $this);
     }
 
@@ -93,7 +93,7 @@ class Recruiter
 
     public function jobOf(Workable $workable)
     {
-        return Job::around($workable, $this, $this->jobs);
+        return Job::around($workable, $this->jobs);
     }
 
     public function scheduledJob($id)

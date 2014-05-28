@@ -14,37 +14,29 @@ class Job
 {
     private $status;
     private $workable;
-    private $recruiter;
+    private $retryPolicy;
     private $instantiatedAt;
 
-    public static function around(Workable $workable, Recruiter $recruiter, Repository $repository)
+    public static function around(Workable $workable, Repository $repository)
     {
-        return new self(
-            self::initialize(), $workable,
-            new RetryPolicy\DoNotDoItAgain(),
-            $recruiter, $repository
-        );
+        return new self(self::initialize(), $workable, new RetryPolicy\DoNotDoItAgain(), $repository);
     }
 
-    public static function import($document, Recruiter $recruiter, Repository $repository)
+    public static function import($document, Repository $repository)
     {
         return new self(
             $document,
             (new WorkableInJob())->import($document),
             (new RetryPolicyInJob())->import($document),
-            $recruiter,
             $repository
         );
     }
 
-    public function __construct($status,
-        Workable $workable, RetryPolicy $retryPolicy,
-        Recruiter $recruiter, Repository $repository)
+    public function __construct($status, Workable $workable, RetryPolicy $retryPolicy, Repository $repository)
     {
         $this->status = $status;
         $this->workable = $workable;
         $this->retryPolicy = $retryPolicy;
-        $this->recruiter = $recruiter;
         $this->repository = $repository;
         $this->instantiatedAt = new MongoDate();
     }

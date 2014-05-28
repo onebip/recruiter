@@ -12,13 +12,11 @@ class Repository
 {
     private $scheduled;
     private $archived;
-    private $recruiter;
 
-    public function __construct(MongoDB $db, Recruiter $recruiter)
+    public function __construct(MongoDB $db)
     {
         $this->scheduled = $db->selectCollection('scheduled');
         $this->archived = $db->selectCollection('archived');
-        $this->recruiter = $recruiter;
     }
 
     public function scheduled($id)
@@ -60,7 +58,7 @@ class Repository
     {
         $jobs = [];
         while ($cursor->hasNext()) {
-            $jobs[] = Job::import($cursor->getNext(), $this->recruiter, $this);
+            $jobs[] = Job::import($cursor->getNext(), $this);
         }
         return $jobs;
     }
