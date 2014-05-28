@@ -74,13 +74,6 @@ class Job
         return array_key_exists('active', $this->status) && $this->status['active'];
     }
 
-    private function isScheduledLater()
-    {
-        return array_key_exists('scheduled_at', $this->status) &&
-            ($this->instantiatedAt->sec <= $this->status['scheduled_at']->sec) &&
-            ($this->instantiatedAt->usec <= $this->status['scheduled_at']->usec);
-    }
-
     private function executeNow()
     {
         $methodToCall = $this->status['workable']['method'];
@@ -104,7 +97,6 @@ class Job
         $this->status['last_execution'] = [
             'scheduled_at' => $this->status['scheduled_at'],
             'started_at' => new MongoDate(),
-            // TODO: informations on worker?
         ];
         unset($this->status['scheduled_at']);
         $this->save();
@@ -112,19 +104,36 @@ class Job
 
     private function afterExecution($result)
     {
-        $this->status['last_execution'] = array_merge(
-            $this->status['last_execution'], [
-                'ended_at' => new MongoDate(),
-                // TODO: result class, message and trace
-            ]
-        );
-        $this->archive();
+        $this->traceLastExecution($result);
+        $this->archive(true);
     }
 
     private function afterFailure($exception)
     {
-        // TODO: apply retry policy
-        $this->archive();
+        $this->traceLastExecution($result);
+        $this->retryPolicy->schedule($this);
+        if (!$this->isScheduledLater()) {
+            $this->archive(false);
+        }
+    }
+
+    private function traceLastExecution($result)
+    {
+        $this->status['last_execution'] = array_merge(
+            $this->status['last_execution'], [
+                'ended_at' => new MongoDate(),
+                'class' => is_object($result) ? get_class($result) : null,
+                'message' => method_exists($result, 'getMessage') ? $result->getMessage() : null,
+                'trace' => null
+            ]
+        );
+    }
+
+    private function isScheduledLater()
+    {
+        return array_key_exists('scheduled_at', $this->status) &&
+            ($this->instantiatedAt->sec <= $this->status['scheduled_at']->sec) &&
+            ($this->instantiatedAt->usec <= $this->status['scheduled_at']->usec);
     }
 
     private function schedule()
@@ -132,10 +141,10 @@ class Job
         $this->repository->schedule($this);
     }
 
-    private function archive()
+    private function archive($done)
     {
         $this->status['active'] = false;
-        $this->status['done'] = true;
+        $this->status['done'] = $done;
         $this->repository->archive($this);
     }
 
