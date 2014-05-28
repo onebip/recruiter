@@ -19,24 +19,31 @@ class Job
 
     public static function around(Workable $workable, Recruiter $recruiter, Repository $repository)
     {
-        return new self(self::initialize(), $workable, $recruiter, $repository);
+        return new self(
+            self::initialize(), $workable,
+            new RetryPolicy\DoNotDoItAgain(),
+            $recruiter, $repository
+        );
     }
 
     public static function import($document, Recruiter $recruiter, Repository $repository)
     {
-
         return new self(
             $document,
             (new WorkableInJob())->import($document),
+            (new RetryPolicyInJob())->import($document),
             $recruiter,
             $repository
         );
     }
 
-    public function __construct($status, Workable $workable, Recruiter $recruiter, Repository $repository)
+    public function __construct($status,
+        Workable $workable, RetryPolicy $retryPolicy,
+        Recruiter $recruiter, Repository $repository)
     {
         $this->status = $status;
         $this->workable = $workable;
+        $this->retryPolicy = $retryPolicy;
         $this->recruiter = $recruiter;
         $this->repository = $repository;
         $this->instantiatedAt = new MongoDate();
@@ -67,6 +74,7 @@ class Job
             $this->status, [
                 'attempts' => new MongoInt32($this->status['attempts']),
                 'workable' => (new WorkableInJob())->export($this->workable),
+                'retry_policy' => (new RetryPolicyInJob())->export($this->retryPolicy),
             ]
         );
     }
@@ -164,6 +172,7 @@ class Job
             'done' => false,
             'created_at' => new MongoDate(),
             'workable' => (new WorkableInJob())->initialize(),
+            'retry_policy' => (new RetryPolicyInJob())->initialize(),
             'attempts' => 0,
             'locked' => false,
             'tags' => []
