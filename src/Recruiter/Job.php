@@ -33,7 +33,7 @@ class Job
         }
         return new self(
             $document,
-            $document['workable_class']::import($document['workable_parameters'], $recruiter),
+            $document['workable_class']::import($document['workable_parameters'], null),
             $recruiter,
             $repository
         );

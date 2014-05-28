@@ -38,7 +38,7 @@ class LazyBones implements Workable
         ];
     }
 
-    public static function import($parameters)
+    public static function import($parameters, RetryPolicy $scheduler = null)
     {
         return new self(
             $parameters['us_to_sleep'],
