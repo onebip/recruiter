@@ -6,6 +6,8 @@ use MongoId;
 use MongoDate;
 use MongoInt32;
 use Exception;
+
+use Recruiter\RetryPolicy;
 use Recruiter\Job\Repository;
 
 class Job
@@ -33,7 +35,9 @@ class Job
         }
         return new self(
             $document,
-            $document['workable_class']::import($document['workable_parameters'], null),
+            $document['workable_class']::import(
+                $document['workable_parameters'], new RetryPolicy\DoNotDoItAgain()
+            ),
             $recruiter,
             $repository
         );

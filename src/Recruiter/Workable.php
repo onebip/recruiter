@@ -35,5 +35,5 @@ interface Workable
      *
      * @return Recruiter\RetryPoicy
      */
-    public static function import($parameters, RetryPolicy $scheduler = null);
+    public static function import($parameters, RetryPolicy $scheduler);
 }

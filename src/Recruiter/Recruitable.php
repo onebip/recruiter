@@ -2,6 +2,8 @@
 
 namespace Recruiter;
 
+use Recruiter\RetryPolicy;
+
 trait Recruitable
 {
     public function asJobOf(Recruiter $recruiter)
@@ -11,6 +13,6 @@ trait Recruitable
 
     public function retryWithPolicy()
     {
-        return null;
+        return new RetryPolicy\DoNotItAgain();
     }
 }
