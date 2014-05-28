@@ -24,19 +24,23 @@ class Job
 
     public static function import($document, Recruiter $recruiter, Repository $repository)
     {
-        if (!array_key_exists('workable_class', $document)) {
+        if (!array_key_exists('workable', $document)) {
+            throw new Exception('Unable to import Job without data about Workable object');
+        }
+        $dataAboutWorkableObject = $document['workable'];
+        if (!array_key_exists('class', $dataAboutWorkableObject)) {
             throw new Exception('Unable to import Job without a class');
         }
-        if (!class_exists($document['workable_class'])) {
+        if (!class_exists($dataAboutWorkableObject['class'])) {
             throw new Exception('Unable to import Job with unknown Workable class');
         }
-        if (!method_exists($document['workable_class'], 'import')) {
+        if (!method_exists($dataAboutWorkableObject['class'], 'import')) {
             throw new Exception('Unable to import Workable without method import');
         }
         return new self(
             $document,
-            $document['workable_class']::import(
-                $document['workable_parameters'], new RetryPolicy\DoNotDoItAgain()
+            $dataAboutWorkableObject['class']::import(
+                $dataAboutWorkableObject['parameters'], new RetryPolicy\DoNotDoItAgain()
             ),
             $recruiter,
             $repository
@@ -76,9 +80,11 @@ class Job
         return array_merge(
             $this->status, [
                 'attempts' => new MongoInt32($this->status['attempts']),
-                'workable_class' => get_class($this->workable),
-                'workable_parameters' => $this->workable->export(),
-                'workable_method' => 'execute',
+                'workable' => [
+                    'class' => get_class($this->workable),
+                    'parameters' => $this->workable->export(),
+                    'method' => 'execute',
+                ],
             ]
         );
     }
@@ -97,7 +103,7 @@ class Job
 
     private function executeNow()
     {
-        $methodToCall = $this->status['workable_method'];
+        $methodToCall = $this->status['workable']['method'];
         if (!method_exists($this->workable, $methodToCall)) {
             throw new Exception('Unknown method on workable instance');
         }
@@ -175,7 +181,7 @@ class Job
             'active' => true,
             'done' => false,
             'created_at' => new MongoDate(),
-            'workable_method' => 'execute',
+            'workable' => ['method' => 'execute'],
             'attempts' => 0,
             'locked' => false,
             'tags' => []
