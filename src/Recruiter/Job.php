@@ -24,24 +24,10 @@ class Job
 
     public static function import($document, Recruiter $recruiter, Repository $repository)
     {
-        if (!array_key_exists('workable', $document)) {
-            throw new Exception('Unable to import Job without data about Workable object');
-        }
-        $dataAboutWorkableObject = $document['workable'];
-        if (!array_key_exists('class', $dataAboutWorkableObject)) {
-            throw new Exception('Unable to import Job without a class');
-        }
-        if (!class_exists($dataAboutWorkableObject['class'])) {
-            throw new Exception('Unable to import Job with unknown Workable class');
-        }
-        if (!method_exists($dataAboutWorkableObject['class'], 'import')) {
-            throw new Exception('Unable to import Workable without method import');
-        }
+
         return new self(
             $document,
-            $dataAboutWorkableObject['class']::import(
-                $dataAboutWorkableObject['parameters'], new RetryPolicy\DoNotDoItAgain()
-            ),
+            (new WorkableInJob())->import($document),
             $recruiter,
             $repository
         );
@@ -80,11 +66,7 @@ class Job
         return array_merge(
             $this->status, [
                 'attempts' => new MongoInt32($this->status['attempts']),
-                'workable' => [
-                    'class' => get_class($this->workable),
-                    'parameters' => $this->workable->export(),
-                    'method' => 'execute',
-                ],
+                'workable' => (new WorkableInJob())->export($this->workable),
             ]
         );
     }
@@ -181,7 +163,7 @@ class Job
             'active' => true,
             'done' => false,
             'created_at' => new MongoDate(),
-            'workable' => ['method' => 'execute'],
+            'workable' => (new WorkableInJob())->initialize(),
             'attempts' => 0,
             'locked' => false,
             'tags' => []
