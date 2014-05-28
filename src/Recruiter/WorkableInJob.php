@@ -25,16 +25,16 @@ class WorkableInJob
     public function export($workable)
     {
         return [
-            'class' => get_class($workable),
-            'parameters' => $workable->export(),
-            'method' => 'execute',
+            'workable' => [
+                'class' => get_class($workable),
+                'parameters' => $workable->export(),
+                'method' => 'execute',
+            ]
         ];
     }
 
     public function initialize()
     {
-        return [
-            'method' => 'execute',
-        ];
+        return ['workable' => ['method' => 'execute']];
     }
 }

@@ -27,8 +27,10 @@ class RetryPolicyInJob
     public function export($retryPolicy)
     {
         return [
-            'class' => get_class($retryPolicy),
-            'parameters' => $retryPolicy->export(),
+            'retry_policy' => [
+                'class' => get_class($retryPolicy),
+                'parameters' => $retryPolicy->export(),
+            ]
         ];
     }
 

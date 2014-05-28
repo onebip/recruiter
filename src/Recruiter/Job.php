@@ -71,11 +71,9 @@ class Job
     public function export()
     {
         return array_merge(
-            $this->status, [
-                'attempts' => new MongoInt32($this->status['attempts']),
-                'workable' => (new WorkableInJob())->export($this->workable),
-                'retry_policy' => (new RetryPolicyInJob())->export($this->retryPolicy),
-            ]
+            $this->status,
+            (new WorkableInJob())->export($this->workable),
+            (new RetryPolicyInJob())->export($this->retryPolicy)
         );
     }
 
@@ -166,16 +164,18 @@ class Job
 
     private static function initialize()
     {
-        return [
-            '_id' => new MongoId(),
-            'active' => true,
-            'done' => false,
-            'created_at' => new MongoDate(),
-            'workable' => (new WorkableInJob())->initialize(),
-            'retry_policy' => (new RetryPolicyInJob())->initialize(),
-            'attempts' => 0,
-            'locked' => false,
-            'tags' => []
-        ];
+        return array_merge(
+            [
+                '_id' => new MongoId(),
+                'active' => true,
+                'done' => false,
+                'created_at' => new MongoDate(),
+                'locked' => false,
+                'attempts' => 0,
+                'tags' => []
+            ],
+            (new WorkableInJob())->initialize(),
+            (new RetryPolicyInJob())->initialize()
+        );
     }
 }
