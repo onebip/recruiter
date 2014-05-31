@@ -28,7 +28,7 @@ class Repository
         return $found[0];
     }
 
-    public function schedule(Job $job)
+    public function save(Job $job)
     {
         $this->scheduled->save($job->export());
     }
@@ -38,20 +38,6 @@ class Repository
         $document = $job->export();
         $this->scheduled->remove(array('_id' => $document['_id']));
         $this->archived->save($document);
-    }
-
-    public function save(Job $job)
-    {
-        if ($job->isActive()) {
-            $this->scheduled->save($job->export());
-        }
-    }
-
-    public function refresh(Job $job)
-    {
-        $job->updateWith(
-            $this->roster->findOne(['_id' => $job->id()])
-        );
     }
 
     private function map($cursor)

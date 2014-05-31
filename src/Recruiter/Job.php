@@ -46,16 +46,9 @@ class Job
         return $this->status['_id'];
     }
 
-    public function scheduleTo()
-    {
-        $this->status['scheduled_at'] = new MongoDate();
-        return $this;
-    }
-
     public function retryWithPolicy(RetryPolicy $retryPolicy)
     {
         $this->retryPolicy = $retryPolicy;
-        return $this;
     }
 
     public function numberOfAttempts()
@@ -63,7 +56,7 @@ class Job
         return $this->status['attempts'];
     }
 
-    public function scheduleAt(MongoDate $at, RetryPolicy $retryPolicy = null)
+    public function scheduleAt(MongoDate $at)
     {
         $this->status['locked'] = false;
         $this->status['scheduled_at'] = $at;
@@ -73,7 +66,7 @@ class Job
     public function execute()
     {
         if ($this->isScheduledLater()) {
-            return $this->schedule();
+            return $this->save();
         }
         return $this->executeNow();
     }
@@ -85,11 +78,6 @@ class Job
             (new WorkableInJob())->export($this->workable),
             (new RetryPolicyInJob())->export($this->retryPolicy)
         );
-    }
-
-    public function isActive()
-    {
-        return array_key_exists('active', $this->status) && $this->status['active'];
     }
 
     private function executeNow()
@@ -154,9 +142,9 @@ class Job
             ($this->instantiatedAt->usec <= $this->status['scheduled_at']->usec);
     }
 
-    private function schedule()
+    private function save()
     {
-        $this->repository->schedule($this);
+        $this->repository->save($this);
     }
 
     private function archive($done)
@@ -165,21 +153,6 @@ class Job
         $this->status['locked'] = false;
         $this->status['done'] = $done;
         $this->repository->archive($this);
-    }
-
-    private function refresh()
-    {
-        $this->repository->refresh($this);
-    }
-
-    private function save()
-    {
-        $this->repository->save($this);
-    }
-
-    private static function fromMongoDocumentToInternalStatus($document)
-    {
-        return $document;
     }
 
     private static function initialize()
