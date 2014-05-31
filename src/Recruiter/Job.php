@@ -4,7 +4,6 @@ namespace Recruiter;
 
 use MongoId;
 use MongoDate;
-use MongoInt32;
 use Exception;
 
 use Recruiter\RetryPolicy;
@@ -15,10 +14,16 @@ class Job
     private $status;
     private $workable;
     private $retryPolicy;
+    private $repository;
 
     public static function around(Workable $workable, Repository $repository)
     {
-        return new self(self::initialize(), $workable, new RetryPolicy\DoNotDoItAgain(), $repository);
+        return new self(
+            self::initialize(),
+            $workable,
+            new RetryPolicy\DoNotDoItAgain(),
+            $repository
+        );
     }
 
     public static function import($document, Repository $repository)
