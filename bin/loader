@@ -33,7 +33,7 @@ GracefulDeath::around(function() {
             for ($counter=0; $counter<$howManyJobsToCreate; $counter++) {
                 LazyBones::waitForMs(200, 100)
                     ->asJobOf($recruiter)
-                    ->scheduleTo()
+                    ->inBackground()
                     ->execute();
             }
         } else {
