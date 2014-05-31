@@ -2,7 +2,7 @@
 
 namespace Recruiter;
 
-class AlwaysFail implements Workable
+abstract class BaseWorkable implements Workable
 {
     use Recruitable;
 
@@ -11,8 +11,7 @@ class AlwaysFail implements Workable
         $this->parameters = $parameters;
     }
 
-    public function execute()
-    {
-        throw new \Exception('Sorry, I\'m good for nothing');
+    public function execute() {
+        throw new \Exception('Workable::execute() need to be implemented');
     }
 }
