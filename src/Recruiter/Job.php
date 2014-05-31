@@ -25,8 +25,8 @@ class Job
     {
         return new self(
             $document,
-            (new WorkableInJob())->import($document),
-            (new RetryPolicyInJob())->import($document),
+            WorkableInJob::import($document),
+            RetryPolicyInJob::import($document),
             $repository
         );
     }
@@ -91,8 +91,8 @@ class Job
     {
         return array_merge(
             $this->status,
-            (new WorkableInJob())->export($this->workable),
-            (new RetryPolicyInJob())->export($this->retryPolicy)
+            WorkableInJob::export($this->workable),
+            RetryPolicyInJob::export($this->retryPolicy)
         );
     }
 
@@ -166,8 +166,8 @@ class Job
                 'attempts' => 0,
                 'tags' => []
             ],
-            (new WorkableInJob())->initialize(),
-            (new RetryPolicyInJob())->initialize()
+            WorkableInJob::initialize(),
+            RetryPolicyInJob::initialize()
         );
     }
 }

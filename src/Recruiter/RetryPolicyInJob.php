@@ -6,7 +6,7 @@ use Recruiter\RetryPolicy;
 
 class RetryPolicyInJob
 {
-    public function import($document)
+    public static function import($document)
     {
         if (!array_key_exists('retry_policy', $document)) {
             throw new Exception('Unable to import Job without data about RetryPolicy object');
@@ -24,7 +24,7 @@ class RetryPolicyInJob
         return $dataAboutRetryPolicyObject['class']::import($dataAboutRetryPolicyObject['parameters']);
     }
 
-    public function export($retryPolicy)
+    public static function export($retryPolicy)
     {
         return [
             'retry_policy' => [
@@ -34,7 +34,7 @@ class RetryPolicyInJob
         ];
     }
 
-    public function initialize()
+    public static function initialize()
     {
         return [];
     }

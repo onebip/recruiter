@@ -4,7 +4,7 @@ namespace Recruiter;
 
 class WorkableInJob
 {
-    public function import($document)
+    public static function import($document)
     {
         if (!array_key_exists('workable', $document)) {
             throw new Exception('Unable to import Job without data about Workable object');
@@ -22,7 +22,7 @@ class WorkableInJob
         return $dataAboutWorkableObject['class']::import($dataAboutWorkableObject['parameters']);
     }
 
-    public function export($workable)
+    public static function export($workable)
     {
         return [
             'workable' => [
@@ -33,7 +33,7 @@ class WorkableInJob
         ];
     }
 
-    public function initialize()
+    public static function initialize()
     {
         return ['workable' => ['method' => 'execute']];
     }
