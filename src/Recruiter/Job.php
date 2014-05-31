@@ -119,7 +119,8 @@ class Job
     {
         $this->traceLastExecution($exception);
         $this->retryPolicy->schedule($this);
-        if ($this->hasBeenScheduled()) {
+        $this->save();
+        if (!$this->hasBeenScheduled()) {
             $this->archive(false);
         }
     }
