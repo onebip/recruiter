@@ -32,7 +32,7 @@ interface RetryPolicy
      *
      * @param array $parameters Previously exported parameters
      *
-     * @return Recruiter\RetryPoicy
+     * @return Recruiter\RetryPolicy
      */
     public static function import($parameters);
 }
