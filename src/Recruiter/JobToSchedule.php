@@ -8,57 +8,39 @@ use Recruiter\RetryPolicy;
 class JobToSchedule
 {
     private $job;
-    private $scheduledAt;
-    private $retryPolicy;
+    private $mustBeScheduled;
 
     public function __construct($job)
     {
         $this->job = $job;
+        $this->mustBeScheduled = false;
     }
 
     public function retryWithPolicy(RetryPolicy $retryPolicy)
     {
-        $this->retryPolicy = $retryPolicy;
+        $this->job->retryWithPolicy($retryPolicy);
         return $this;
     }
 
     public function doNotRetry()
     {
-        return $this->retryWithPolicy(new RetryPolicy\DoNotDoItAgain());
+        $this->job->retryWithPolicy(new RetryPolicy\DoNotDoItAgain());
+        return $this;
     }
 
     public function inBackground()
     {
-        $this->scheduledAt = Timeless\clock()->now();
+        $this->mustBeScheduled = true;
+        $this->job->scheduleAt(Timeless\clock()->now()->to('MongoDate'));
         return $this;
     }
 
     public function execute()
     {
-        if ($this->hasRetryPolicy()) {
-            $this->job->retryWithPolicy($this->retryPolicy);
-        }
-        $this->job->scheduleAt($this->scheduledAt());
-        if (!$this->isScheduled()) {
+        if ($this->mustBeScheduled) {
+            $this->job->schedule();
+        } else {
             $this->job->execute();
         }
-    }
-
-    private function hasRetryPolicy()
-    {
-        return !is_null($this->retryPolicy);
-    }
-
-    private function isScheduled()
-    {
-        return !is_null($this->scheduledAt);
-    }
-
-    private function scheduledAt()
-    {
-        if ($this->scheduledAt) {
-            return $this->scheduledAt->to('MongoDate');
-        }
-        return Timeless\clock()->now()->to('MongoDate');
     }
 }

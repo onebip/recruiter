@@ -66,6 +66,10 @@ class JobToScheduleTest extends \PHPUnit_Framework_TestCase
     public function testShouldNotExecuteJobWhenScheduled()
     {
         $this->job
+            ->expects($this->once())
+            ->method('schedule');
+
+        $this->job
             ->expects($this->never())
             ->method('execute');
 
@@ -76,6 +80,10 @@ class JobToScheduleTest extends \PHPUnit_Framework_TestCase
 
     public function testShouldExecuteJobWhenNotScheduled()
     {
+        $this->job
+            ->expects($this->never())
+            ->method('schedule');
+
         $this->job
             ->expects($this->once())
             ->method('execute');

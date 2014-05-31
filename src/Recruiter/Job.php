@@ -15,7 +15,6 @@ class Job
     private $status;
     private $workable;
     private $retryPolicy;
-    private $instantiatedAt;
 
     public static function around(Workable $workable, Repository $repository)
     {
@@ -38,7 +37,6 @@ class Job
         $this->workable = $workable;
         $this->retryPolicy = $retryPolicy;
         $this->repository = $repository;
-        $this->instantiatedAt = new MongoDate();
     }
 
     public function id()
@@ -46,41 +44,33 @@ class Job
         return $this->status['_id'];
     }
 
-    public function retryWithPolicy(RetryPolicy $retryPolicy)
-    {
-        $this->retryPolicy = $retryPolicy;
-    }
-
     public function numberOfAttempts()
     {
         return $this->status['attempts'];
+    }
+
+    public function retryWithPolicy(RetryPolicy $retryPolicy)
+    {
+        $this->retryPolicy = $retryPolicy;
     }
 
     public function scheduleAt(MongoDate $at)
     {
         $this->status['locked'] = false;
         $this->status['scheduled_at'] = $at;
+    }
+
+    public function methodToCallOnWorkable($method)
+    {
+        $this->status['workable']['method'] = $method;
+    }
+
+    public function schedule()
+    {
         $this->save();
     }
 
     public function execute()
-    {
-        if ($this->isScheduledLater()) {
-            return $this->save();
-        }
-        return $this->executeNow();
-    }
-
-    public function export()
-    {
-        return array_merge(
-            $this->status,
-            (new WorkableInJob())->export($this->workable),
-            (new RetryPolicyInJob())->export($this->retryPolicy)
-        );
-    }
-
-    private function executeNow()
     {
         $methodToCall = $this->status['workable']['method'];
         if (!method_exists($this->workable, $methodToCall)) {
@@ -97,30 +87,46 @@ class Job
         }
     }
 
+    public function export()
+    {
+        return array_merge(
+            $this->status,
+            (new WorkableInJob())->export($this->workable),
+            (new RetryPolicyInJob())->export($this->retryPolicy)
+        );
+    }
+
     private function beforeExecution()
     {
         $this->status['attempts'] += 1;
         $this->status['last_execution'] = [
-            'scheduled_at' => $this->status['scheduled_at'],
             'started_at' => new MongoDate(),
         ];
-        unset($this->status['scheduled_at']);
-        $this->save();
+        if ($this->hasBeenScheduled()) {
+            $this->save();
+        }
     }
 
     private function afterExecution($result)
     {
         $this->traceLastExecution($result);
-        $this->archive(true);
+        if ($this->hasBeenScheduled()) {
+            $this->archive(true);
+        }
     }
 
     private function afterFailure($exception)
     {
         $this->traceLastExecution($exception);
         $this->retryPolicy->schedule($this);
-        if (!array_key_exists('scheduled_at', $this->status)) {
+        if ($this->hasBeenScheduled()) {
             $this->archive(false);
         }
+    }
+
+    private function hasBeenScheduled()
+    {
+        return array_key_exists('scheduled_at', $this->status);
     }
 
     private function traceLastExecution($result)
@@ -133,13 +139,6 @@ class Job
                 'trace' => null
             ]
         );
-    }
-
-    private function isScheduledLater()
-    {
-        return array_key_exists('scheduled_at', $this->status) &&
-            ($this->instantiatedAt->sec <= $this->status['scheduled_at']->sec) &&
-            ($this->instantiatedAt->usec <= $this->status['scheduled_at']->usec);
     }
 
     private function save()
