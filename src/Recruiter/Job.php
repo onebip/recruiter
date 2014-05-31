@@ -77,16 +77,12 @@ class Job
 
     public function execute()
     {
-        $methodToCall = $this->status['workable']['method'];
-        if (!method_exists($this->workable, $methodToCall)) {
-            throw new Exception('Unknown method on workable instance');
-        }
+        $methodToCall = $this->ensureMethodToCallExistsInWorkable();
         try {
             $this->beforeExecution();
-            $result = $this->workable->$methodToCall();
+            $result = $this->workable->$this->$methodToCall();
             $this->afterExecution($result);
             return $result;
-
         } catch(\Exception $exception) {
             $this->afterFailure($exception);
         }
@@ -99,6 +95,15 @@ class Job
             WorkableInJob::export($this->workable),
             RetryPolicyInJob::export($this->retryPolicy)
         );
+    }
+
+    private function ensureMethodToCallExistsInWorkable()
+    {
+        $methodToCall = $this->status['workable']['method'];
+        if (!method_exists($this->workable, $methodToCall)) {
+            throw new Exception("Unknown method '$methodToCall' on workable instance");
+        }
+        return $methodToCall;
     }
 
     private function beforeExecution()
