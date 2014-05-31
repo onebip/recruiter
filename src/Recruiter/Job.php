@@ -63,7 +63,7 @@ class Job
         return $this->status['attempts'];
     }
 
-    public function scheduleAt(MongoDate $at)
+    public function scheduleAt(MongoDate $at, RetryPolicy $retryPolicy = null)
     {
         $this->status['locked'] = false;
         $this->status['scheduled_at'] = $at;

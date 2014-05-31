@@ -8,10 +8,17 @@ class JobToSchedule
 {
     private $job;
     private $scheduledAt;
+    private $retryPolicy;
 
     public function __construct($job)
     {
         $this->job = $job;
+    }
+
+    public function retryWithPolicy(RetryPolicy $retryPolicy)
+    {
+        $this->retryPolicy = $retryPolicy;
+        return $this;
     }
 
     public function inBackground()
@@ -22,10 +29,18 @@ class JobToSchedule
 
     public function execute()
     {
+        if ($this->hasRetryPolicy()) {
+            $this->job->retryWithPolicy($this->retryPolicy);
+        }
         $this->job->scheduleAt($this->scheduledAt());
         if (!$this->isScheduled()) {
             $this->job->execute();
         }
+    }
+
+    private function hasRetryPolicy()
+    {
+        return !is_null($this->retryPolicy);
     }
 
     private function isScheduled()

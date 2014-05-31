@@ -3,6 +3,7 @@
 namespace Recruiter;
 
 use Timeless;
+use Recruiter\RetryPolicy;
 
 class JobToScheduleTest extends \PHPUnit_Framework_TestCase
 {
@@ -31,6 +32,21 @@ class JobToScheduleTest extends \PHPUnit_Framework_TestCase
 
         (new JobToSchedule($this->job))
             ->inBackground()
+            ->execute();
+    }
+
+    public function testRetryWithPolicy()
+    {
+        $doNotDoItAgain = new RetryPolicy\DoNotDoItAgain();
+
+        $this->job
+            ->expects($this->once())
+            ->method('retryWithPolicy')
+            ->with($doNotDoItAgain);
+
+        (new JobToSchedule($this->job))
+            ->inBackground()
+            ->retryWithPolicy($doNotDoItAgain)
             ->execute();
     }
 
