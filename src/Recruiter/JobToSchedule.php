@@ -43,4 +43,10 @@ class JobToSchedule
             $this->job->execute();
         }
     }
+
+    public function __call($name, $arguments)
+    {
+        $this->job->methodToCallOnWorkable($name);
+        $this->execute();
+    }
 }

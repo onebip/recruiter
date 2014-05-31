@@ -91,4 +91,15 @@ class JobToScheduleTest extends \PHPUnit_Framework_TestCase
         (new JobToSchedule($this->job))
             ->execute();
     }
+
+    public function testConfigureMethodToCallOnWorkableInJob()
+    {
+        $this->job
+            ->expects($this->once())
+            ->method('methodToCallOnWorkable')
+            ->with('send');
+
+        (new JobToSchedule($this->job))
+            ->send();
+    }
 }
