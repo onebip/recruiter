@@ -3,6 +3,7 @@
 namespace Recruiter;
 
 use Timeless;
+use Recruiter\RetryPolicy;
 
 class JobToSchedule
 {
@@ -19,6 +20,11 @@ class JobToSchedule
     {
         $this->retryPolicy = $retryPolicy;
         return $this;
+    }
+
+    public function doNotRetry()
+    {
+        return $this->retryWithPolicy(new RetryPolicy\DoNotDoItAgain());
     }
 
     public function inBackground()

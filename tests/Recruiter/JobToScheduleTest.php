@@ -50,6 +50,19 @@ class JobToScheduleTest extends \PHPUnit_Framework_TestCase
             ->execute();
     }
 
+    public function testDoNotRetry()
+    {
+        $this->job
+            ->expects($this->once())
+            ->method('retryWithPolicy')
+            ->with($this->isInstanceOf('Recruiter\RetryPolicy\DoNotDoItAgain'));
+
+        (new JobToSchedule($this->job))
+            ->inBackground()
+            ->doNotRetry()
+            ->execute();
+    }
+
     public function testShouldNotExecuteJobWhenScheduled()
     {
         $this->job
