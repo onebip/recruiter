@@ -26,6 +26,13 @@ class Recruiter
         return Worker::workFor($this, $this->workers);
     }
 
+    public function jobOf(Workable $workable)
+    {
+        return new JobToSchedule(
+            Job::around($workable, $this->jobs)
+        );
+    }
+
     public function assignJobsToWorkers()
     {
         $roster = $this->db->selectCollection('roster');
@@ -89,11 +96,6 @@ class Recruiter
         );
 
         return $numberOfAssignments;
-    }
-
-    public function jobOf(Workable $workable)
-    {
-        return Job::around($workable, $this->jobs);
     }
 
     public function scheduledJob($id)

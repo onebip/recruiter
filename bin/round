@@ -15,7 +15,7 @@ $recruiter = new Recruiter($db);
 
 LazyBones::waitForMs(200, 100)
     ->asJobOf($recruiter)
-    ->scheduleTo()
+    ->inBackground()
     ->execute();
 
 $worker = $recruiter->hire();

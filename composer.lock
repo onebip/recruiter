@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "136c3caaf8b0d376d9e0c7b3c623b391",
+    "hash": "69471d9e88e73889b834886913e997e7",
     "packages": [
         {
             "name": "gabrielelana/graceful-death",
