@@ -20,6 +20,15 @@ class JobAfterFailure
         $this->hasBeenArchived = false;
     }
 
+    public function scheduleWith(RetryPolicy $retryPolicy)
+    {
+        if ($retryPolicy->isExceptionRetriable($this->lastJobExecution->causeOfFailure())) {
+            $retryPolicy->schedule($this);
+        } else {
+            $this->job->archive('non-retriable-exception');
+        }
+    }
+
     public function scheduleAt(Moment $at)
     {
         $this->hasBeenScheduled = true;

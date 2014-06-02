@@ -6,6 +6,7 @@ use MongoDate;
 
 use Recruiter\RetryPolicy;
 use Recruiter\JobAfterFailure;
+use Recruiter\Retriable;
 
 use Timeless;
 
@@ -13,6 +14,8 @@ class RetryManyTimes implements RetryPolicy
 {
     private $retryHowManyTimes;
     private $secondsToWaitBeforeRetry;
+
+    use Retriable;
 
     public function __construct($retryHowManyTimes, $secondsToWaitBeforeRetry)
     {

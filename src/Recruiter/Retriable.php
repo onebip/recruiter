@@ -2,6 +2,8 @@
 
 namespace Recruiter;
 
+use Recruiter\RetryPolicy\RetriableExceptionFilter;
+
 trait Retriable
 {
     private $parameters;
@@ -9,6 +11,16 @@ trait Retriable
     public function __construct($parameters = [])
     {
         $this->parameters = $parameters;
+    }
+
+    public function retryOnlyWhenExceptionIs($retriableExceptionType)
+    {
+        return new RetriableExceptionFilter($this, [$retriableExceptionType]);
+    }
+
+    public function retryOnlyWhenExceptionsAre($retriableExceptionTypes)
+    {
+        return new RetriableExceptionFilter($this, $retriableExceptionTypes);
     }
 
     public function export()
