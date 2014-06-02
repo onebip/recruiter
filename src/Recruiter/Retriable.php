@@ -2,13 +2,13 @@
 
 namespace Recruiter;
 
-trait Recruitable
+trait Retriable
 {
     private $parameters;
 
-    public function asJobOf(Recruiter $recruiter)
+    public function __construct($parameters = [])
     {
-        return $recruiter->jobOf($this);
+        $this->parameters = $parameters;
     }
 
     public function export()
