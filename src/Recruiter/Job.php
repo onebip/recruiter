@@ -15,6 +15,7 @@ class Job
     private $workable;
     private $retryPolicy;
     private $repository;
+    private $lastJobExecution;
 
     public static function around(Workable $workable, Repository $repository)
     {
@@ -42,6 +43,7 @@ class Job
         $this->workable = $workable;
         $this->retryPolicy = $retryPolicy;
         $this->repository = $repository;
+        $this->lastJobExecution = new JobExecution();
     }
 
     public function id()
@@ -100,6 +102,7 @@ class Job
     {
         return array_merge(
             $this->status,
+            $this->lastJobExecution->export(),
             WorkableInJob::export($this->workable),
             RetryPolicyInJob::export($this->retryPolicy)
         );
@@ -117,9 +120,7 @@ class Job
     private function beforeExecution()
     {
         $this->status['attempts'] += 1;
-        $this->status['last_execution'] = [
-            'started_at' => new MongoDate(),
-        ];
+        $this->lastJobExecution->started();
         if ($this->hasBeenScheduled()) {
             $this->save();
         }
@@ -127,7 +128,7 @@ class Job
 
     private function afterExecution($result)
     {
-        $this->traceLastExecution($result);
+        $this->lastJobExecution->completedWith($result);
         if ($this->hasBeenScheduled()) {
             $this->archive(true);
         }
@@ -135,7 +136,7 @@ class Job
 
     private function afterFailure($exception)
     {
-        $this->traceLastExecution($exception);
+        $this->lastJobExecution->failedWith($exception);
         $this->retryPolicy->schedule($this);
         $this->save();
         if (!$this->hasBeenScheduled()) {
@@ -146,18 +147,6 @@ class Job
     private function hasBeenScheduled()
     {
         return array_key_exists('scheduled_at', $this->status);
-    }
-
-    private function traceLastExecution($result)
-    {
-        $this->status['last_execution'] = array_merge(
-            $this->status['last_execution'], [
-                'ended_at' => new MongoDate(),
-                'class' => is_object($result) ? get_class($result) : null,
-                'message' => method_exists($result, 'getMessage') ? $result->getMessage() : null,
-                'trace' => null
-            ]
-        );
     }
 
     private static function initialize()
