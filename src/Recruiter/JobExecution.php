@@ -38,9 +38,9 @@ class JobExecution
     {
         $exported = [];
         if ($this->startedAt) {
-            $exported['started_at'] = $this->startedAt->to('MongoDate');
+            $exported['started_at'] = Timeless\MongoDate::from($this->startedAt);
             if ($this->endedAt) {
-                $exported['ended_at'] = $this->startedAt->to('MongoDate');
+                $exported['ended_at'] = Timeless\MongoDate::from($this->endedAt);
                 if ($this->failedWith) {
                     $exported['class'] = get_class($this->failedWith);
                     $exported['message'] = $this->failedWith->getMessage();

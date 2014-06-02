@@ -4,28 +4,30 @@ namespace Timeless;
 
 class Moment
 {
-    private $msSince;
+    private $ms;
 
-    public function __construct($msSince)
+    public function __construct($ms)
     {
-        $this->msSince = $msSince;
+        $this->ms = $ms;
+    }
+
+    public function ms()
+    {
+        return $this->ms;
+    }
+
+    public function milliseconds()
+    {
+        return $this->ms;
     }
 
     public function after(Duration $d)
     {
-        return new self($this->msSince + $d->ms());
+        return new self($this->ms + $d->ms());
     }
 
     public function before(Duration $d)
     {
-        return new self($this->msSince - $d->ms());
-    }
-
-    public function to($class)
-    {
-        $seconds = floor($this->msSince / 1000);
-        $milliseconds = $this->msSince - $seconds * 1000;
-        $microseconds = $milliseconds * 1000;
-        return new \MongoDate($seconds, $microseconds);
+        return new self($this->ms - $d->ms());
     }
 }

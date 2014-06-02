@@ -2,6 +2,7 @@
 
 namespace Recruiter;
 
+use Timeless;
 use Timeless\Moment;
 use Timeless\Duration;
 
@@ -32,14 +33,14 @@ class JobAfterFailure
     public function scheduleAt(Moment $at)
     {
         $this->hasBeenScheduled = true;
-        $this->job->scheduleAt($at->to('MongoDate'));
+        $this->job->scheduleAt(Timeless\MongoDate::from($at));
         $this->job->save();
     }
 
     public function scheduleIn(Duration $in)
     {
         $this->hasBeenScheduled = true;
-        $this->job->scheduleAt($in->fromNow()->to('MongoDate'));
+        $this->job->scheduleAt(Timeless\MongoDate::from($in->fromNow()));
         $this->job->save();
     }
 
