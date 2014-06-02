@@ -29,6 +29,6 @@
       "Recruiter\\": "src/Recruiter",
       "Timeless\\": "src/Timeless"
     },
-    "files": ["src/Timeless/clock.php"]
+    "files": ["src/Timeless/functions.php"]
   }
 }
