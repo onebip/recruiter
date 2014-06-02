@@ -3,6 +3,7 @@
 namespace Recruiter;
 
 use Timeless;
+use Timeless\Duration;
 use Recruiter\RetryPolicy;
 
 class JobToSchedule
@@ -16,15 +17,24 @@ class JobToSchedule
         $this->mustBeScheduled = false;
     }
 
+    public function doNotRetry()
+    {
+        return $this->retryWithPolicy(new RetryPolicy\DoNotDoItAgain());
+    }
+
+    public function retryManyTimes($howManyTimes, Duration $timeToWaitBeforeRetry, $retriableExceptionTypes = [])
+    {
+        return $this->retryWithPolicy(
+            $this->filterForRetriableExceptions(
+                new RetryPolicy\RetryManyTimes($howManyTimes, $timeToWaitBeforeRetry->seconds()),
+                $retriableExceptionTypes
+            )
+        );
+    }
+
     public function retryWithPolicy(RetryPolicy $retryPolicy)
     {
         $this->job->retryWithPolicy($retryPolicy);
-        return $this;
-    }
-
-    public function doNotRetry()
-    {
-        $this->job->retryWithPolicy(new RetryPolicy\DoNotDoItAgain());
         return $this;
     }
 
@@ -48,5 +58,16 @@ class JobToSchedule
     {
         $this->job->methodToCallOnWorkable($name);
         $this->execute();
+    }
+
+    private function filterForRetriableExceptions($retryPolicy, $retriableExceptionTypes)
+    {
+        if (!is_array($retriableExceptionTypes)) {
+            $retriableExceptionTypes = [$retriableExceptionTypes];
+        }
+        if (!empty($retriableExceptionTypes)) {
+            $retryPolicy = new RetryPolicy\RetriableExceptionFilter($retryPolicy, $retriableExceptionTypes);
+        }
+        return $retryPolicy;
     }
 }
