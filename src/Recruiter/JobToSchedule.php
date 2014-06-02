@@ -38,7 +38,7 @@ class JobToSchedule
     public function execute()
     {
         if ($this->mustBeScheduled) {
-            $this->job->schedule();
+            $this->job->save();
         } else {
             $this->job->execute();
         }

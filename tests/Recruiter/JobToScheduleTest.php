@@ -67,7 +67,7 @@ class JobToScheduleTest extends \PHPUnit_Framework_TestCase
     {
         $this->job
             ->expects($this->once())
-            ->method('schedule');
+            ->method('save');
 
         $this->job
             ->expects($this->never())

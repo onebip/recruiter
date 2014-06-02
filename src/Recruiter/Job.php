@@ -70,11 +70,6 @@ class Job
         $this->status['workable']['method'] = $method;
     }
 
-    public function schedule()
-    {
-        $this->save();
-    }
-
     public function execute()
     {
         $methodToCall = $this->ensureMethodToCallExistsInWorkable();
@@ -86,6 +81,19 @@ class Job
         } catch(\Exception $exception) {
             $this->afterFailure($exception);
         }
+    }
+
+    public function save()
+    {
+        $this->repository->save($this);
+    }
+
+    public function archive($done)
+    {
+        $this->status['active'] = false;
+        $this->status['locked'] = false;
+        $this->status['done'] = $done;
+        $this->repository->archive($this);
     }
 
     public function export()
@@ -150,19 +158,6 @@ class Job
                 'trace' => null
             ]
         );
-    }
-
-    private function save()
-    {
-        $this->repository->save($this);
-    }
-
-    private function archive($done)
-    {
-        $this->status['active'] = false;
-        $this->status['locked'] = false;
-        $this->status['done'] = $done;
-        $this->repository->archive($this);
     }
 
     private static function initialize()
