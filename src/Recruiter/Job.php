@@ -80,7 +80,7 @@ class Job
         $methodToCall = $this->ensureMethodToCallExistsInWorkable();
         try {
             $this->beforeExecution();
-            $result = $this->workable->$this->$methodToCall();
+            $result = $this->workable->$methodToCall();
             $this->afterExecution($result);
             return $result;
         } catch(\Exception $exception) {
