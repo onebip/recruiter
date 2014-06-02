@@ -137,11 +137,9 @@ class Job
     private function afterFailure($exception)
     {
         $this->lastJobExecution->failedWith($exception);
-        $this->retryPolicy->schedule($this);
-        $this->save();
-        if (!$this->hasBeenScheduled()) {
-            $this->archive(false);
-        }
+        $jobAfterFailure = new JobAfterFailure($this, $this->lastJobExecution);
+        $this->retryPolicy->schedule($jobAfterFailure);
+        $jobAfterFailure->archiveIfNotScheduled();
     }
 
     private function hasBeenScheduled()

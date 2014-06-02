@@ -4,8 +4,10 @@ namespace Recruiter\RetryPolicy;
 
 use MongoDate;
 
-use Recruiter\Job;
 use Recruiter\RetryPolicy;
+use Recruiter\JobAfterFailure;
+
+use Timeless;
 
 class RetryManyTimes implements RetryPolicy
 {
@@ -18,14 +20,10 @@ class RetryManyTimes implements RetryPolicy
         $this->secondsToWaitBeforeRetry = $secondsToWaitBeforeRetry;
     }
 
-    public function schedule(Job $job)
+    public function schedule(JobAfterFailure $job)
     {
         if ($job->numberOfAttempts() <= $this->retryHowManyTimes) {
-            $job->scheduleAt(
-                new MongoDate(
-                    strtotime('+' . $this->secondsToWaitBeforeRetry . ' seconds')
-                )
-            );
+            $job->scheduleIn(Timeless\seconds($this->secondsToWaitBeforeRetry));
         }
     }
 

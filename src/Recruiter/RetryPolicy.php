@@ -18,7 +18,7 @@ interface RetryPolicy
      *
      * @return void
      */
-    public function schedule(Job $job);
+    public function schedule(JobAfterFailure $job);
 
     /**
      * Export retry policy parameters
