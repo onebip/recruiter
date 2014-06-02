@@ -34,7 +34,7 @@ class JobAfterFailure
         $this->job->save();
     }
 
-    public function archive($why = null)
+    public function archive($why)
     {
         $this->hasBeenArchived = true;
         $this->job->archive($why);
@@ -54,8 +54,7 @@ class JobAfterFailure
     public function archiveIfNotScheduled()
     {
         if (!$this->hasBeenScheduled && !$this->hasBeenArchived) {
-            // TODO $this->job->archive('not-scheduled-by-retry-policy');
-            $this->job->archive(false);
+            $this->job->archive('not-scheduled-by-retry-policy');
         }
     }
 }

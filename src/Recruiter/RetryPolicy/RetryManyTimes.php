@@ -24,6 +24,8 @@ class RetryManyTimes implements RetryPolicy
     {
         if ($job->numberOfAttempts() <= $this->retryHowManyTimes) {
             $job->scheduleIn(Timeless\seconds($this->secondsToWaitBeforeRetry));
+        } else {
+            $job->archive('tried-to-many-times');
         }
     }
 

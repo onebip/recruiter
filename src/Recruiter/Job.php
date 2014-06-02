@@ -93,11 +93,11 @@ class Job
         $this->repository->save($this);
     }
 
-    public function archive($done)
+    public function archive($why)
     {
+        $this->status['why'] = $why;
         $this->status['active'] = false;
         $this->status['locked'] = false;
-        $this->status['done'] = $done;
         $this->repository->archive($this);
     }
 
@@ -122,9 +122,10 @@ class Job
 
     private function afterExecution($result)
     {
+        $this->status['done'] = true;
         $this->lastJobExecution->completedWith($result);
         if ($this->hasBeenScheduled()) {
-            $this->archive(true);
+            $this->archive('done');
         }
     }
 
