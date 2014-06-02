@@ -98,6 +98,7 @@ class Job
         $this->status['why'] = $why;
         $this->status['active'] = false;
         $this->status['locked'] = false;
+        unset($this->status['scheduled_at']);
         $this->repository->archive($this);
     }
 
