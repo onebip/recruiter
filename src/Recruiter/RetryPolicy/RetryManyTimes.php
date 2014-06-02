@@ -2,31 +2,30 @@
 
 namespace Recruiter\RetryPolicy;
 
-use MongoDate;
-
 use Recruiter\RetryPolicy;
 use Recruiter\JobAfterFailure;
 use Recruiter\Retriable;
 
 use Timeless;
+use Timeless\Duration;
 
 class RetryManyTimes implements RetryPolicy
 {
     private $retryHowManyTimes;
-    private $secondsToWaitBeforeRetry;
+    private $timeToWaitBeforeRetry;
 
     use Retriable;
 
-    public function __construct($retryHowManyTimes, $secondsToWaitBeforeRetry)
+    public function __construct($retryHowManyTimes, Duration $timeToWaitBeforeRetry)
     {
         $this->retryHowManyTimes = $retryHowManyTimes;
-        $this->secondsToWaitBeforeRetry = $secondsToWaitBeforeRetry;
+        $this->timeToWaitBeforeRetry = $timeToWaitBeforeRetry;
     }
 
     public function schedule(JobAfterFailure $job)
     {
         if ($job->numberOfAttempts() <= $this->retryHowManyTimes) {
-            $job->scheduleIn(Timeless\seconds($this->secondsToWaitBeforeRetry));
+            $job->scheduleIn($this->timeToWaitBeforeRetry);
         } else {
             $job->archive('tried-to-many-times');
         }
@@ -36,7 +35,7 @@ class RetryManyTimes implements RetryPolicy
     {
         return [
             'retry_how_many_times' => $this->retryHowManyTimes,
-            'seconds_to_wait_before_retry' => $this->secondsToWaitBeforeRetry
+            'seconds_to_wait_before_retry' => $this->timeToWaitBeforeRetry->seconds()
         ];
     }
 
@@ -44,7 +43,7 @@ class RetryManyTimes implements RetryPolicy
     {
         return new self(
             $parameters['retry_how_many_times'],
-            $parameters['seconds_to_wait_before_retry']
+            Timeless\seconds($parameters['seconds_to_wait_before_retry'])
         );
     }
 }

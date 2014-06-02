@@ -27,7 +27,7 @@ class JobToScheduleTest extends \PHPUnit_Framework_TestCase
             ->expects($this->once())
             ->method('scheduleAt')
             ->with(
-                $this->equalTo(Timeless\MongoDate::from($this->clock->now()))
+                $this->equalTo($this->clock->now())
             );
 
         (new JobToSchedule($this->job))

@@ -3,7 +3,6 @@
 namespace Recruiter\Job;
 
 use MongoDB;
-use MongoDate;
 use MongoCollection;
 use Recruiter\Recruiter;
 use Recruiter\Job;

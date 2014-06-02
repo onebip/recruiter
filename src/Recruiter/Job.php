@@ -3,8 +3,10 @@
 namespace Recruiter;
 
 use MongoId;
-use MongoDate;
 use Exception;
+
+use Timeless;
+use Timeless\Moment;
 
 use Recruiter\RetryPolicy;
 use Recruiter\Job\Repository;
@@ -61,10 +63,10 @@ class Job
         $this->retryPolicy = $retryPolicy;
     }
 
-    public function scheduleAt(MongoDate $at)
+    public function scheduleAt(Moment $at)
     {
         $this->status['locked'] = false;
-        $this->status['scheduled_at'] = $at;
+        $this->status['scheduled_at'] = Timeless\MongoDate::from($at);
     }
 
     public function methodToCallOnWorkable($method)
@@ -150,7 +152,7 @@ class Job
                 '_id' => new MongoId(),
                 'active' => true,
                 'done' => false,
-                'created_at' => new MongoDate(),
+                'created_at' => Timeless\MongoDate::now(),
                 'locked' => false,
                 'attempts' => 0,
                 'tags' => []

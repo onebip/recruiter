@@ -11,4 +11,9 @@ class MongoDate
         $microseconds = $milliseconds * 1000;
         return new \MongoDate($seconds, $microseconds);
     }
+
+    public static function now()
+    {
+        return self::from(now());
+    }
 }

@@ -4,7 +4,8 @@ namespace Recruiter;
 
 use MongoDB;
 use MongoId;
-use MongoDate;
+
+use Timeless;
 
 use Functional as _;
 
@@ -54,7 +55,7 @@ class Recruiter
         $jobsReadyToBeDone = _\pluck(
             $scheduled
                 ->find(
-                    [   'scheduled_at' => ['$lt' => new MongoDate()],
+                    [   'scheduled_at' => ['$lt' => Timeless\MongoDate::now()],
                         'active' => true,
                         'locked' => false
                     ],
@@ -90,7 +91,7 @@ class Recruiter
                         _\map($workersAvailableToWork, function($id) {return (string)$id;}),
                         $jobsReadyToBeDone
                 ),
-                'assigned_since' => new MongoDate()
+                'assigned_since' => Timeless\MongoDate::now()
             ]],
             ['multiple' => true]
         );

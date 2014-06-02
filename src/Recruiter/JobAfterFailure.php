@@ -33,14 +33,14 @@ class JobAfterFailure
     public function scheduleAt(Moment $at)
     {
         $this->hasBeenScheduled = true;
-        $this->job->scheduleAt(Timeless\MongoDate::from($at));
+        $this->job->scheduleAt($at);
         $this->job->save();
     }
 
     public function scheduleIn(Duration $in)
     {
         $this->hasBeenScheduled = true;
-        $this->job->scheduleAt(Timeless\MongoDate::from($in->fromNow()));
+        $this->job->scheduleAt($in->fromNow());
         $this->job->save();
     }
 
@@ -52,7 +52,6 @@ class JobAfterFailure
 
     public function causeOfFailure()
     {
-        // TODO: check to see if it's not null otherwise raise exception
         return $this->lastJobExecution->causeOfFailure();
     }
 

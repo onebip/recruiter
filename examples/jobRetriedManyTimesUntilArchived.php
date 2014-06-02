@@ -3,6 +3,8 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
+use Timeless as T;
+
 use Recruiter\Recruiter;
 use Recruiter\AlwaysFail;
 use Recruiter\RetryPolicy;
@@ -15,7 +17,9 @@ $recruiter = new Recruiter($db);
 
 (new AlwaysFail())
     ->asJobOf($recruiter)
-    ->retryWithPolicy(new RetryPolicy\RetryManyTimes(5, 1))
+    ->retryWithPolicy(
+        new RetryPolicy\RetryManyTimes(5, T\seconds(1))
+    )
     ->inBackground()
     ->execute();
 

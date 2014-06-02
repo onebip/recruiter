@@ -41,7 +41,7 @@ class JobToSchedule
     public function inBackground()
     {
         $this->mustBeScheduled = true;
-        $this->job->scheduleAt(Timeless\MongoDate::from(Timeless\now()));
+        $this->job->scheduleAt(Timeless\now());
         return $this;
     }
 
