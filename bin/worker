@@ -6,14 +6,24 @@ require __DIR__ . '/../vendor/autoload.php';
 use Recruiter\Recruiter;
 use Recruiter\Worker;
 
-GracefulDeath::around(function($life) {
+$options = array_merge(
+    [
+        'host' => 'localhost:27017',
+        'work-on' => 'all',
+    ],
+    getopt('', ['host:', 'work-on:'])
+);
+
+GracefulDeath::around(function($life) use ($options) {
 
     $pid = posix_getpid();
-    $options = array_merge(['host' => 'localhost:27017'], getopt('', ['host:']));
-
     $db = (new MongoClient($options['host']))->selectDB('recruiter');
     $recruiter = new Recruiter($db);
+
     $worker = $recruiter->hire();
+    if ($options['work-on'] !== 'all') {
+        $worker->workOnJobsTaggedAs($options['work-on']);
+    }
 
     printf('[WORKER][%d][%s] ready to work!' . PHP_EOL, $pid, date('c'));
 

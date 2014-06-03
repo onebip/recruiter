@@ -11,7 +11,6 @@ use Recruiter\Worker\Repository;
 
 class Worker
 {
-    private $db;
     private $status;
     private $recruiter;
     private $repository;
@@ -67,6 +66,12 @@ class Worker
         $this->status = self::fromMongoDocumentToInternalStatus($document);
     }
 
+    public function workOnJobsTaggedAS($tag)
+    {
+        $this->status['work_on'] = $tag;
+        $this->save();
+    }
+
     private function workOn($job)
     {
         $this->beforeExecutionOf($job);
@@ -118,6 +123,7 @@ class Worker
     {
         return [
             '_id' => new MongoId(),
+            'work_on' => '*',
             'available' => true,
             'available_since' => Timeless\MongoDate::now(),
             'created_at' => Timeless\MongoDate::now(),
