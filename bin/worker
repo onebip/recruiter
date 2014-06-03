@@ -11,14 +11,16 @@ $options = array_merge(
         'host' => 'localhost:27017',
         'work-on' => 'all',
     ],
-    getopt('', ['host:', 'work-on:'])
+    getopt('', ['host::', 'work-on::', 'respawn'])
 );
+
+$options['respawn'] = array_key_exists('respawn', $options);
 
 GracefulDeath::around(function($life) use ($options) {
 
-    $pid = posix_getpid();
     $db = (new MongoClient($options['host']))->selectDB('recruiter');
     $recruiter = new Recruiter($db);
+    $pid = posix_getpid();
 
     $worker = $recruiter->hire();
     if ($options['work-on'] !== 'all') {
@@ -26,19 +28,27 @@ GracefulDeath::around(function($life) use ($options) {
     }
 
     printf('[WORKER][%d][%s] ready to work!' . PHP_EOL, $pid, date('c'));
-
     while (!$life->askedToStop()) {
         $doneSomeWork = $worker->work();
         if (!$doneSomeWork) usleep(1000 * 200);
     }
-
     printf('[WORKER][%d][%s] ok, see you space cowboy...' . PHP_EOL, $pid, date('c'));
 
 })
 ->doNotCaptureOutput()
 ->catchSignals([SIGTERM, SIGQUIT, SIGINT])
-->reanimationPolicy(function() {
-    printf('[WORKER-SUPERVISOR][%d][%s] respawn!'. PHP_EOL, posix_getpid(), date('c'));
-    return true;
+->reanimationPolicy(function() use ($options) {
+    if ($options['respawn']) {
+        printf(
+            '[SUPERVISOR][%d][%s] worker died, respawn...' . PHP_EOL,
+            posix_getpid(), date('c')
+        );
+        return true;
+    }
+    printf(
+        '[SUPERVISOR][%d][%s] %s' . PHP_EOL, posix_getpid(), date('c'),
+        'worker died, I will let it go, start with --respawn options if you wish otherwise'
+    );
+    return false;
 })
 ->run();

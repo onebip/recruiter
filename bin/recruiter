@@ -6,15 +6,19 @@ require __DIR__ . '/../vendor/autoload.php';
 use Recruiter\Recruiter;
 use Rych\ByteSize\ByteSize;
 
+$options = array_merge(
+    [
+        'host' => 'localhost:27017',
+        'memory-limit' => 33554432, // 32MB
+    ],
+    getopt('', ['host::', 'memory-limit::', 'respawn'])
+);
+
+$options['respawn'] = array_key_exists('respawn', $options);
+
 GracefulDeath::around(function($life) {
 
     $pid = posix_getpid();
-    $options = array_merge([
-            'host' => 'localhost:27017',
-            'memory-limit' => 33554432, // 32MB
-        ],
-        getopt('', ['host:', 'memory-limit:'])
-    );
 
     $db = (new MongoClient($options['host']))->selectDB('recruiter');
     $recruiter = new Recruiter($db);
@@ -38,8 +42,18 @@ GracefulDeath::around(function($life) {
 })
 ->doNotCaptureOutput()
 ->catchSignals([SIGTERM, SIGQUIT, SIGINT])
-->reanimationPolicy(function() {
-    printf('[RECRUITER-SUPERVISOR][%d][%s] respawn!'. PHP_EOL, posix_getpid(), date('c'));
-    return true;
+->reanimationPolicy(function() use ($options) {
+    if ($options['respawn']) {
+        printf(
+            '[SUPERVISOR][%d][%s] recruiter died, respawn...' . PHP_EOL,
+            posix_getpid(), date('c')
+        );
+        return true;
+    }
+    printf(
+        '[SUPERVISOR][%d][%s] %s' . PHP_EOL, posix_getpid(), date('c'),
+        'recruiter died, I will let it go, start with --respawn options if you wish otherwise'
+    );
+    return false;
 })
 ->run();
