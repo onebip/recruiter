@@ -45,10 +45,7 @@ class Recruiter
             return Job::pickReadyJobsForWorkers($scheduled, $worksOn, $workers,
                 function($worksOn, $workers, $jobs) use($scheduled, $roster)
             {
-                // ASSIGNMENTS
-                $numberOfAssignments = min(count($workers), count($jobs));
-                $workers = array_slice($workers, 0, $numberOfAssignments);
-                $jobs = array_slice($jobs, 0, $numberOfAssignments);
+                list($assignments, $jobs, $workers) = $this->combineJobsWithWorkers($jobs, $workers);
 
                 // LOCK JOBS
                 $scheduled->update(
@@ -71,7 +68,7 @@ class Recruiter
                     ['multiple' => true]
                 );
 
-                return $numberOfAssignments;
+                return $assignments;
             });
         });
     }
@@ -79,5 +76,13 @@ class Recruiter
     public function scheduledJob($id)
     {
         return $this->jobs->scheduled($id);
+    }
+
+    private function combineJobsWithWorkers($jobs, $workers)
+    {
+        $assignments = min(count($workers), count($jobs));
+        $workers = array_slice($workers, 0, $assignments);
+        $jobs = array_slice($jobs, 0, $assignments);
+        return [$assignments, $jobs, $workers];
     }
 }
