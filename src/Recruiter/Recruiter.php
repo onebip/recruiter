@@ -39,62 +39,40 @@ class Recruiter
         $scheduled = $this->db->selectCollection('scheduled');
         $workersPerUnit = 42;
 
-        return Worker::pickAvailableWorkers(
-            $roster, $workersPerUnit, function($worksOn, $workers) use ($scheduled, $roster)
+        return Worker::pickAvailableWorkers($roster, $workersPerUnit,
+            function($worksOn, $workers) use ($scheduled, $roster)
         {
-            // PICK READY JOBS
-            $jobsReadyToBeDone = _\pluck(
-                $scheduled
-                    ->find(
-                        (Worker::canWorkOnAnyJobs($worksOn) ?
-                            [   'scheduled_at' => ['$lt' => T\MongoDate::now()],
-                                'active' => true,
-                                'locked' => false,
-                            ] :
-                            [   'scheduled_at' => ['$lt' => T\MongoDate::now()],
-                                'active' => true,
-                                'locked' => false,
-                                'tags' => $worksOn,
-                            ]
+            return Job::pickReadyJobsForWorkers($scheduled, $worksOn, $workers,
+                function($worksOn, $workers, $jobs) use($scheduled, $roster)
+            {
+                // ASSIGNMENTS
+                $numberOfAssignments = min(count($workers), count($jobs));
+                $workers = array_slice($workers, 0, $numberOfAssignments);
+                $jobs = array_slice($jobs, 0, $numberOfAssignments);
+
+                // LOCK JOBS
+                $scheduled->update(
+                    ['_id' => ['$in' => $jobs]],
+                    ['$set' => ['locked' => true]],
+                    ['multiple' => true]
+                );
+
+                // ASSIGN JOBS TO WORKERS
+                $roster->update(
+                    ['_id' => ['$in' => array_values($workers)]],
+                    ['$set' => [
+                        'available' => false,
+                        'assigned_to' => array_combine(
+                                _\map($workers, function($id) {return (string)$id;}),
+                                $jobs
                         ),
-                        [   '_id' => 1
-                        ]
-                    )
-                    ->sort(['scheduled_at' => 1])
-                    ->limit(count($workers)),
-                '_id'
-            );
-            if (count($jobsReadyToBeDone) === 0) {
-                return 0;
-            }
+                        'assigned_since' => T\MongoDate::now()
+                    ]],
+                    ['multiple' => true]
+                );
 
-            // ASSIGNMENTS
-            $numberOfAssignments = min(count($workers), count($jobsReadyToBeDone));
-            $workers = array_slice($workers, 0, $numberOfAssignments);
-            $jobsReadyToBeDone = array_slice($jobsReadyToBeDone, 0, $numberOfAssignments);
-
-            // LOCK JOBS
-            $scheduled->update(
-                ['_id' => ['$in' => $jobsReadyToBeDone]],
-                ['$set' => ['locked' => true]],
-                ['multiple' => true]
-            );
-
-            // ASSIGN JOBS TO WORKERS
-            $roster->update(
-                ['_id' => ['$in' => array_values($workers)]],
-                ['$set' => [
-                    'available' => false,
-                    'assigned_to' => array_combine(
-                            _\map($workers, function($id) {return (string)$id;}),
-                            $jobsReadyToBeDone
-                    ),
-                    'assigned_since' => T\MongoDate::now()
-                ]],
-                ['multiple' => true]
-            );
-
-            return $numberOfAssignments;
+                return $numberOfAssignments;
+            });
         });
     }
 
