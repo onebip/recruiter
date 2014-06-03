@@ -48,20 +48,7 @@ class Recruiter
                 list($assignments, $jobs, $workers) = $this->combineJobsWithWorkers($jobs, $workers);
 
                 Job::lockAll($scheduled, $jobs);
-
-                // ASSIGN JOBS TO WORKERS
-                $roster->update(
-                    ['_id' => ['$in' => array_values($workers)]],
-                    ['$set' => [
-                        'available' => false,
-                        'assigned_to' => array_combine(
-                                _\map($workers, function($id) {return (string)$id;}),
-                                $jobs
-                        ),
-                        'assigned_since' => T\MongoDate::now()
-                    ]],
-                    ['multiple' => true]
-                );
+                Worker::assignJobsToWorkers($roster, $jobs, $workers);
 
                 return $assignments;
             });

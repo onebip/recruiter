@@ -152,4 +152,20 @@ class Worker
         }
         return $numberOfWorkersWithJobs;
     }
+
+    public static function assignJobsToWorkers(MongoCollection $collection, $jobs, $workers)
+    {
+        $collection->update(
+            ['_id' => ['$in' => array_values($workers)]],
+            ['$set' => [
+                'available' => false,
+                'assigned_to' => array_combine(
+                        _\map($workers, function($id) {return (string)$id;}),
+                        $jobs
+                ),
+                'assigned_since' => T\MongoDate::now()
+            ]],
+            ['multiple' => true]
+        );
+    }
 }
