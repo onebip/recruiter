@@ -63,6 +63,11 @@ class Job
         $this->retryPolicy = $retryPolicy;
     }
 
+    public function taggedAs(array $tags)
+    {
+        $this->status['tags'] = $tags;
+    }
+
     public function scheduleAt(Moment $at)
     {
         $this->status['locked'] = false;

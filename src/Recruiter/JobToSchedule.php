@@ -45,6 +45,12 @@ class JobToSchedule
         return $this;
     }
 
+    public function taggedAs($tags)
+    {
+        $this->job->taggedAs(is_array($tags) ? $tags : [$tags]);
+        return $this;
+    }
+
     public function execute()
     {
         if ($this->mustBeScheduled) {
