@@ -47,12 +47,7 @@ class Recruiter
             {
                 list($assignments, $jobs, $workers) = $this->combineJobsWithWorkers($jobs, $workers);
 
-                // LOCK JOBS
-                $scheduled->update(
-                    ['_id' => ['$in' => $jobs]],
-                    ['$set' => ['locked' => true]],
-                    ['multiple' => true]
-                );
+                Job::lockAll($scheduled, $jobs);
 
                 // ASSIGN JOBS TO WORKERS
                 $roster->update(

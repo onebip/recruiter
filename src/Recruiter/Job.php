@@ -197,4 +197,13 @@ class Job
         }
         return 0;
     }
+
+    public static function lockAll(MongoCollection $collection, $jobs)
+    {
+        $collection->update(
+            ['_id' => ['$in' => $jobs]],
+            ['$set' => ['locked' => true]],
+            ['multiple' => true]
+        );
+    }
 }
