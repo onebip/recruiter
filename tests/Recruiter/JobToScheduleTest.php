@@ -2,14 +2,14 @@
 
 namespace Recruiter;
 
-use Timeless;
+use Timeless as T;
 use Recruiter\RetryPolicy;
 
 class JobToScheduleTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $this->clock = Timeless\clock()->stop();
+        $this->clock = T\clock()->stop();
         $this->job = $this
             ->getMockBuilder('Recruiter\Job')
             ->disableOriginalConstructor()

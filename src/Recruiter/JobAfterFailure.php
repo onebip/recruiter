@@ -2,7 +2,6 @@
 
 namespace Recruiter;
 
-use Timeless;
 use Timeless\Moment;
 use Timeless\Duration;
 

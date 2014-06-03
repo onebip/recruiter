@@ -5,7 +5,7 @@ namespace Recruiter;
 use MongoDB;
 use MongoId;
 
-use Timeless;
+use Timeless as T;
 
 use Recruiter\Worker\Repository;
 
@@ -83,7 +83,7 @@ class Worker
     {
         $this->status['working'] = true;
         $this->status['working_on'] = $job->id();
-        $this->status['working_since'] = Timeless\MongoDate::now();
+        $this->status['working_since'] = T\MongoDate::now();
         $this->save();
     }
 
@@ -91,7 +91,7 @@ class Worker
     {
         $this->status['working'] = false;
         $this->status['available'] = true;
-        $this->status['available_since'] = Timeless\MongoDate::now();
+        $this->status['available_since'] = T\MongoDate::now();
         unset($this->status['working_on']);
         unset($this->status['working_since']);
         unset($this->status['assigned_to']);
@@ -125,8 +125,8 @@ class Worker
             '_id' => new MongoId(),
             'work_on' => '*',
             'available' => true,
-            'available_since' => Timeless\MongoDate::now(),
-            'created_at' => Timeless\MongoDate::now(),
+            'available_since' => T\MongoDate::now(),
+            'created_at' => T\MongoDate::now(),
             'working' => false,
             'pid' => getmypid()
         ];

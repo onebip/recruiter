@@ -2,7 +2,7 @@
 
 namespace Recruiter;
 
-use Timeless;
+use Timeless as T;
 use Exception;
 
 class JobExecution
@@ -14,18 +14,18 @@ class JobExecution
 
     public function started()
     {
-        $this->startedAt = Timeless\now();
+        $this->startedAt = T\now();
     }
 
     public function failedWith(Exception $exception)
     {
-        $this->endedAt = Timeless\now();
+        $this->endedAt = T\now();
         $this->failedWith = $exception;
     }
 
     public function completedWith($result)
     {
-        $this->endedAt = Timeless\now();
+        $this->endedAt = T\now();
         $this->completedWith = $result;
     }
 
@@ -38,9 +38,9 @@ class JobExecution
     {
         $exported = [];
         if ($this->startedAt) {
-            $exported['started_at'] = Timeless\MongoDate::from($this->startedAt);
+            $exported['started_at'] = T\MongoDate::from($this->startedAt);
             if ($this->endedAt) {
-                $exported['ended_at'] = Timeless\MongoDate::from($this->endedAt);
+                $exported['ended_at'] = T\MongoDate::from($this->endedAt);
                 if ($this->failedWith) {
                     $exported['class'] = get_class($this->failedWith);
                     $exported['message'] = $this->failedWith->getMessage();

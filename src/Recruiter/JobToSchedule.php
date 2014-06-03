@@ -2,7 +2,7 @@
 
 namespace Recruiter;
 
-use Timeless;
+use Timeless as T;
 use Timeless\Duration;
 use Recruiter\RetryPolicy;
 
@@ -41,7 +41,7 @@ class JobToSchedule
     public function inBackground()
     {
         $this->mustBeScheduled = true;
-        $this->job->scheduleAt(Timeless\now());
+        $this->job->scheduleAt(T\now());
         return $this;
     }
 

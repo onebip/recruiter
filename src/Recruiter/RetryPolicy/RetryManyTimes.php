@@ -6,7 +6,7 @@ use Recruiter\RetryPolicy;
 use Recruiter\JobAfterFailure;
 use Recruiter\Retriable;
 
-use Timeless;
+use Timeless as T;
 use Timeless\Duration;
 
 class RetryManyTimes implements RetryPolicy
@@ -43,7 +43,7 @@ class RetryManyTimes implements RetryPolicy
     {
         return new self(
             $parameters['retry_how_many_times'],
-            Timeless\seconds($parameters['seconds_to_wait_before_retry'])
+            T\seconds($parameters['seconds_to_wait_before_retry'])
         );
     }
 }
