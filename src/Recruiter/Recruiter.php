@@ -3,10 +3,6 @@
 namespace Recruiter;
 
 use MongoDB;
-use MongoId;
-
-use Timeless as T;
-use Functional as _;
 
 class Recruiter
 {
