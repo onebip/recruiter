@@ -2,10 +2,11 @@
 
 namespace Recruiter;
 
-use MongoDB;
 use MongoId;
+use MongoCollection;
 
 use Timeless as T;
+use Functional as _;
 
 use Recruiter\Worker\Repository;
 
@@ -130,5 +131,25 @@ class Worker
             'working' => false,
             'pid' => getmypid()
         ];
+    }
+
+    public static function canWorkOnAnyJobs($worksOn)
+    {
+        return $worksOn === '*';
+    }
+
+    public static function pickAvailableWorkers(MongoCollection $collection, $workersPerUnit, $callback)
+    {
+        $numberOfWorkersWithJobs = 0;
+        $workers = $collection->find(['available' => true], ['_id' => 1, 'work_on' => 1]);
+        if (count($workers) > 0) {
+            $unitsOfWorkers = _\group($workers, function($worker) {return $worker['work_on'];});
+            foreach ($unitsOfWorkers as $workOn => $workersInUnit) {
+                $workersInUnit = _\pluck($workersInUnit, '_id');
+                $workersInUnit = array_slice($workersInUnit, 0, min(count($workersInUnit), $workersPerUnit));
+                $numberOfWorkersWithJobs += $callback($workOn, $workersInUnit);
+            }
+        }
+        return $numberOfWorkersWithJobs;
     }
 }
