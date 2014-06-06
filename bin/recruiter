@@ -3,8 +3,19 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
+use Recruiter\Cli;
+use Recruiter\Option;
 use Recruiter\Recruiter;
 use Rych\ByteSize\ByteSize;
+
+$cli = new Cli();
+/* $cli->add('bootstrap', new Option\Bootstrap('b', 'bootstrap')); */
+/* $cli->add('recuiter', new Option\RecruiterHost('h', 'host', 'localhost:27017')); */
+$cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '30s'));
+/* $cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '128MB')); */
+/* $cli->add('supervisor', new Option\Supervisor('respawn', false)); */
+$cli->parse();
+
 
 $options = array_merge(
     [
