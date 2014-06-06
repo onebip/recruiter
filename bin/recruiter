@@ -27,12 +27,13 @@ $options = array_merge(
 
 $options['respawn'] = array_key_exists('respawn', $options);
 
-GracefulDeath::around(function($life) {
+GracefulDeath::around(function($life) use($cli, $options) {
 
     $pid = posix_getpid();
 
     $db = (new MongoClient($options['host']))->selectDB('recruiter');
     $recruiter = new Recruiter($db);
+    $waitStrategy = $cli->get('wait-strategy');
 
     while (!$life->askedToStop()) {
         $currentMemoryUsage = memory_get_usage();
@@ -45,7 +46,9 @@ GracefulDeath::around(function($life) {
             $numberOfAssignments, ($pickEndAt - $pickStartAt) * 1000
         );
         if ($currentMemoryUsage > (int)$options['memory-limit']) exit(1);
-        if ($numberOfAssignments === 0) usleep(1000 * 200);
+        ($numberOfAssignments === 0) ?
+            $waitStrategy->wait()->backOff() :
+            $waitStrategy->goForward();
     }
 
     printf('[RECRUITER][%d][%s] ok, see you space cowboy...' . PHP_EOL, $pid, date('c'));
