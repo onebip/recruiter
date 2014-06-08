@@ -26,6 +26,11 @@ class Duration
         return round($this->ms / 1000);
     }
 
+    public function ago()
+    {
+        return $this->since(now());
+    }
+
     public function sinceNow()
     {
         return $this->since(now());
