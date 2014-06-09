@@ -10,6 +10,7 @@ use Recruiter\Worker;
 
 $cli = new Cli();
 $cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '30s'));
+$cli->add('bootstrap', new Option\Bootstrap('bootstrap'));
 $cli->parse();
 
 
@@ -25,11 +26,11 @@ $options['respawn'] = array_key_exists('respawn', $options);
 
 GracefulDeath::around(function($life) use ($cli, $options) {
 
-    $pid = posix_getpid();
-
+    $cli->get('bootstrap')->load();
     $db = (new MongoClient($options['host']))->selectDB('recruiter');
     $recruiter = new Recruiter($db);
     $waitStrategy = $cli->get('wait-strategy');
+    $pid = posix_getpid();
 
     $worker = $recruiter->hire();
     if ($options['work-on'] !== 'all') {
