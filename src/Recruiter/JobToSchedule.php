@@ -24,17 +24,22 @@ class JobToSchedule
 
     public function retryManyTimes($howManyTimes, Duration $timeToWaitBeforeRetry, $retriableExceptionTypes = [])
     {
-        return $this->retryWithPolicy(
+        $this->job->retryWithPolicy(
             $this->filterForRetriableExceptions(
                 new RetryPolicy\RetryManyTimes($howManyTimes, $timeToWaitBeforeRetry),
                 $retriableExceptionTypes
             )
         );
+        return $this;
     }
 
-    public function retryWithPolicy(RetryPolicy $retryPolicy)
+    public function retryWithPolicy(RetryPolicy $retryPolicy, $retriableExceptionTypes = [])
     {
-        $this->job->retryWithPolicy($retryPolicy);
+        $this->job->retryWithPolicy(
+            $this->filterForRetriableExceptions(
+                $retryPolicy, $retriableExceptionTypes
+            )
+        );
         return $this;
     }
 
