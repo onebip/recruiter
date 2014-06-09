@@ -38,11 +38,13 @@ class TargetHost implements Recruiter\Option
     }
 
     public function pickFrom(GetOpt\GetOpt $optionsFromCommandLine) {
-        return new Recruiter\Recruiter(
+        $recruiter = new Recruiter\Recruiter(
             $this->validate(
                 $optionsFromCommandLine->getOption($this->name)
             )
         );
+        $recruiter->createCollectionsAndIndexes();
+        return $recruiter;
     }
 
     private function validate($target)
