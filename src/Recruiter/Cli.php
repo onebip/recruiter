@@ -4,7 +4,7 @@ namespace Recruiter;
 
 use Functional as _;
 use Recruiter\Option;
-use Ulrichsg\Getopt\Getopt;
+use Ulrichsg\Getopt;
 
 class Cli
 {
@@ -29,15 +29,37 @@ class Cli
     public function parse($arguments = null)
     {
         $optionsFromCommandLine =
-            new Getopt(
-                _\map($this->options, function($option) {
-                    return $option->specification();
-                })
+            new Getopt\Getopt(
+                $this->addHelpOption(
+                    _\map($this->options, function($option) {
+                        return $option->specification();
+                    })
+                )
             );
         $optionsFromCommandLine->parse();
+        if ($this->helpHasBeenAsked($optionsFromCommandLine)) {
+            $this->showHelpAndExit($optionsFromCommandLine);
+        }
         foreach ($this->options as $key => $option) {
             $this->values[$key] = $option->pickFrom($optionsFromCommandLine);
         }
         return $this;
+    }
+
+    private function addHelpOption($options)
+    {
+        $options[] = (new Getopt\Option('h', 'help'))->setDescription('Shows this help');
+        return $options;
+    }
+
+    private function helpHasBeenAsked($optionsFromCommandLine)
+    {
+        return !!($optionsFromCommandLine->getOption('help'));
+    }
+
+    private function showHelpAndExit($optionsFromCommandLine)
+    {
+        echo $optionsFromCommandLine->getHelpText();
+        exit(0);
     }
 }
