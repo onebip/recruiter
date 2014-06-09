@@ -123,7 +123,7 @@ class Duration
         throw new InvalidDurationFormat('You need to use strings');
     }
 
-    public function parse($string)
+    public static function parse($string)
     {
         if (is_string($string)) {
             $tokenToFunction = [
