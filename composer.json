@@ -15,7 +15,7 @@
     "psr/log": "1.0.0",
     "gabrielelana/graceful-death": "0.5.0",
     "lstrojny/functional-php": "dev-master",
-    "rych/bytesize": "1.0.*",
+    "rych/bytesize": "~1.0",
     "ulrichsg/getopt-php": "~2.1"
   },
   "require-dev": {
