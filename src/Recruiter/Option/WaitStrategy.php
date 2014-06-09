@@ -16,12 +16,8 @@ class WaitStrategy implements Recruiter\Option
     public function __construct($name, $default)
     {
         $this->name = $name;
-        $this->validate($default,
-            function(T\Duration $timeToWaitAtMost) {
-                $this->timeToWaitAtLeast = T\milliseconds(200);
-                $this->timeToWaitAtMost = $timeToWaitAtMost;
-            }
-        );
+        $this->timeToWaitAtLeast = T\milliseconds(200);
+        $this->timeToWaitAtMost = $this->validate($default);
     }
 
     public function specification()
@@ -37,27 +33,25 @@ class WaitStrategy implements Recruiter\Option
     }
 
     public function pickFrom(GetOpt\GetOpt $optionsFromCommandLine) {
-        $argument = $optionsFromCommandLine->getOption($this->name);
-        return $this->validate($argument,
-            function(T\Duration $timeToWaitAtMost) {
-                return new Recruiter\WaitStrategy(
-                    $this->timeToWaitAtLeast, $timeToWaitAtMost
-                );
-            }
+        return new Recruiter\WaitStrategy(
+            $this->timeToWaitAtLeast,
+            $this->validate(
+                $optionsFromCommandLine->getOption($this->name)
+            )
         );
     }
 
-    private function validate($argument, $callback)
+    private function validate($argument)
     {
         if (!is_null($argument)) {
             try {
-                return $callback(T\Duration::parse($argument));
+                return T\Duration::parse($argument);
             } catch (T\InvalidDurationFormat $e) {
                 throw new UnexpectedValueException(
                     sprintf("Option '%s' has an invalid value: %s", $this->name, $e->getMessage())
                 );
             }
         }
-        return $callback($this->timeToWaitAtMost);
+        return $this->timeToWaitAtMost;
     }
 }
