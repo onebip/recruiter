@@ -9,8 +9,7 @@ use Recruiter\Recruiter;
 use Rych\ByteSize\ByteSize;
 
 $cli = new Cli();
-/* $cli->add('bootstrap', new Option\Bootstrap('b', 'bootstrap')); */
-/* $cli->add('recuiter', new Option\RecruiterHost('h', 'host', 'localhost:27017')); */
+$cli->add('recruiter', new Option\TargetHost('target'));
 $cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '30s'));
 /* $cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '128MB')); */
 /* $cli->add('supervisor', new Option\Supervisor('respawn', false)); */
@@ -19,21 +18,19 @@ $cli->parse();
 
 $options = array_merge(
     [
-        'host' => 'localhost:27017',
         'memory-limit' => 33554432, // 32MB
     ],
-    getopt('', ['host::', 'memory-limit::', 'respawn'])
+    getopt('', ['memory-limit::', 'respawn'])
 );
 
 $options['respawn'] = array_key_exists('respawn', $options);
 
 GracefulDeath::around(function($life) use($cli, $options) {
 
-    $pid = posix_getpid();
-
-    $db = (new MongoClient($options['host']))->selectDB('recruiter');
-    $recruiter = new Recruiter($db);
+    $recruiter = $cli->get('recruiter');
     $waitStrategy = $cli->get('wait-strategy');
+
+    $pid = posix_getpid();
 
     while (!$life->askedToStop()) {
         $currentMemoryUsage = memory_get_usage();
