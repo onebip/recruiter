@@ -8,7 +8,7 @@ use Exception;
 
 use Timeless as T;
 use Timeless\Moment;
-use Functional as _;
+use Underscore\Underscore as _;
 
 use Recruiter\RetryPolicy;
 use Recruiter\Job\Repository;
@@ -171,25 +171,27 @@ class Job
 
     public static function pickReadyJobsForWorkers(MongoCollection $collection, $worksOn, $workers, $callback)
     {
-        $jobs = _\pluck(
-            $collection
-                ->find(
-                    (Worker::canWorkOnAnyJobs($worksOn) ?
-                        [   'scheduled_at' => ['$lt' => T\MongoDate::now()],
-                            'active' => true,
-                            'locked' => false,
-                        ] :
-                        [   'scheduled_at' => ['$lt' => T\MongoDate::now()],
-                            'active' => true,
-                            'locked' => false,
-                            'tags' => $worksOn,
+        $jobs = _::pluck(
+            iterator_to_array(
+                $collection
+                    ->find(
+                        (Worker::canWorkOnAnyJobs($worksOn) ?
+                            [   'scheduled_at' => ['$lt' => T\MongoDate::now()],
+                                'active' => true,
+                                'locked' => false,
+                            ] :
+                            [   'scheduled_at' => ['$lt' => T\MongoDate::now()],
+                                'active' => true,
+                                'locked' => false,
+                                'tags' => $worksOn,
+                            ]
+                        ),
+                        [   '_id' => 1
                         ]
-                    ),
-                    [   '_id' => 1
-                    ]
-                )
-                ->sort(['scheduled_at' => 1])
-                ->limit(count($workers)),
+                    )
+                    ->sort(['scheduled_at' => 1])
+                    ->limit(count($workers))
+            ),
             '_id'
         );
         if (count($jobs) > 0) {

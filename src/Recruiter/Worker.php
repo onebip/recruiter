@@ -6,7 +6,7 @@ use MongoId;
 use MongoCollection;
 
 use Timeless as T;
-use Functional as _;
+use Underscore\Underscore as _;
 
 use Recruiter\Worker\Repository;
 
@@ -141,11 +141,11 @@ class Worker
     public static function pickAvailableWorkers(MongoCollection $collection, $workersPerUnit, $callback)
     {
         $numberOfWorkersWithJobs = 0;
-        $workers = $collection->find(['available' => true], ['_id' => 1, 'work_on' => 1]);
+        $workers = iterator_to_array($collection->find(['available' => true], ['_id' => 1, 'work_on' => 1]));
         if (count($workers) > 0) {
-            $unitsOfWorkers = _\group($workers, function($worker) {return $worker['work_on'];});
+            $unitsOfWorkers = _::group($workers, function($worker) {return $worker['work_on'];});
             foreach ($unitsOfWorkers as $workOn => $workersInUnit) {
-                $workersInUnit = _\pluck($workersInUnit, '_id');
+                $workersInUnit = _::pluck($workersInUnit, '_id');
                 $workersInUnit = array_slice($workersInUnit, 0, min(count($workersInUnit), $workersPerUnit));
                 $numberOfWorkersWithJobs += $callback($workOn, $workersInUnit);
             }
@@ -160,7 +160,7 @@ class Worker
             ['$set' => [
                 'available' => false,
                 'assigned_to' => array_combine(
-                        _\map($workers, function($id) {return (string)$id;}),
+                        _::transform($workers, function($id) {return (string)$id;}),
                         $jobs
                 ),
                 'assigned_since' => T\MongoDate::now()

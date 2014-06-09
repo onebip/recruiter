@@ -14,9 +14,9 @@
     "php": ">=5.4.0",
     "psr/log": "1.0.0",
     "gabrielelana/graceful-death": "0.5.0",
-    "lstrojny/functional-php": "dev-master",
     "rych/bytesize": "~1.0",
-    "ulrichsg/getopt-php": "~2.1"
+    "ulrichsg/getopt-php": "~2.1",
+    "anahkiasen/underscore-php": "~1.2"
   },
   "require-dev": {
     "phpunit/phpunit": "~4.0"
@@ -30,6 +30,9 @@
       "Recruiter\\": "src/Recruiter",
       "Timeless\\": "src/Timeless"
     },
-    "files": ["src/Timeless/functions.php"]
+    "files": [
+      "src/Recruiter/underscore.php",
+      "src/Timeless/functions.php"
+    ]
   }
 }

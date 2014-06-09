@@ -3,8 +3,57 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "4fe44b6f4267a48c9d7fb3d680f2ea71",
+    "hash": "7fc8bce8df18cfb95fcf05812937b9e2",
     "packages": [
+        {
+            "name": "anahkiasen/underscore-php",
+            "version": "1.2.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Anahkiasen/underscore-php.git",
+                "reference": "c5d2900e7eea6b22ba266e3bcd19d290f9075f5f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Anahkiasen/underscore-php/zipball/c5d2900e7eea6b22ba266e3bcd19d290f9075f5f",
+                "reference": "c5d2900e7eea6b22ba266e3bcd19d290f9075f5f",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": "~4",
+                "patchwork/utf8": "1.1.*",
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Underscore\\": [
+                        "src",
+                        "tests"
+                    ]
+                },
+                "files": [
+                    "helpers.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Maxime Fabre",
+                    "email": "ehtnam6@gmail.com"
+                }
+            ],
+            "description": "A redacted port of Underscore.js for PHP",
+            "keywords": [
+                "internals",
+                "laravel",
+                "toolkit"
+            ],
+            "time": "2014-03-13 10:45:40"
+        },
         {
             "name": "gabrielelana/graceful-death",
             "version": "0.5.0",
@@ -60,34 +109,39 @@
             "time": "2014-05-17 10:29:01"
         },
         {
-            "name": "lstrojny/functional-php",
-            "version": "dev-master",
+            "name": "illuminate/support",
+            "version": "v4.2.1",
+            "target-dir": "Illuminate/Support",
             "source": {
                 "type": "git",
-                "url": "https://github.com/lstrojny/functional-php.git",
-                "reference": "370561b41b80bdf6c2864d52b587b28184fe76c0"
+                "url": "https://github.com/illuminate/support.git",
+                "reference": "f1dd716598f99ff18b455da3e073a8324d65252e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lstrojny/functional-php/zipball/370561b41b80bdf6c2864d52b587b28184fe76c0",
-                "reference": "370561b41b80bdf6c2864d52b587b28184fe76c0",
+                "url": "https://api.github.com/repos/illuminate/support/zipball/f1dd716598f99ff18b455da3e073a8324d65252e",
+                "reference": "f1dd716598f99ff18b455da3e073a8324d65252e",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.0"
+                "php": ">=5.4.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "~4"
+                "jeremeamia/superclosure": "~1.0",
+                "patchwork/utf8": "1.1.*"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.0-dev"
+                    "dev-master": "4.2-dev"
                 }
             },
             "autoload": {
+                "psr-0": {
+                    "Illuminate\\Support": ""
+                },
                 "files": [
-                    "src/Functional/_import.php"
+                    "Illuminate/Support/helpers.php"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -96,20 +150,64 @@
             ],
             "authors": [
                 {
-                    "name": "Lars Strojny",
-                    "email": "lstrojny@php.net",
-                    "homepage": "http://usrportage.de"
-                },
-                {
-                    "name": "Max Beutel",
-                    "email": "nash12@gmail.com"
+                    "name": "Taylor Otwell",
+                    "email": "taylorotwell@gmail.com",
+                    "homepage": "https://github.com/taylorotwell",
+                    "role": "Creator of Laravel"
                 }
             ],
-            "description": "Functional primitives for PHP",
-            "keywords": [
-                "functional"
+            "time": "2014-05-30 16:22:28"
+        },
+        {
+            "name": "patchwork/utf8",
+            "version": "v1.1.23",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nicolas-grekas/Patchwork-UTF8.git",
+                "reference": "c1edbc82aed49ff2bdef0a0f659bf69e3f7b14cc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nicolas-grekas/Patchwork-UTF8/zipball/c1edbc82aed49ff2bdef0a0f659bf69e3f7b14cc",
+                "reference": "c1edbc82aed49ff2bdef0a0f659bf69e3f7b14cc",
+                "shasum": ""
+            },
+            "require": {
+                "lib-pcre": ">=7.3",
+                "php": ">=5.3.0"
+            },
+            "suggest": {
+                "ext-iconv": "Use iconv for best performance",
+                "ext-intl": "Use Intl for best performance",
+                "ext-mbstring": "Use Mbstring for best performance"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Patchwork": "class/",
+                    "Normalizer": "class/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "(Apache-2.0 or GPL-2.0)"
             ],
-            "time": "2014-04-28 13:15:17"
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Extensive, portable and performant handling of UTF-8 and grapheme clusters for PHP",
+            "homepage": "https://github.com/nicolas-grekas/Patchwork-UTF8",
+            "keywords": [
+                "i18n",
+                "unicode",
+                "utf-8",
+                "utf8"
+            ],
+            "time": "2014-05-22 13:59:09"
         },
         {
             "name": "psr/log",
@@ -936,9 +1034,9 @@
 
     ],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "lstrojny/functional-php": 20
-    },
+    "stability-flags": [
+
+    ],
     "platform": {
         "php": ">=5.4.0"
     },

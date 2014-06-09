@@ -2,7 +2,7 @@
 
 namespace Recruiter\RetryPolicy;
 
-use Functional as _;
+use Underscore\Underscore as _;
 
 use Recruiter\RetryPolicy;
 use Recruiter\JobAfterFailure;
@@ -51,7 +51,7 @@ class RetriableExceptionFilter implements RetryPolicy
 
     private function isExceptionRetriable($exception)
     {
-        return _\some($this->retriableExceptions, function($retriableExceptionType) use ($exception) {
+        return _::some($this->retriableExceptions, function($retriableExceptionType) use ($exception) {
             return ($exception instanceof $retriableExceptionType);
         });
     }

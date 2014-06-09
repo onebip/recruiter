@@ -3,6 +3,7 @@
 namespace Recruiter;
 
 use MongoId;
+use ArrayIterator;
 
 class PickAvailableWorkersTest extends \PHPUnit_Framework_TestCase
 {
@@ -135,7 +136,7 @@ class PickAvailableWorkersTest extends \PHPUnit_Framework_TestCase
         $this->repository
             ->expects($this->any())
             ->method('find')
-            ->will($this->returnValue($workersThatShouldBeFound));
+            ->will($this->returnValue(new ArrayIterator($workersThatShouldBeFound)));
     }
 
     private function withNoAvailableWorkers()
@@ -143,7 +144,7 @@ class PickAvailableWorkersTest extends \PHPUnit_Framework_TestCase
         $this->repository
             ->expects($this->any())
             ->method('find')
-            ->will($this->returnValue([]));
+            ->will($this->returnValue(new ArrayIterator([])));
     }
 
     private function assertArrayAreEquals($expected, $given)

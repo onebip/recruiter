@@ -2,10 +2,10 @@
 
 namespace Recruiter;
 
-use Functional as _;
 use Recruiter\Option;
 use Ulrichsg\Getopt;
 use UnexpectedValueException;
+use Underscore\Underscore as _;
 
 class Cli
 {
@@ -32,7 +32,7 @@ class Cli
         $optionsFromCommandLine =
             new Getopt\Getopt(
                 $this->addHelpOption(
-                    _\map($this->options, function($option) {
+                    _::transform($this->options, function($option) {
                         return $option->specification();
                     })
                 )
