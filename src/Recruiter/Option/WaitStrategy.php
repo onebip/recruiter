@@ -26,8 +26,7 @@ class WaitStrategy implements Recruiter\Option
             ->setDescription(
                 sprintf(
                     'Upper limit of time to wait before next polling [%s]',
-                    // TODO: $this->timeToWaitAtMost->format('s')
-                    $this->timeToWaitAtMost->seconds() . 's'
+                    $this->timeToWaitAtMost->format('s')
                 )
             );
     }
