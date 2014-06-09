@@ -31,37 +31,37 @@ class Duration
 
     public function seconds()
     {
-        return (int) round($this->ms / self::MILLISECONDS_IN_SECONDS);
+        return (int) floor($this->ms / self::MILLISECONDS_IN_SECONDS);
     }
 
     public function minutes()
     {
-        return (int) round($this->ms / self::MILLISECONDS_IN_MINUTES);
+        return (int) floor($this->ms / self::MILLISECONDS_IN_MINUTES);
     }
 
     public function hours()
     {
-        return (int) round($this->ms / self::MILLISECONDS_IN_HOURS);
+        return (int) floor($this->ms / self::MILLISECONDS_IN_HOURS);
     }
 
     public function days()
     {
-        return (int) round($this->ms / self::MILLISECONDS_IN_DAYS);
+        return (int) floor($this->ms / self::MILLISECONDS_IN_DAYS);
     }
 
     public function weeks()
     {
-        return (int) round($this->ms / self::MILLISECONDS_IN_WEEKS);
+        return (int) floor($this->ms / self::MILLISECONDS_IN_WEEKS);
     }
 
     public function months()
     {
-        return (int) round($this->ms / self::MILLISECONDS_IN_MONTHS);
+        return (int) floor($this->ms / self::MILLISECONDS_IN_MONTHS);
     }
 
     public function years()
     {
-        return (int) round($this->ms / self::MILLISECONDS_IN_YEARS);
+        return (int) floor($this->ms / self::MILLISECONDS_IN_YEARS);
     }
 
     public function ago()

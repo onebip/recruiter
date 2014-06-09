@@ -13,7 +13,7 @@ class DurationFormatTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('32 hours', hours(32)->format('hours'));
         $this->assertEquals('4 days', days(4)->format('days'));
         $this->assertEquals('1 week', days(7)->format('weeks'));
-        $this->assertEquals('3 months', weeks(12)->format('months'));
+        $this->assertEquals('3 months', weeks(13)->format('months'));
         $this->assertEquals('1 year', months(12)->format('years'));
     }
 
@@ -26,7 +26,7 @@ class DurationFormatTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('32h', hours(32)->format('h'));
         $this->assertEquals('4d', days(4)->format('d'));
         $this->assertEquals('1w', days(7)->format('w'));
-        $this->assertEquals('3mo', weeks(12)->format('mo'));
+        $this->assertEquals('3mo', weeks(13)->format('mo'));
         $this->assertEquals('1y', months(12)->format('y'));
     }
 }
