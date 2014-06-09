@@ -17,9 +17,7 @@ $recruiter = new Recruiter($db);
 
 (new AlwaysFail())
     ->asJobOf($recruiter)
-    ->retryWithPolicy(
-        new RetryPolicy\RetryManyTimes(5, T\seconds(1))
-    )
+    ->retryManyTimes(5, T\second(1))
     ->inBackground()
     ->execute();
 

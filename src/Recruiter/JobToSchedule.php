@@ -26,7 +26,7 @@ class JobToSchedule
     {
         return $this->retryWithPolicy(
             $this->filterForRetriableExceptions(
-                new RetryPolicy\RetryManyTimes($howManyTimes, $timeToWaitBeforeRetry->seconds()),
+                new RetryPolicy\RetryManyTimes($howManyTimes, $timeToWaitBeforeRetry),
                 $retriableExceptionTypes
             )
         );
