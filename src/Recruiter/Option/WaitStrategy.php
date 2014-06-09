@@ -26,7 +26,14 @@ class WaitStrategy implements Recruiter\Option
 
     public function specification()
     {
-        return new Getopt\Option(null, $this->name, Getopt\Getopt::REQUIRED_ARGUMENT);
+        return (new Getopt\Option(null, $this->name, Getopt\Getopt::REQUIRED_ARGUMENT))
+            ->setDescription(
+                sprintf(
+                    'Upper limit of time to wait before next polling [%s]',
+                    // TODO: $this->timeToWaitAtMost->format('s')
+                    $this->timeToWaitAtMost->seconds() . 's'
+                )
+            );
     }
 
     public function pickFrom(GetOpt\GetOpt $optionsFromCommandLine) {
