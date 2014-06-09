@@ -4,6 +4,14 @@ namespace Timeless;
 
 class Duration
 {
+    const MILLISECONDS_IN_SECONDS = 1000;
+    const MILLISECONDS_IN_MINUTES = 60000;
+    const MILLISECONDS_IN_HOURS = 3600000;
+    const MILLISECONDS_IN_DAYS = 86400000;
+    const MILLISECONDS_IN_WEEKS = 604800000;
+    const MILLISECONDS_IN_MONTHS = 2592000000;
+    const MILLISECONDS_IN_YEARS = 31104000000;
+
     private $ms;
 
     public function __construct($ms)
@@ -23,7 +31,37 @@ class Duration
 
     public function seconds()
     {
-        return round($this->ms / 1000);
+        return (int) round($this->ms / self::MILLISECONDS_IN_SECONDS);
+    }
+
+    public function minutes()
+    {
+        return (int) round($this->ms / self::MILLISECONDS_IN_MINUTES);
+    }
+
+    public function hours()
+    {
+        return (int) round($this->ms / self::MILLISECONDS_IN_HOURS);
+    }
+
+    public function days()
+    {
+        return (int) round($this->ms / self::MILLISECONDS_IN_DAYS);
+    }
+
+    public function weeks()
+    {
+        return (int) round($this->ms / self::MILLISECONDS_IN_WEEKS);
+    }
+
+    public function months()
+    {
+        return (int) round($this->ms / self::MILLISECONDS_IN_MONTHS);
+    }
+
+    public function years()
+    {
+        return (int) round($this->ms / self::MILLISECONDS_IN_YEARS);
     }
 
     public function ago()
@@ -49,6 +87,40 @@ class Duration
     public function from(Moment $reference)
     {
         return $reference->after($this);
+    }
+
+    public function format($format)
+    {
+        if (is_string($format)) {
+            $availableFormatsTable = [
+                'ms' => ['milliseconds', 'ms', 'ms'],
+                's' => ['seconds', 's', 's'],
+                'm' => ['minutes', 'm', 'm'],
+                'h' => ['hours', 'h', 'h'],
+                'd' => ['days', 'd', 'd'],
+                'w' => ['weeks', 'w', 'w'],
+                'mo' => ['months', 'mo', 'mo'],
+                'y' => ['years', 'y', 'y'],
+                'milliseconds' => ['milliseconds', ' milliseconds', ' millisecond'],
+                'seconds' => ['seconds', ' seconds', ' second'],
+                'minutes' => ['minutes', ' minutes', ' minute'],
+                'hours' => ['hours', ' hours', ' hour'],
+                'days' => ['days', ' days', ' day'],
+                'weeks' => ['weeks', ' weeks', ' week'],
+                'months' => ['months', ' months', ' month'],
+                'years' => ['years', ' years', ' year'],
+            ];
+            $format = trim($format);
+            if (array_key_exists($format, $availableFormatsTable)) {
+                $amountOfTime = call_user_func([$this, $availableFormatsTable[$format][0]]);
+                $unitOfTime = $amountOfTime === 1 ?
+                    $availableFormatsTable[$format][2] :
+                    $availableFormatsTable[$format][1];
+                return sprintf('%d%s', $amountOfTime, $unitOfTime);
+            }
+            throw new InvalidDurationFormat("'{$format}' is not a valid Duration format");
+        }
+        throw new InvalidDurationFormat('You need to use strings');
     }
 
     public function parse($string)
