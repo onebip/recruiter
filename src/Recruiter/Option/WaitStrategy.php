@@ -41,6 +41,9 @@ class WaitStrategy implements Recruiter\Option
 
     private function validate($argument, $callback)
     {
+        if (is_null($argument)) {
+            return $callback($this->timeToWaitAtMost);
+        }
         return $callback(T\Duration::parse($argument));
     }
 }
