@@ -5,6 +5,7 @@ namespace Recruiter\Option;
 use Recruiter;
 use Ulrichsg\Getopt;
 use Timeless as T;
+use UnexpectedValueException;
 
 class WaitStrategy implements Recruiter\Option
 {
@@ -41,9 +42,15 @@ class WaitStrategy implements Recruiter\Option
 
     private function validate($argument, $callback)
     {
-        if (is_null($argument)) {
-            return $callback($this->timeToWaitAtMost);
+        if (!is_null($argument)) {
+            try {
+                return $callback(T\Duration::parse($argument));
+            } catch (T\InvalidDurationFormat $e) {
+                throw new UnexpectedValueException(
+                    sprintf("Option '%s' has an invalid value: %s", $this->name, $e->getMessage())
+                );
+            }
         }
-        return $callback(T\Duration::parse($argument));
+        return $callback($this->timeToWaitAtMost);
     }
 }

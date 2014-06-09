@@ -5,6 +5,7 @@ namespace Recruiter;
 use Functional as _;
 use Recruiter\Option;
 use Ulrichsg\Getopt;
+use UnexpectedValueException;
 
 class Cli
 {
@@ -36,12 +37,16 @@ class Cli
                     })
                 )
             );
-        $optionsFromCommandLine->parse();
-        if ($this->helpHasBeenAsked($optionsFromCommandLine)) {
-            $this->showHelpAndExit($optionsFromCommandLine);
-        }
-        foreach ($this->options as $key => $option) {
-            $this->values[$key] = $option->pickFrom($optionsFromCommandLine);
+        try {
+            $optionsFromCommandLine->parse();
+            if ($this->helpHasBeenAsked($optionsFromCommandLine)) {
+                $this->showHelpAndExitWith($optionsFromCommandLine, 0);
+            }
+            foreach ($this->options as $key => $option) {
+                $this->values[$key] = $option->pickFrom($optionsFromCommandLine);
+            }
+        } catch(UnexpectedValueException $e) {
+            $this->showErrorMessageAndExit($e, $optionsFromCommandLine);
         }
         return $this;
     }
@@ -57,9 +62,15 @@ class Cli
         return !!($optionsFromCommandLine->getOption('help'));
     }
 
-    private function showHelpAndExit($optionsFromCommandLine)
+    private function showErrorMessageAndExit($exception, $optionsFromCommandLine)
     {
-        echo $optionsFromCommandLine->getHelpText();
-        exit(0);
+        printf("\n%s\n\n", $exception->getMessage());
+        $this->showHelpAndExitWith($optionsFromCommandLine, 1);
+    }
+
+    private function showHelpAndExitWith($optionsFromCommandLine, $status)
+    {
+        printf("%s", $optionsFromCommandLine->getHelpText());
+        exit($status);
     }
 }
