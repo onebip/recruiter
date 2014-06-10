@@ -61,6 +61,16 @@ class RetriableExceptionFilterTest extends \PHPUnit_Framework_TestCase
         $filter->schedule($this->jobFailedWithException(new Exception('Test')));
     }
 
+    public function testJobFailedWithSomethingThatIsNotAnException()
+    {
+        $this->filteredRetryPolicy
+            ->expects($this->once())
+            ->method('archive');
+
+        $filter = new RetriableExceptionFilter($this->filteredRetryPolicy);
+        $filter->schedule($this->jobFailedWithException(null));
+    }
+
     public function testExportFilteredRetryPolicy()
     {
         $this->filteredRetryPolicy

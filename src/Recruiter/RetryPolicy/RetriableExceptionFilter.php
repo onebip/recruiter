@@ -64,8 +64,11 @@ class RetriableExceptionFilter implements RetryPolicy
 
     private function isExceptionRetriable($exception)
     {
-        return _::some($this->retriableExceptions, function($retriableExceptionType) use ($exception) {
-            return ($exception instanceof $retriableExceptionType);
-        });
+        if (!is_null($exception) && is_object($exception)) {
+            return _::some($this->retriableExceptions, function($retriableExceptionType) use ($exception) {
+                return ($exception instanceof $retriableExceptionType);
+            });
+        }
+        return false;
     }
 }
