@@ -4,7 +4,7 @@ namespace Recruiter;
 
 trait Recruitable
 {
-    private $parameters;
+    protected $parameters;
 
     public function __construct($parameters = [])
     {
