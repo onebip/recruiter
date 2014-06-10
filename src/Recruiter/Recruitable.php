@@ -4,7 +4,7 @@ namespace Recruiter;
 
 trait Recruitable
 {
-    private $parameters;
+    protected $parameters;
 
     public function __construct($parameters = [])
     {
@@ -23,6 +23,6 @@ trait Recruitable
 
     public static function import($parameters)
     {
-        return new self($parameters);
+        return new static($parameters);
     }
 }
