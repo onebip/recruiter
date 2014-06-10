@@ -2,6 +2,7 @@
 
 namespace Recruiter\RetryPolicy;
 
+use InvalidArgumentException;
 use Underscore\Underscore as _;
 
 use Recruiter\RetryPolicy;
@@ -15,7 +16,7 @@ class RetriableExceptionFilter implements RetryPolicy
     public function __construct(RetryPolicy $filteredRetryPolicy, array $retriableExceptions = ['Exception'])
     {
         $this->filteredRetryPolicy = $filteredRetryPolicy;
-        $this->retriableExceptions = $retriableExceptions;
+        $this->retriableExceptions = $this->ensureAreAllExceptions($retriableExceptions);
     }
 
     public function schedule(JobAfterFailure $job)
@@ -48,6 +49,18 @@ class RetriableExceptionFilter implements RetryPolicy
         );
     }
 
+
+    private function ensureAreAllExceptions($exceptions)
+    {
+        foreach ($exceptions as $exception) {
+            if (!is_a($exception, 'Exception', true)) {
+                throw new InvalidArgumentException(
+                    "Only subclasses of Exception can be retriable exceptions, '{$exception}' is not"
+                );
+            }
+        }
+        return $exceptions;
+    }
 
     private function isExceptionRetriable($exception)
     {

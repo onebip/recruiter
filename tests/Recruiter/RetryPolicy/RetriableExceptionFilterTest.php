@@ -91,6 +91,16 @@ class RetriableExceptionFilterTest extends \PHPUnit_Framework_TestCase
         $filter->schedule($this->jobFailedWithException(new Exception('Test')));
     }
 
+    /**
+     * @expectedException InvalidArgumentException
+     * @expectedExceptionMessage Only subclasses of Exception can be retriable exceptions, 'StdClass' is not
+     */
+    public function testRetriableExceptionsThatAreNotExceptions()
+    {
+        $retryPolicy = new DoNotDoItAgain();
+        $notAnExceptionClass = 'StdClass';
+        new RetriableExceptionFilter($retryPolicy, [$notAnExceptionClass]);
+    }
 
 
     private function jobFailedWithException($exception)
