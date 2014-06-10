@@ -35,6 +35,21 @@ class JobToScheduleTest extends \PHPUnit_Framework_TestCase
             ->execute();
     }
 
+    public function testScheduledIn()
+    {
+        $amountOfTime = T\minutes(10);
+        $this->job
+            ->expects($this->once())
+            ->method('scheduleAt')
+            ->with(
+                $this->equalTo($amountOfTime->fromNow())
+            );
+
+        (new JobToSchedule($this->job))
+            ->scheduleIn($amountOfTime)
+            ->execute();
+    }
+
     public function testRetryWithPolicy()
     {
         $doNotDoItAgain = new RetryPolicy\DoNotDoItAgain();
