@@ -5,15 +5,15 @@ class RecruitableTest extends \PHPUnit_Framework_TestCase
 {
     public function testCanBeExportedAndImported()
     {
-        $job = new DummyRecruitableJob(['key' => 'value']);
+        $job = new DummyRecruitable(['key' => 'value']);
         $this->assertEquals(
             $job,
-            DummyRecruitableJob::import($job->export())
+            DummyRecruitable::import($job->export())
         );
     }
 }
 
-class DummyRecruitableJob implements Workable
+class DummyRecruitable implements Workable
 {
     use Recruitable;
 }
