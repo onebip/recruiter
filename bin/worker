@@ -12,16 +12,11 @@ $cli = new Cli();
 $cli->add('recruiter', new Option\TargetHost('target'));
 $cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '30s'));
 $cli->add('bootstrap', new Option\Bootstrap('bootstrap'));
+$cli->add('work-on', new Option\WorkOn('work-on'));
 $cli->parse();
 
 
-$options = array_merge(
-    [
-        'work-on' => 'all',
-    ],
-    getopt('', ['work-on::', 'respawn'])
-);
-
+$options = getopt('', ['respawn']);
 $options['respawn'] = array_key_exists('respawn', $options);
 
 GracefulDeath::around(function($life) use ($cli, $options) {
@@ -29,13 +24,10 @@ GracefulDeath::around(function($life) use ($cli, $options) {
     $cli->get('bootstrap')->load();
     $recruiter = $cli->get('recruiter');
     $waitStrategy = $cli->get('wait-strategy');
+    $filterJobToWorkOn = $cli->get('work-on');
 
+    $worker = $filterJobToWorkOn->applyTo($recruiter->hire());
     $pid = posix_getpid();
-
-    $worker = $recruiter->hire();
-    if ($options['work-on'] !== 'all') {
-        $worker->workOnJobsTaggedAs($options['work-on']);
-    }
 
     printf('[WORKER][%d][%s] ready to work!' . PHP_EOL, $pid, date('c'));
     while (!$life->askedToStop()) {
