@@ -10,7 +10,7 @@ class WaitStrategyTest extends \PHPUnit_Framework_TestCase
     {
         $this->waited = 0;
         $this->howToWait = function($microseconds) {
-            $this->waited = $microseconds;
+            $this->waited = T\milliseconds($microseconds/1000);
         };
         $this->timeToWaitAtLeast = T\milliseconds(250);
         $this->timeToWaitAtMost = T\seconds(30);
@@ -24,7 +24,7 @@ class WaitStrategyTest extends \PHPUnit_Framework_TestCase
             $this->howToWait
         );
         $ws->wait();
-        $this->assertEquals(250000, $this->waited);
+        $this->assertEquals($this->timeToWaitAtLeast, $this->waited);
     }
 
     public function testBackingOffIncreasesTheIntervalExponentially()
@@ -35,11 +35,11 @@ class WaitStrategyTest extends \PHPUnit_Framework_TestCase
             $this->howToWait
         );
         $ws->wait();
-        $this->assertEquals(250000, $this->waited);
+        $this->assertEquals($this->timeToWaitAtLeast, $this->waited);
         $ws->backOff()->wait();
-        $this->assertEquals(500000, $this->waited);
+        $this->assertEquals($this->timeToWaitAtLeast->multiplyBy(2), $this->waited);
         $ws->backOff()->wait();
-        $this->assertEquals(1000000, $this->waited);
+        $this->assertEquals($this->timeToWaitAtLeast->multiplyBy(4), $this->waited);
     }
 
     public function testBackingOffCannotIncreaseTheIntervalOverAMaximum()
@@ -50,7 +50,7 @@ class WaitStrategyTest extends \PHPUnit_Framework_TestCase
         $ws->backOff();
         $ws->backOff();
         $ws->wait();
-        $this->assertEquals(2000000, $this->waited);
+        $this->assertEquals(T\seconds(2), $this->waited);
     }
 
     public function testGoingForwardLowersTheSleepingPeriod()
@@ -63,7 +63,7 @@ class WaitStrategyTest extends \PHPUnit_Framework_TestCase
         $ws->backOff();
         $ws->goForward();
         $ws->wait();
-        $this->assertEquals(250000, $this->waited);
+        $this->assertEquals($this->timeToWaitAtLeast, $this->waited);
     }
 
     public function testTheSleepingPeriodCanBeResetToTheMinimum()
@@ -79,7 +79,7 @@ class WaitStrategyTest extends \PHPUnit_Framework_TestCase
         $ws->backOff();
         $ws->reset();
         $ws->wait();
-        $this->assertEquals(250000, $this->waited);
+        $this->assertEquals($this->timeToWaitAtLeast, $this->waited);
     }
 
     public function testGoingForwardCannotLowerTheIntervalBelowMinimum()
@@ -94,6 +94,6 @@ class WaitStrategyTest extends \PHPUnit_Framework_TestCase
         $ws->goForward();
         $ws->goForward();
         $ws->wait();
-        $this->assertEquals(250000, $this->waited);
+        $this->assertEquals($this->timeToWaitAtLeast, $this->waited);
     }
 }

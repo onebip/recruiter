@@ -19,6 +19,16 @@ class Duration
         $this->ms = $ms;
     }
 
+    public function us()
+    {
+        return $this->ms * 1000;
+    }
+
+    public function microseconds()
+    {
+        return $this->ms * 1000;
+    }
+
     public function ms()
     {
         return $this->ms;
@@ -62,6 +72,11 @@ class Duration
     public function years()
     {
         return (int) floor($this->ms / self::MILLISECONDS_IN_YEARS);
+    }
+
+    public function multiplyBy($multiplier)
+    {
+        return new self($this->ms * $multiplier);
     }
 
     public function ago()
