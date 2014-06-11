@@ -56,6 +56,11 @@ class Recruiter
         return $this->jobs->scheduled($id);
     }
 
+    public function cleanUpAfterWorkerProcessDied($process)
+    {
+        $process->cleanUp($this->workers);
+    }
+
     public function createCollectionsAndIndexes()
     {
         $this->db->command(['collMod' => 'scheduled', 'usePowerOf2Sizes' => true]);
@@ -76,6 +81,8 @@ class Recruiter
             'available' => 1,
         ]);
     }
+
+
 
     private function combineJobsWithWorkers($jobs, $workers)
     {

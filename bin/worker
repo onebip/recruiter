@@ -6,6 +6,7 @@ autoload();
 use Recruiter\Cli;
 use Recruiter\Option;
 use Recruiter\Recruiter;
+use Recruiter\ProcessWorker;
 use Recruiter\Worker;
 
 $cli = new Cli();
@@ -16,19 +17,21 @@ $cli->add('bootstrap', new Option\Bootstrap('bootstrap'));
 $cli->add('work-on', new Option\WorkOn('work-on'));
 $cli->parse();
 
+$process = new ProcessWorker();
 
 $options = getopt('', ['respawn']);
 $options['respawn'] = array_key_exists('respawn', $options);
 
-GracefulDeath::around(function($life) use ($cli, $options) {
+GracefulDeath::around(function($life) use ($cli, $options, $process) {
 
     $cli->get('bootstrap')->load();
     $recruiter = $cli->get('recruiter');
     $waitStrategy = $cli->get('wait-strategy');
     $filterJobToWorkOn = $cli->get('work-on');
 
-    $worker = $filterJobToWorkOn->applyTo($recruiter->hire());
     $pid = posix_getpid();
+    $worker = $filterJobToWorkOn->applyTo($recruiter->hire());
+    $process->associatedTo($worker);
 
     printf('[WORKER][%d][%s] ready to work!' . PHP_EOL, $pid, date('c'));
     while (!$life->askedToStop()) {
@@ -55,6 +58,13 @@ GracefulDeath::around(function($life) use ($cli, $options) {
         'worker died, I will let it go, start with --respawn options if you wish otherwise'
     );
     return false;
+})
+->afterDeath(function() use ($process, $cli) {
+    $cli->get('recruiter')->cleanUpAfterWorkerProcessDied($process);
+    printf(
+        '[SUPERVISOR][%d][%s] %s' . PHP_EOL, posix_getpid(), date('c'),
+        'cleaned up after the worker death'
+    );
 })
 ->run();
 

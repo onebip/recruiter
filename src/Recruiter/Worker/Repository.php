@@ -2,6 +2,7 @@
 
 namespace Recruiter\Worker;
 
+use MongoId;
 use MongoDB;
 use MongoCollection;
 use Recruiter\Recruiter;
@@ -28,5 +29,10 @@ class Repository
         $worker->updateWith(
             $this->roster->findOne(['_id' => $worker->id()])
         );
+    }
+
+    public function retire($workerId)
+    {
+        $this->roster->remove(['_id' => new MongoId($workerId)]);
     }
 }
