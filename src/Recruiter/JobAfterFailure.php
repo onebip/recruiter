@@ -3,7 +3,7 @@
 namespace Recruiter;
 
 use Timeless\Moment;
-use Timeless\Duration;
+use Timeless\Interval;
 
 class JobAfterFailure
 {
@@ -20,7 +20,7 @@ class JobAfterFailure
         $this->hasBeenArchived = false;
     }
 
-    public function scheduleIn(Duration $in)
+    public function scheduleIn(Interval $in)
     {
         $this->scheduleAt($in->fromNow());
     }

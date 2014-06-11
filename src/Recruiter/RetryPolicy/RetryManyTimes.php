@@ -7,7 +7,7 @@ use Recruiter\JobAfterFailure;
 use Recruiter\Retriable;
 
 use Timeless as T;
-use Timeless\Duration;
+use Timeless\Interval;
 
 class RetryManyTimes implements RetryPolicy
 {
@@ -16,7 +16,7 @@ class RetryManyTimes implements RetryPolicy
 
     use Retriable;
 
-    public function __construct($retryHowManyTimes, Duration $timeToWaitBeforeRetry)
+    public function __construct($retryHowManyTimes, Interval $timeToWaitBeforeRetry)
     {
         $this->retryHowManyTimes = $retryHowManyTimes;
         $this->timeToWaitBeforeRetry = $timeToWaitBeforeRetry;

@@ -21,12 +21,12 @@ class Moment
         return $this->ms;
     }
 
-    public function after(Duration $d)
+    public function after(Interval $d)
     {
         return new self($this->ms + $d->ms());
     }
 
-    public function before(Duration $d)
+    public function before(Interval $d)
     {
         return new self($this->ms - $d->ms());
     }

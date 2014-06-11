@@ -4,6 +4,6 @@ namespace Timeless;
 
 use Exception;
 
-class InvalidDurationFormat extends Exception
+class InvalidIntervalFormat extends Exception
 {
 }

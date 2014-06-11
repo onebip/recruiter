@@ -2,7 +2,7 @@
 
 namespace Recruiter;
 
-use Timeless\Duration;
+use Timeless\Interval;
 
 class WaitStrategy
 {
@@ -11,7 +11,7 @@ class WaitStrategy
     private $timeToWait;
     private $howToWait;
 
-    public function __construct(Duration $timeToWaitAtLeast, Duration $timeToWaitAtMost, $howToWait = 'usleep')
+    public function __construct(Interval $timeToWaitAtLeast, Interval $timeToWaitAtMost, $howToWait = 'usleep')
     {
         $this->timeToWaitAtLeast = $timeToWaitAtLeast->milliseconds();
         $this->timeToWaitAtMost = $timeToWaitAtMost->milliseconds();

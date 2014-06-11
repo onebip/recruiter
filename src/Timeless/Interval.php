@@ -2,7 +2,7 @@
 
 namespace Timeless;
 
-class Duration
+class Interval
 {
     const MILLISECONDS_IN_SECONDS = 1000;
     const MILLISECONDS_IN_MINUTES = 60000;
@@ -133,9 +133,9 @@ class Duration
                     $availableFormatsTable[$format][1];
                 return sprintf('%d%s', $amountOfTime, $unitOfTime);
             }
-            throw new InvalidDurationFormat("'{$format}' is not a valid Duration format");
+            throw new InvalidIntervalFormat("'{$format}' is not a valid Interval format");
         }
-        throw new InvalidDurationFormat('You need to use strings');
+        throw new InvalidIntervalFormat('You need to use strings');
     }
 
     public static function parse($string)
@@ -156,13 +156,13 @@ class Duration
                 return call_user_func('Timeless\\' . $tokenToFunction[$matches['unit']], $matches['quantity']);
             }
             if (!preg_match('/^\d+$/', $string)) {
-                throw new InvalidDurationFormat("'{$string}' is not a valid Duration format");
+                throw new InvalidIntervalFormat("'{$string}' is not a valid Interval format");
             }
         }
         if (is_numeric($string)) {
             $duration = floor($string);
-            throw new InvalidDurationFormat("Maybe you mean '{$duration} seconds' or something like that?");
+            throw new InvalidIntervalFormat("Maybe you mean '{$duration} seconds' or something like that?");
         }
-        throw new InvalidDurationFormat('You need to use strings');
+        throw new InvalidIntervalFormat('You need to use strings');
     }
 }

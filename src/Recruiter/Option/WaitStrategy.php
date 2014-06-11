@@ -44,8 +44,8 @@ class WaitStrategy implements Recruiter\Option
     {
         if (!is_null($argument)) {
             try {
-                return T\Duration::parse($argument);
-            } catch (T\InvalidDurationFormat $e) {
+                return T\Interval::parse($argument);
+            } catch (T\InvalidIntervalFormat $e) {
                 throw new UnexpectedValueException(
                     sprintf("Option '%s' has an invalid value: %s", $this->name, $e->getMessage())
                 );

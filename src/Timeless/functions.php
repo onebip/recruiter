@@ -24,7 +24,7 @@ function millisecond($numberOf)
 
 function milliseconds($numberOf)
 {
-    return new Duration($numberOf);
+    return new Interval($numberOf);
 }
 
 function second($numberOf)
@@ -34,7 +34,7 @@ function second($numberOf)
 
 function seconds($numberOf)
 {
-    return new Duration($numberOf * Duration::MILLISECONDS_IN_SECONDS);
+    return new Interval($numberOf * Interval::MILLISECONDS_IN_SECONDS);
 }
 
 function minute($numberOf)
@@ -44,7 +44,7 @@ function minute($numberOf)
 
 function minutes($numberOf)
 {
-    return new Duration($numberOf * Duration::MILLISECONDS_IN_MINUTES);
+    return new Interval($numberOf * Interval::MILLISECONDS_IN_MINUTES);
 }
 
 function hour($numberOf)
@@ -54,7 +54,7 @@ function hour($numberOf)
 
 function hours($numberOf)
 {
-    return new Duration($numberOf * Duration::MILLISECONDS_IN_HOURS);
+    return new Interval($numberOf * Interval::MILLISECONDS_IN_HOURS);
 }
 
 function day($numberOf)
@@ -64,7 +64,7 @@ function day($numberOf)
 
 function days($numberOf)
 {
-    return new Duration($numberOf * Duration::MILLISECONDS_IN_DAYS);
+    return new Interval($numberOf * Interval::MILLISECONDS_IN_DAYS);
 }
 
 function week($numberOf)
@@ -74,7 +74,7 @@ function week($numberOf)
 
 function weeks($numberOf)
 {
-    return new Duration($numberOf * Duration::MILLISECONDS_IN_WEEKS);
+    return new Interval($numberOf * Interval::MILLISECONDS_IN_WEEKS);
 }
 
 function month($numberOf)
@@ -84,7 +84,7 @@ function month($numberOf)
 
 function months($numberOf)
 {
-    return new Duration($numberOf * Duration::MILLISECONDS_IN_MONTHS);
+    return new Interval($numberOf * Interval::MILLISECONDS_IN_MONTHS);
 }
 
 function year($numberOf)
@@ -94,6 +94,6 @@ function year($numberOf)
 
 function years($numberOf)
 {
-    return new Duration($numberOf * Duration::MILLISECONDS_IN_YEARS);
+    return new Interval($numberOf * Interval::MILLISECONDS_IN_YEARS);
 }
 

@@ -2,7 +2,7 @@
 
 namespace Timeless;
 
-class DurationFormatTest extends \PHPUnit_Framework_TestCase
+class IntervalFormatTest extends \PHPUnit_Framework_TestCase
 {
     public function testFormatExtended()
     {

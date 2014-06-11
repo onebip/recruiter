@@ -3,7 +3,7 @@
 namespace Recruiter;
 
 use Timeless as T;
-use Timeless\Duration;
+use Timeless\Interval;
 use Timeless\Moment;
 use Recruiter\RetryPolicy;
 
@@ -23,7 +23,7 @@ class JobToSchedule
         return $this->retryWithPolicy(new RetryPolicy\DoNotDoItAgain());
     }
 
-    public function retryManyTimes($howManyTimes, Duration $timeToWaitBeforeRetry, $retriableExceptionTypes = [])
+    public function retryManyTimes($howManyTimes, Interval $timeToWaitBeforeRetry, $retriableExceptionTypes = [])
     {
         $this->job->retryWithPolicy(
             $this->filterForRetriableExceptions(
@@ -49,7 +49,7 @@ class JobToSchedule
         return $this->scheduleAt(T\now());
     }
 
-    public function scheduleIn(Duration $duration)
+    public function scheduleIn(Interval $duration)
     {
         return $this->scheduleAt($duration->fromNow());
     }
