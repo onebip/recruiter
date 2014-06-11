@@ -11,6 +11,7 @@ use Recruiter\Worker;
 $cli = new Cli();
 $cli->add('recruiter', new Option\TargetHost('target'));
 $cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '30s'));
+/* $cli->add('supervisor', new Option\Supervisor('respawn', false)); */
 $cli->add('bootstrap', new Option\Bootstrap('bootstrap'));
 $cli->add('work-on', new Option\WorkOn('work-on'));
 $cli->parse();
