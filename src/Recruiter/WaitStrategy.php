@@ -19,6 +19,12 @@ class WaitStrategy
         $this->howToWait = $howToWait;
     }
 
+    public function reset()
+    {
+        $this->timeToWait = $this->timeToWaitAtLeast;
+        return $this;
+    }
+
     public function goForward()
     {
         $this->timeToWait =  max(
