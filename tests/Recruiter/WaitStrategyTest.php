@@ -66,6 +66,22 @@ class WaitStrategyTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(250000, $this->waited);
     }
 
+    public function testTheSleepingPeriodCanBeResetToTheMinimum()
+    {
+        $ws = new WaitStrategy(
+            $this->timeToWaitAtLeast,
+            $this->timeToWaitAtMost,
+            $this->howToWait
+        );
+        $ws->backOff();
+        $ws->backOff();
+        $ws->backOff();
+        $ws->backOff();
+        $ws->reset();
+        $ws->wait();
+        $this->assertEquals(250000, $this->waited);
+    }
+
     public function testGoingForwardCannotLowerTheIntervalBelowMinimum()
     {
         $ws = new WaitStrategy(
