@@ -45,7 +45,7 @@ GracefulDeath::around(function($life) use($cli, $options) {
         if ($currentMemoryUsage > (int)$options['memory-limit']) exit(1);
         ($numberOfAssignments === 0) ?
             $waitStrategy->wait()->backOff() :
-            $waitStrategy->goForward();
+            $waitStrategy->reset();
     }
 
     printf('[RECRUITER][%d][%s] ok, see you space cowboy...' . PHP_EOL, $pid, date('c'));
