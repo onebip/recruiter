@@ -102,6 +102,13 @@ class Worker
 
     private function hasBeenAssignedToDoSomething()
     {
+        if (is_null($this->status)) {
+            // I don't know yet why this happens, but seems like that sometimes
+            // some workers remains zombies and they have $this->status === null
+            // this is very strange, I need to dig deeper but for now the only
+            // thing to do seems like terminate the process
+            exit(1);
+        }
         return array_key_exists('assigned_to', $this->status);
     }
 
