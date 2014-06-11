@@ -116,7 +116,7 @@ class Job
         return array_merge(
             $this->status,
             $this->lastJobExecution->export(),
-            WorkableInJob::export($this->workable),
+            WorkableInJob::export($this->workable, $this->status['workable']['method']),
             RetryPolicyInJob::export($this->retryPolicy)
         );
     }

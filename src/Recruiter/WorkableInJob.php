@@ -22,13 +22,13 @@ class WorkableInJob
         return $dataAboutWorkableObject['class']::import($dataAboutWorkableObject['parameters']);
     }
 
-    public static function export($workable)
+    public static function export($workable, $methodToCall)
     {
         return [
             'workable' => [
                 'class' => get_class($workable),
                 'parameters' => $workable->export(),
-                'method' => 'execute',
+                'method' => $methodToCall,
             ]
         ];
     }
