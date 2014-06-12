@@ -9,6 +9,7 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->recruiter = (new MongoClient('localhost:27017'))->selectDB('recruiter');
+        $this->recruiter->drop();
         $this->roster = $this->recruiter->selectCollection('roster');
     }
 

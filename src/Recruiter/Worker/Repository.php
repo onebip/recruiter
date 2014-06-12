@@ -33,7 +33,7 @@ class Repository
 
     public function retireWorkerWithPid($pid)
     {
-        throw new \Exception('Not Yet Implemented');
+        $this->roster->remove(['pid' => $pid]);
     }
 
     public function retire($workerId)
