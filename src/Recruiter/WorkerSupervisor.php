@@ -5,7 +5,7 @@ namespace Recruiter;
 use Exception;
 use Recruiter\Worker\Repository;
 
-class ProcessWorker
+class WorkerSupervisor
 {
     private $workerId;
 

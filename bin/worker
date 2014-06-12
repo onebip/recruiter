@@ -6,7 +6,7 @@ autoload();
 use Recruiter\Cli;
 use Recruiter\Option;
 use Recruiter\Recruiter;
-use Recruiter\ProcessWorker;
+use Recruiter\WorkerSupervisor;
 use Recruiter\Worker;
 
 $cli = new Cli();
@@ -17,7 +17,7 @@ $cli->add('bootstrap', new Option\Bootstrap('bootstrap'));
 $cli->add('work-on', new Option\WorkOn('work-on'));
 $cli->parse();
 
-$process = new ProcessWorker();
+$process = new WorkerSupervisor();
 
 $options = getopt('', ['respawn']);
 $options['respawn'] = array_key_exists('respawn', $options);
