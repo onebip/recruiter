@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "8ddc83ae84532d43f9d3ffca62409678",
+    "hash": "cca48ecc95407d9239456a5e3af6517d",
     "packages": [
         {
             "name": "anahkiasen/underscore-php",

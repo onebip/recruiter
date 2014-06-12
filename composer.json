@@ -28,7 +28,8 @@
   "autoload": {
     "psr-4": {
       "Recruiter\\": "src/Recruiter",
-      "Timeless\\": "src/Timeless"
+      "Timeless\\": "src/Timeless",
+      "Sink\\": "src/Sink"
     },
     "files": [
       "src/Recruiter/underscore.php",
