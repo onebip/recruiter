@@ -31,6 +31,11 @@ class Repository
         );
     }
 
+    public function retireWorkerWithPid($pid)
+    {
+        throw new \Exception('Not Yet Implemented');
+    }
+
     public function retire($workerId)
     {
         $this->roster->remove(['_id' => new MongoId($workerId)]);
