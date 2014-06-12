@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "7fc8bce8df18cfb95fcf05812937b9e2",
+    "hash": "8ddc83ae84532d43f9d3ffca62409678",
     "packages": [
         {
             "name": "anahkiasen/underscore-php",
@@ -56,20 +56,21 @@
         },
         {
             "name": "gabrielelana/graceful-death",
-            "version": "0.5.0",
+            "version": "0.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/gabrielelana/graceful-death.git",
-                "reference": "627b25769e10450dc276e3bf6db710ed975b2a10"
+                "reference": "7a5f1b3568854e5c64e3d905ce537e981e94caee"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/gabrielelana/graceful-death/zipball/627b25769e10450dc276e3bf6db710ed975b2a10",
-                "reference": "627b25769e10450dc276e3bf6db710ed975b2a10",
+                "url": "https://api.github.com/repos/gabrielelana/graceful-death/zipball/7a5f1b3568854e5c64e3d905ce537e981e94caee",
+                "reference": "7a5f1b3568854e5c64e3d905ce537e981e94caee",
                 "shasum": ""
             },
             "require": {
                 "ext-pcntl": "*",
+                "ext-posix": "*",
                 "php": ">=5.4.0"
             },
             "require-dev": {
@@ -99,28 +100,27 @@
                 "die",
                 "error",
                 "fatal",
-                "leak",
                 "long",
-                "memory",
                 "process",
                 "running",
+                "supervisor",
                 "try"
             ],
-            "time": "2014-05-17 10:29:01"
+            "time": "2014-06-12 10:27:21"
         },
         {
             "name": "illuminate/support",
-            "version": "v4.2.1",
+            "version": "v4.2.3",
             "target-dir": "Illuminate/Support",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/support.git",
-                "reference": "f1dd716598f99ff18b455da3e073a8324d65252e"
+                "reference": "71975fd0c0f73033e108a7058be9dae2d32545a7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/support/zipball/f1dd716598f99ff18b455da3e073a8324d65252e",
-                "reference": "f1dd716598f99ff18b455da3e073a8324d65252e",
+                "url": "https://api.github.com/repos/illuminate/support/zipball/71975fd0c0f73033e108a7058be9dae2d32545a7",
+                "reference": "71975fd0c0f73033e108a7058be9dae2d32545a7",
                 "shasum": ""
             },
             "require": {
@@ -156,7 +156,7 @@
                     "role": "Creator of Laravel"
                 }
             ],
-            "time": "2014-05-30 16:22:28"
+            "time": "2014-06-03 16:57:35"
         },
         {
             "name": "patchwork/utf8",
@@ -584,16 +584,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "4.1.2",
+            "version": "4.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "be5f237df860da88a7cfe247594232cae61845df"
+                "reference": "939cb801b3b2aa253aedd0b279f40bb8f35cec91"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/be5f237df860da88a7cfe247594232cae61845df",
-                "reference": "be5f237df860da88a7cfe247594232cae61845df",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/939cb801b3b2aa253aedd0b279f40bb8f35cec91",
+                "reference": "939cb801b3b2aa253aedd0b279f40bb8f35cec91",
                 "shasum": ""
             },
             "require": {
@@ -654,20 +654,20 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2014-06-07 07:30:48"
+            "time": "2014-06-11 14:15:47"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
-            "version": "2.1.3",
+            "version": "2.1.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit-mock-objects.git",
-                "reference": "92f4b49d2cd4f2537db7ef969231f3d43c8da957"
+                "reference": "1a894a16b6c15fcdc5ef2b110f0e6233952c9b0f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit-mock-objects/zipball/92f4b49d2cd4f2537db7ef969231f3d43c8da957",
-                "reference": "92f4b49d2cd4f2537db7ef969231f3d43c8da957",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit-mock-objects/zipball/1a894a16b6c15fcdc5ef2b110f0e6233952c9b0f",
+                "reference": "1a894a16b6c15fcdc5ef2b110f0e6233952c9b0f",
                 "shasum": ""
             },
             "require": {
@@ -711,7 +711,7 @@
                 "mock",
                 "xunit"
             ],
-            "time": "2014-06-07 12:56:52"
+            "time": "2014-06-07 16:22:57"
         },
         {
             "name": "sebastian/comparator",
