@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "cca48ecc95407d9239456a5e3af6517d",
+    "hash": "2519831b535590caf1d4bd9875e0b514",
     "packages": [
         {
             "name": "anahkiasen/underscore-php",
@@ -56,16 +56,16 @@
         },
         {
             "name": "gabrielelana/graceful-death",
-            "version": "0.7.0",
+            "version": "0.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/gabrielelana/graceful-death.git",
-                "reference": "7a5f1b3568854e5c64e3d905ce537e981e94caee"
+                "reference": "b94162f9aa5e72906b46ee418e0cf85e6b4e2593"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/gabrielelana/graceful-death/zipball/7a5f1b3568854e5c64e3d905ce537e981e94caee",
-                "reference": "7a5f1b3568854e5c64e3d905ce537e981e94caee",
+                "url": "https://api.github.com/repos/gabrielelana/graceful-death/zipball/b94162f9aa5e72906b46ee418e0cf85e6b4e2593",
+                "reference": "b94162f9aa5e72906b46ee418e0cf85e6b4e2593",
                 "shasum": ""
             },
             "require": {
@@ -106,7 +106,7 @@
                 "supervisor",
                 "try"
             ],
-            "time": "2014-06-12 10:27:21"
+            "time": "2014-06-16 14:09:02"
         },
         {
             "name": "illuminate/support",

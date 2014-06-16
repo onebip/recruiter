@@ -12,60 +12,43 @@ use Recruiter\Worker;
 $cli = new Cli();
 $cli->add('recruiter', new Option\TargetHost('target'));
 $cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '30s'));
-/* $cli->add('supervisor', new Option\Supervisor('respawn', false)); */
+$cli->add('supervisor', new Option\Supervisor('respawn'));
 $cli->add('bootstrap', new Option\Bootstrap('bootstrap'));
 $cli->add('work-on', new Option\WorkOn('work-on'));
 $cli->parse();
 
 $process = new WorkerSupervisor();
 
-$options = getopt('', ['respawn']);
-$options['respawn'] = array_key_exists('respawn', $options);
+$cli->get('supervisor')->applyTo(
 
-GracefulDeath::around(function($life) use ($cli, $options, $process) {
+    GracefulDeath::around(function($life) use ($cli, $process) {
+        $cli->get('bootstrap')->load();
+        $recruiter = $cli->get('recruiter');
+        $waitStrategy = $cli->get('wait-strategy');
+        $filterJobToWorkOn = $cli->get('work-on');
 
-    $cli->get('bootstrap')->load();
-    $recruiter = $cli->get('recruiter');
-    $waitStrategy = $cli->get('wait-strategy');
-    $filterJobToWorkOn = $cli->get('work-on');
+        $worker = $filterJobToWorkOn->applyTo($recruiter->hire());
+        $process->associatedTo($worker);
 
-    $pid = posix_getpid();
-    $worker = $filterJobToWorkOn->applyTo($recruiter->hire());
-    $process->associatedTo($worker);
-
-    printf('[WORKER][%d][%s] ready to work!' . PHP_EOL, $pid, date('c'));
-    while (!$life->askedToStop()) {
-        $doneSomeWork = $worker->work();
-        ($doneSomeWork) ?
-            $waitStrategy->goForward() :
-            $waitStrategy->wait()->backOff();
-    }
-    printf('[WORKER][%d][%s] ok, see you space cowboy...' . PHP_EOL, $pid, date('c'));
-
-})
-->doNotCaptureOutput()
-->catchSignals([SIGTERM, SIGQUIT, SIGINT])
-->reanimationPolicy(function() use ($options) {
-    if ($options['respawn']) {
+        printf('[WORKER][%d][%s] ready to work!' . PHP_EOL, posix_getpid(), date('c'));
+        while (!$life->askedToStop()) {
+            $doneSomeWork = $worker->work();
+            ($doneSomeWork) ?
+                $waitStrategy->goForward() :
+                $waitStrategy->wait()->backOff();
+        }
+        printf('[WORKER][%d][%s] ok, see you space cowboy...' . PHP_EOL, posix_getpid(), date('c'));
+    })
+    ->doNotCaptureOutput()
+    ->catchSignals([SIGTERM, SIGQUIT, SIGINT])
+    ->afterDeath(function() use ($process, $cli) {
+        $cli->get('recruiter')->cleanUpAfterWorkerProcessDied($process);
         printf(
-            '[SUPERVISOR][%d][%s] worker died, respawn...' . PHP_EOL,
-            posix_getpid(), date('c')
+            '[SUPERVISOR][%d][%s] %s' . PHP_EOL, posix_getpid(), date('c'),
+            'cleaned up after the worker death'
         );
-        return true;
-    }
-    printf(
-        '[SUPERVISOR][%d][%s] %s' . PHP_EOL, posix_getpid(), date('c'),
-        'worker died, I will let it go, start with --respawn options if you wish otherwise'
-    );
-    return false;
-})
-->afterDeath(function() use ($process, $cli) {
-    $cli->get('recruiter')->cleanUpAfterWorkerProcessDied($process);
-    printf(
-        '[SUPERVISOR][%d][%s] %s' . PHP_EOL, posix_getpid(), date('c'),
-        'cleaned up after the worker death'
-    );
-})
+    })
+)
 ->run();
 
 

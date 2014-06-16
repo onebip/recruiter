@@ -12,7 +12,7 @@ $cli = new Cli();
 $cli->add('recruiter', new Option\TargetHost('target'));
 $cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '30s'));
 /* $cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '128MB')); */
-/* $cli->add('supervisor', new Option\Supervisor('respawn', false)); */
+$cli->add('supervisor', new Option\Supervisor('respawn'));
 $cli->parse();
 
 
@@ -20,53 +20,38 @@ $options = array_merge(
     [
         'memory-limit' => 33554432, // 32MB
     ],
-    getopt('', ['memory-limit::', 'respawn'])
+    getopt('', ['memory-limit::'])
 );
 
-$options['respawn'] = array_key_exists('respawn', $options);
+$cli->get('supervisor')->applyTo(
 
-GracefulDeath::around(function($life) use($cli, $options) {
+    GracefulDeath::around(function($life) use($cli, $options) {
+        $recruiter = $cli->get('recruiter');
+        $waitStrategy = $cli->get('wait-strategy');
 
-    $recruiter = $cli->get('recruiter');
-    $waitStrategy = $cli->get('wait-strategy');
-
-    $pid = posix_getpid();
-
-    while (!$life->askedToStop()) {
-        $currentMemoryUsage = memory_get_usage();
-        $pickStartAt = microtime(true);
-        $numberOfAssignments = $recruiter->assignJobsToWorkers();
-        $pickEndAt = microtime(true);
+        while (!$life->askedToStop()) {
+            $currentMemoryUsage = memory_get_usage();
+            $pickStartAt = microtime(true);
+            $numberOfAssignments = $recruiter->assignJobsToWorkers();
+            $pickEndAt = microtime(true);
+            printf(
+                '[RECRUITER][%d][%s][%s] picked jobs for %d workers in %fms' . PHP_EOL,
+                posix_getpid(), date('c'), ByteSize::formatMetric($currentMemoryUsage),
+                $numberOfAssignments, ($pickEndAt - $pickStartAt) * 1000
+            );
+            if ($currentMemoryUsage > (int)$options['memory-limit']) exit(1);
+            ($numberOfAssignments === 0) ?
+                $waitStrategy->wait()->backOff() :
+                $waitStrategy->reset();
+        }
         printf(
-            '[RECRUITER][%d][%s][%s] picked jobs for %d workers in %fms' . PHP_EOL,
-            $pid, date('c'), ByteSize::formatMetric($currentMemoryUsage),
-            $numberOfAssignments, ($pickEndAt - $pickStartAt) * 1000
-        );
-        if ($currentMemoryUsage > (int)$options['memory-limit']) exit(1);
-        ($numberOfAssignments === 0) ?
-            $waitStrategy->wait()->backOff() :
-            $waitStrategy->reset();
-    }
-
-    printf('[RECRUITER][%d][%s] ok, see you space cowboy...' . PHP_EOL, $pid, date('c'));
-
-})
-->doNotCaptureOutput()
-->catchSignals([SIGTERM, SIGQUIT, SIGINT])
-->reanimationPolicy(function() use ($options) {
-    if ($options['respawn']) {
-        printf(
-            '[SUPERVISOR][%d][%s] recruiter died, respawn...' . PHP_EOL,
+            '[RECRUITER][%d][%s] ok, see you space cowboy...' . PHP_EOL,
             posix_getpid(), date('c')
         );
-        return true;
-    }
-    printf(
-        '[SUPERVISOR][%d][%s] %s' . PHP_EOL, posix_getpid(), date('c'),
-        'recruiter died, I will let it go, start with --respawn options if you wish otherwise'
-    );
-    return false;
-})
+    })
+    ->doNotCaptureOutput()
+    ->catchSignals([SIGTERM, SIGQUIT, SIGINT])
+)
 ->run();
 
 

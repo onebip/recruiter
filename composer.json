@@ -13,7 +13,7 @@
   "require": {
     "php": ">=5.4.0",
     "psr/log": "1.0.0",
-    "gabrielelana/graceful-death": "0.7.0",
+    "gabrielelana/graceful-death": "~0.7",
     "rych/bytesize": "~1.0",
     "ulrichsg/getopt-php": "~2.1",
     "anahkiasen/underscore-php": "~1.2"
