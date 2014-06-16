@@ -44,14 +44,29 @@ class JobExecution
                 if ($this->failedWith) {
                     $exported['class'] = get_class($this->failedWith);
                     $exported['message'] = $this->failedWith->getMessage();
-                    $exported['trace'] = null; // TODO
+                    $exported['trace'] = $this->traceOf($this->completedWith);
                 }
                 if ($this->completedWith) {
-                    $exported['trace'] = null; // TODO
+                    $exported['trace'] = $this->traceOf($this->completedWith);
                 }
             }
             return ['last_execution' => $exported];
         }
         return $exported;
+    }
+
+    private function traceOf($result)
+    {
+        $trace = 'ok';
+        if ($result instanceof \Exception) {
+            $trace = $result->getMessage();
+        } else if (is_object($result) && method_exists($result, 'trace')) {
+            $trace = $result->trace();
+        } else if (is_object($result)) {
+            $trace = get_class($result);
+        } else if (is_string($result) || is_numeric($result)) {
+            $trace = $result;
+        }
+        return substr($trace, 0, 512);
     }
 }
