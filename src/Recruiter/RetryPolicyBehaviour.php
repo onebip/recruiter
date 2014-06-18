@@ -4,7 +4,7 @@ namespace Recruiter;
 
 use Recruiter\RetryPolicy\RetriableExceptionFilter;
 
-trait Retriable
+trait RetryPolicyBehaviour
 {
     private $parameters;
 

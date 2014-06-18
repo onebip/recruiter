@@ -2,13 +2,13 @@
 
 namespace Recruiter\RetryPolicy;
 
-use Recruiter\Retriable;
 use Recruiter\RetryPolicy;
+use Recruiter\RetryPolicyBehaviour;
 use Recruiter\JobAfterFailure;
 
 class DoNotDoItAgain implements RetryPolicy
 {
-    use Retriable;
+    use RetryPolicyBehaviour;
 
     public function schedule(JobAfterFailure $job)
     {

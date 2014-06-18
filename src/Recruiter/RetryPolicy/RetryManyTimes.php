@@ -3,8 +3,8 @@
 namespace Recruiter\RetryPolicy;
 
 use Recruiter\RetryPolicy;
+use Recruiter\RetryPolicyBehaviour;
 use Recruiter\JobAfterFailure;
-use Recruiter\Retriable;
 
 use Timeless as T;
 use Timeless\Interval;
@@ -14,7 +14,7 @@ class RetryManyTimes implements RetryPolicy
     private $retryHowManyTimes;
     private $timeToWaitBeforeRetry;
 
-    use Retriable;
+    use RetryPolicyBehaviour;
 
     public function __construct($retryHowManyTimes, Interval $timeToWaitBeforeRetry)
     {

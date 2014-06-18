@@ -2,16 +2,17 @@
 
 namespace Recruiter\RetryPolicy;
 
-use Recruiter\Retriable;
+use Exception;
 use Recruiter\RetryPolicy;
+use Recruiter\RetryPolicyBehaviour;
 use Recruiter\JobAfterFailure;
 
 abstract class BaseRetryPolicy implements RetryPolicy
 {
-    use Retriable;
+    use RetryPolicyBehaviour;
 
     public function schedule(JobAfterFailure $job)
     {
-        throw new \Exception('RetryPolicy::schedule(JobAfterFailure) need to be implemented');
+        throw new Exception('RetryPolicy::schedule(JobAfterFailure) need to be implemented');
     }
 }
