@@ -4,7 +4,7 @@ namespace Recruiter;
 
 class LazyBones implements Workable
 {
-    use Recruitable;
+    use WorkableBehaviour;
 
     private $usToSleep;
     private $usOfDelta;

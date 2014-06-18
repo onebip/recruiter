@@ -4,7 +4,7 @@ namespace Recruiter;
 
 class AlwaysFail implements Workable
 {
-    use Recruitable;
+    use WorkableBehaviour;
 
     public function execute()
     {

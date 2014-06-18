@@ -2,7 +2,7 @@
 
 namespace Recruiter;
 
-trait Recruitable
+trait WorkableBehaviour
 {
     protected $parameters;
 
