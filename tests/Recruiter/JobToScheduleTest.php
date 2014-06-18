@@ -35,7 +35,7 @@ class JobToScheduleTest extends \PHPUnit_Framework_TestCase
             ->execute();
     }
 
-    public function testScheduledIn()
+    public function testScheduledInShouldScheduleInCertainAmountOfTime()
     {
         $amountOfTime = T\minutes(10);
         $this->job
@@ -50,7 +50,7 @@ class JobToScheduleTest extends \PHPUnit_Framework_TestCase
             ->execute();
     }
 
-    public function testRetryWithPolicy()
+    public function testConfigureRetryPolicy()
     {
         $doNotDoItAgain = new RetryPolicy\DoNotDoItAgain();
 
@@ -65,7 +65,7 @@ class JobToScheduleTest extends \PHPUnit_Framework_TestCase
             ->execute();
     }
 
-    public function testDoNotRetry()
+    public function tesShortcutToConfigureJobToNotBeRetried()
     {
         $this->job
             ->expects($this->once())
