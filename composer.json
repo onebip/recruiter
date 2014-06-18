@@ -16,7 +16,7 @@
     "gabrielelana/graceful-death": "~0.7",
     "rych/bytesize": "~1.0",
     "ulrichsg/getopt-php": "~2.1",
-    "anahkiasen/underscore-php": "~1.2"
+    "anahkiasen/underscore-php": "dev-master"
   },
   "require-dev": {
     "phpunit/phpunit": "~4.0"

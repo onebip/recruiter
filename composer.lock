@@ -3,20 +3,20 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "2519831b535590caf1d4bd9875e0b514",
+    "hash": "d2e571ece6d0793437f3f0b09bee3779",
     "packages": [
         {
             "name": "anahkiasen/underscore-php",
-            "version": "1.2.3",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Anahkiasen/underscore-php.git",
-                "reference": "c5d2900e7eea6b22ba266e3bcd19d290f9075f5f"
+                "reference": "8dc86f6630eb345b7d042b69f7db21482af7b79c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Anahkiasen/underscore-php/zipball/c5d2900e7eea6b22ba266e3bcd19d290f9075f5f",
-                "reference": "c5d2900e7eea6b22ba266e3bcd19d290f9075f5f",
+                "url": "https://api.github.com/repos/Anahkiasen/underscore-php/zipball/8dc86f6630eb345b7d042b69f7db21482af7b79c",
+                "reference": "8dc86f6630eb345b7d042b69f7db21482af7b79c",
                 "shasum": ""
             },
             "require": {
@@ -31,10 +31,7 @@
                         "src",
                         "tests"
                     ]
-                },
-                "files": [
-                    "helpers.php"
-                ]
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -52,7 +49,7 @@
                 "laravel",
                 "toolkit"
             ],
-            "time": "2014-03-13 10:45:40"
+            "time": "2014-06-11 15:06:50"
         },
         {
             "name": "gabrielelana/graceful-death",
@@ -110,17 +107,17 @@
         },
         {
             "name": "illuminate/support",
-            "version": "v4.2.3",
+            "version": "v4.2.4",
             "target-dir": "Illuminate/Support",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/support.git",
-                "reference": "71975fd0c0f73033e108a7058be9dae2d32545a7"
+                "reference": "976bdc0f42e9efd3dfa2e0eba11aba48a97113ac"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/support/zipball/71975fd0c0f73033e108a7058be9dae2d32545a7",
-                "reference": "71975fd0c0f73033e108a7058be9dae2d32545a7",
+                "url": "https://api.github.com/repos/illuminate/support/zipball/976bdc0f42e9efd3dfa2e0eba11aba48a97113ac",
+                "reference": "976bdc0f42e9efd3dfa2e0eba11aba48a97113ac",
                 "shasum": ""
             },
             "require": {
@@ -156,20 +153,20 @@
                     "role": "Creator of Laravel"
                 }
             ],
-            "time": "2014-06-03 16:57:35"
+            "time": "2014-06-13 20:42:27"
         },
         {
             "name": "patchwork/utf8",
-            "version": "v1.1.23",
+            "version": "v1.1.24",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nicolas-grekas/Patchwork-UTF8.git",
-                "reference": "c1edbc82aed49ff2bdef0a0f659bf69e3f7b14cc"
+                "reference": "40f552c019956f446553b19f7de2da2f9c74d730"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nicolas-grekas/Patchwork-UTF8/zipball/c1edbc82aed49ff2bdef0a0f659bf69e3f7b14cc",
-                "reference": "c1edbc82aed49ff2bdef0a0f659bf69e3f7b14cc",
+                "url": "https://api.github.com/repos/nicolas-grekas/Patchwork-UTF8/zipball/40f552c019956f446553b19f7de2da2f9c74d730",
+                "reference": "40f552c019956f446553b19f7de2da2f9c74d730",
                 "shasum": ""
             },
             "require": {
@@ -207,7 +204,7 @@
                 "utf-8",
                 "utf8"
             ],
-            "time": "2014-05-22 13:59:09"
+            "time": "2014-06-17 08:23:06"
         },
         {
             "name": "psr/log",
@@ -1034,9 +1031,9 @@
 
     ],
     "minimum-stability": "stable",
-    "stability-flags": [
-
-    ],
+    "stability-flags": {
+        "anahkiasen/underscore-php": 20
+    },
     "platform": {
         "php": ">=5.4.0"
     },
