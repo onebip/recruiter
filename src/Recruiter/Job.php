@@ -26,7 +26,8 @@ class Job
         return new self(
             self::initialize(),
             $workable,
-            new RetryPolicy\DoNotDoItAgain(),
+            ($workable instanceof Retriable) ?
+                $workable->retryWithPolicy() : new RetryPolicy\DoNotDoItAgain(),
             $repository
         );
     }
