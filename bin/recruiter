@@ -11,7 +11,7 @@ use Rych\ByteSize\ByteSize;
 $cli = new Cli();
 $cli->add('recruiter', new Option\TargetHost('target'));
 $cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '30s'));
-/* $cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '128MB')); */
+/* $cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '256MB')); */
 $cli->add('supervisor', new Option\Supervisor('respawn'));
 $cli->parse();
 
