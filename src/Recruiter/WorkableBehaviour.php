@@ -2,6 +2,8 @@
 
 namespace Recruiter;
 
+use Exception;
+
 trait WorkableBehaviour
 {
     protected $parameters;
@@ -14,6 +16,10 @@ trait WorkableBehaviour
     public function asJobOf(Recruiter $recruiter)
     {
         return $recruiter->jobOf($this);
+    }
+
+    public function execute() {
+        throw new Exception('Workable::execute() need to be implemented');
     }
 
     public function export()
