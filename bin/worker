@@ -12,7 +12,7 @@ use Recruiter\Worker;
 $cli = new Cli();
 $cli->add('recruiter', new Option\TargetHost('target'));
 $cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '30s'));
-/* $cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '64MB')); */
+$cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '64MB'));
 $cli->add('supervisor', new Option\Supervisor('respawn'));
 $cli->add('bootstrap', new Option\Bootstrap('bootstrap'));
 $cli->add('work-on', new Option\WorkOn('work-on'));
@@ -25,6 +25,7 @@ $cli->get('supervisor')->applyTo(
     GracefulDeath::around(function($life) use ($cli, $process) {
         $cli->get('bootstrap')->load();
         $recruiter = $cli->get('recruiter');
+        $memoryLimit = $cli->get('memory-limit');
         $waitStrategy = $cli->get('wait-strategy');
         $filterJobToWorkOn = $cli->get('work-on');
 
@@ -34,6 +35,7 @@ $cli->get('supervisor')->applyTo(
         printf('[WORKER][%d][%s] ready to work!' . PHP_EOL, posix_getpid(), date('c'));
         while (!$life->askedToStop()) {
             $doneSomeWork = $worker->work();
+            $memoryLimit->ensure(memory_get_usage());
             ($doneSomeWork) ?
                 $waitStrategy->goForward() :
                 $waitStrategy->wait()->backOff();

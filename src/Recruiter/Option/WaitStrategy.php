@@ -31,7 +31,8 @@ class WaitStrategy implements Recruiter\Option
             );
     }
 
-    public function pickFrom(GetOpt\GetOpt $optionsFromCommandLine) {
+    public function pickFrom(GetOpt\GetOpt $optionsFromCommandLine)
+    {
         return new Recruiter\WaitStrategy(
             $this->timeToWaitAtLeast,
             $this->validate(

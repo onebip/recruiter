@@ -10,35 +10,29 @@ use Recruiter\Recruiter;
 $cli = new Cli();
 $cli->add('recruiter', new Option\TargetHost('target'));
 $cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '30s'));
-/* $cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '256MB')); */
+$cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '256MB'));
 $cli->add('supervisor', new Option\Supervisor('respawn'));
 $cli->parse();
 
 
-$options = array_merge(
-    [
-        'memory-limit' => 33554432, // 32MB
-    ],
-    getopt('', ['memory-limit::'])
-);
-
 $cli->get('supervisor')->applyTo(
 
-    GracefulDeath::around(function($life) use($cli, $options) {
+    GracefulDeath::around(function($life) use($cli) {
         $recruiter = $cli->get('recruiter');
         $waitStrategy = $cli->get('wait-strategy');
+        $memoryLimit = $cli->get('memory-limit');
 
         while (!$life->askedToStop()) {
-            $currentMemoryUsage = memory_get_usage();
+            $memoryUsage = ByteUnits\bytes(memory_get_usage());
             $pickStartAt = microtime(true);
             $numberOfAssignments = $recruiter->assignJobsToWorkers();
             $pickEndAt = microtime(true);
             printf(
                 '[RECRUITER][%d][%s][%s] picked jobs for %d workers in %fms' . PHP_EOL,
-                posix_getpid(), date('c'), ByteUnits\bytes($currentMemoryUsage)->format(),
+                posix_getpid(), date('c'), $memoryUsage->format(),
                 $numberOfAssignments, ($pickEndAt - $pickStartAt) * 1000
             );
-            if ($currentMemoryUsage > (int)$options['memory-limit']) exit(1);
+            $memoryLimit->ensure($memoryUsage);
             ($numberOfAssignments === 0) ?
                 $waitStrategy->wait()->backOff() :
                 $waitStrategy->reset();
