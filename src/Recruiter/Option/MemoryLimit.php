@@ -37,9 +37,9 @@ class MemoryLimit implements Recruiter\Option
         return $this;
     }
 
-    public function ensure($used = null)
+    public function ensure($used)
     {
-        $used = ByteUnits\box($used ?: memory_get_usage());
+        $used = ByteUnits\box($used);
         if ($used->isGreaterThan($this->limit)) {
             fprintf(STDERR,
                 'Memory limit reached, %s is more than the force limit of %s' . PHP_EOL,
