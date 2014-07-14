@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "2519831b535590caf1d4bd9875e0b514",
+    "hash": "3e5a35cdfaa8211ecbc2abbb99b661b3",
     "packages": [
         {
             "name": "anahkiasen/underscore-php",
@@ -53,6 +53,57 @@
                 "toolkit"
             ],
             "time": "2014-03-13 10:45:40"
+        },
+        {
+            "name": "gabrielelana/byte-units",
+            "version": "0.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/gabrielelana/byte-units.git",
+                "reference": "46dada48d3e3d410ea9ddb3fb87fbc820e781138"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/gabrielelana/byte-units/zipball/46dada48d3e3d410ea9ddb3fb87fbc820e781138",
+                "reference": "46dada48d3e3d410ea9ddb3fb87fbc820e781138",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "ByteUnits\\": "src/ByteUnits"
+                },
+                "files": [
+                    "src/ByteUnits/functions.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Gabriele Lana",
+                    "email": "gabriele.lana@gmail.com"
+                }
+            ],
+            "description": "Library to parse, format and convert byte units",
+            "homepage": "https://github.com/gabrielelana/byte-units",
+            "keywords": [
+                "byte",
+                "convert",
+                "format",
+                "parse",
+                "size",
+                "units"
+            ],
+            "time": "2014-06-27 14:22:18"
         },
         {
             "name": "gabrielelana/graceful-death",
@@ -246,51 +297,6 @@
                 "psr-3"
             ],
             "time": "2012-12-21 11:40:51"
-        },
-        {
-            "name": "rych/bytesize",
-            "version": "v1.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/rchouinard/bytesize.git",
-                "reference": "297e16ea047461b91e8d7eb90aa46aaa52917824"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/rchouinard/bytesize/zipball/297e16ea047461b91e8d7eb90aa46aaa52917824",
-                "reference": "297e16ea047461b91e8d7eb90aa46aaa52917824",
-                "shasum": ""
-            },
-            "require": {
-                "ext-bcmath": "*",
-                "php": ">=5.3.4"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "3.7.*"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Rych\\ByteSize\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Ryan Chouinard",
-                    "email": "rchouinard@gmail.com",
-                    "homepage": "http://ryanchouinard.com"
-                }
-            ],
-            "description": "Utility component for nicely formatted file sizes.",
-            "homepage": "https://github.com/rchouinard/bytesize",
-            "keywords": [
-                "filesize"
-            ],
-            "time": "2014-04-04 18:06:18"
         },
         {
             "name": "ulrichsg/getopt-php",

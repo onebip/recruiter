@@ -6,7 +6,6 @@ autoload();
 use Recruiter\Cli;
 use Recruiter\Option;
 use Recruiter\Recruiter;
-use Rych\ByteSize\ByteSize;
 
 $cli = new Cli();
 $cli->add('recruiter', new Option\TargetHost('target'));
@@ -36,7 +35,7 @@ $cli->get('supervisor')->applyTo(
             $pickEndAt = microtime(true);
             printf(
                 '[RECRUITER][%d][%s][%s] picked jobs for %d workers in %fms' . PHP_EOL,
-                posix_getpid(), date('c'), ByteSize::formatMetric($currentMemoryUsage),
+                posix_getpid(), date('c'), ByteUnits\bytes($currentMemoryUsage)->format(),
                 $numberOfAssignments, ($pickEndAt - $pickStartAt) * 1000
             );
             if ($currentMemoryUsage > (int)$options['memory-limit']) exit(1);
