@@ -43,6 +43,11 @@ class Worker
         return $this->status['_id'];
     }
 
+    public function pid()
+    {
+        return $this->status['pid'];
+    }
+
     public function work()
     {
         $this->refresh();

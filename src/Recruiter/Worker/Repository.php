@@ -33,11 +33,6 @@ class Repository
 
     public function retireWorkerWithPid($pid)
     {
-        $this->roster->remove(['pid' => $pid]);
-    }
-
-    public function retire($workerId)
-    {
-        $this->roster->remove(['_id' => new MongoId($workerId)]);
+        $this->roster->remove(['pid' => intval($pid)]);
     }
 }

@@ -12,22 +12,22 @@ class WorkerTrackerTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->aWorkerId = 42;
+        $this->aWorkerPid = 42;
         $this->worker = $this->getMockBuilder('Recruiter\Worker')
             ->disableOriginalConstructor()
             ->getMock();
         $this->worker
             ->expects($this->any())
-            ->method('id')
-            ->will($this->returnValue($this->aWorkerId));
+            ->method('pid')
+            ->will($this->returnValue($this->aWorkerPid));
     }
 
     public function testOnCleanUpIsGoingToRetireTheWorkerAssociatedTo()
     {
         $this->repository
             ->expects($this->once())
-            ->method('retire')
-            ->with($this->equalTo($this->aWorkerId));
+            ->method('retireWorkerWithPid')
+            ->with($this->equalTo($this->aWorkerPid));
 
         $process = new Worker\Tracker();
         $process->associateTo($this->worker);
@@ -48,8 +48,8 @@ class WorkerTrackerTest extends \PHPUnit_Framework_TestCase
 
         $this->repository
             ->expects($this->once())
-            ->method('retire')
-            ->with($this->equalTo($this->aWorkerId));
+            ->method('retireWorkerWithPid')
+            ->with($this->equalTo($this->aWorkerPid));
 
         $sameInstanceInSupervisorProcess->cleanUp($this->repository);
     }

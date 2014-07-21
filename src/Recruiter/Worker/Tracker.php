@@ -7,32 +7,34 @@ use Recruiter\Worker\Repository;
 
 class Tracker
 {
-    private $workerId;
+    private $workerPid;
 
     public function __construct()
     {
-        $this->workerIdFilePath = tempnam(sys_get_temp_dir(), 'recruiter');
-        $this->ensureItIsPossibleToUse($this->workerIdFilePath);
+        $this->workerPidFilePath = tempnam(sys_get_temp_dir(), 'recruiter');
+        $this->ensureItIsPossibleToUse($this->workerPidFilePath);
     }
 
     public function associateTo($worker)
     {
-        file_put_contents($this->workerIdFilePath, $worker->id());
+        file_put_contents($this->workerPidFilePath, $worker->pid());
     }
 
     public function cleanUp(Repository $repository)
     {
-        $repository->retire($this->workerId($this->workerIdFilePath));
+        $repository->retireWorkerWithPid(
+            $this->workerPid($this->workerPidFilePath)
+        );
     }
 
-    private function workerId($fileWithWorkerId)
+    private function workerPid($fileWithWorkerPid)
     {
-        if (!file_exists($fileWithWorkerId)) {
+        if (!file_exists($fileWithWorkerPid)) {
             $this->failBecause('did you call cleanUp twice? Don\'t do that :-)');
         }
-        $workerId = file_get_contents($fileWithWorkerId);
-        @unlink($fileWithWorkerId);
-        return $workerId;
+        $workerPid = file_get_contents($fileWithWorkerPid);
+        @unlink($fileWithWorkerPid);
+        return $workerPid;
     }
 
     private function ensureItIsPossibleToUse($fileToUse)
