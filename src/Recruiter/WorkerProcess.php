@@ -9,6 +9,11 @@ class WorkerProcess
 {
     private $pid;
 
+    public static function withPid($pid)
+    {
+        return new self($pid);
+    }
+
     public function __construct($pid)
     {
         $this->pid = $pid;
@@ -21,7 +26,7 @@ class WorkerProcess
         }
     }
 
-    public function ifNotAlive()
+    public function ifDead()
     {
         if ($this->isAlive()) {
             return new BlackHole();

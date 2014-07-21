@@ -16,13 +16,13 @@ class WorkerProcessTest extends \PHPUnit_Framework_TestCase
     public function testIfNotAliveWhenIsNotAliveReturnsItself()
     {
         $process = $this->givenWorkerProcessDead();
-        $this->assertInstanceOf('Recruiter\WorkerProcess', $process->ifNotAlive());
+        $this->assertInstanceOf('Recruiter\WorkerProcess', $process->ifDead());
     }
 
     public function testIfNotAliveWhenIsAliveReturnsBlackHole()
     {
         $process = $this->givenWorkerProcessAlive();
-        $this->assertInstanceOf('Sink\BlackHole', $process->ifNotAlive());
+        $this->assertInstanceOf('Sink\BlackHole', $process->ifDead());
     }
 
     public function testRetireWorkerIfNotAlive()
