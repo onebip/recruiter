@@ -1,11 +1,11 @@
 <?php
 
-namespace Recruiter;
+namespace Recruiter\Worker;
 
 use Sink\BlackHole;
 use Recruiter\Worker\Repository;
 
-class WorkerProcess
+class Process
 {
     private $pid;
 

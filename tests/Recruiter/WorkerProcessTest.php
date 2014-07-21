@@ -16,7 +16,7 @@ class WorkerProcessTest extends \PHPUnit_Framework_TestCase
     public function testIfNotAliveWhenIsNotAliveReturnsItself()
     {
         $process = $this->givenWorkerProcessDead();
-        $this->assertInstanceOf('Recruiter\WorkerProcess', $process->ifDead());
+        $this->assertInstanceOf('Recruiter\Worker\Process', $process->ifDead());
     }
 
     public function testIfNotAliveWhenIsAliveReturnsBlackHole()
@@ -60,7 +60,7 @@ class WorkerProcessTest extends \PHPUnit_Framework_TestCase
 
     private function givenWorkerProcess($alive)
     {
-        $process = $this->getMockBuilder('Recruiter\WorkerProcess')
+        $process = $this->getMockBuilder('Recruiter\Worker\Process')
             ->setMethods(['isAlive'])
             ->setConstructorArgs([$this->pid])
             ->getMock();
