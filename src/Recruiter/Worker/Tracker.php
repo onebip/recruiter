@@ -22,9 +22,7 @@ class Tracker
 
     public function cleanUp(Repository $repository)
     {
-        $repository->retireWorkerWithPid(
-            $this->workerPid($this->workerPidFilePath)
-        );
+        Process::withPid($this->workerPid($this->workerPidFilePath))->ifDead()->cleanUp($repository);
     }
 
     private function workerPid($fileWithWorkerPid)
