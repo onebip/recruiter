@@ -2,7 +2,9 @@
 
 namespace Recruiter;
 
-class WorkerSupervisorTest extends \PHPUnit_Framework_TestCase
+use Recruiter\Worker;
+
+class WorkerTrackerTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
@@ -27,7 +29,7 @@ class WorkerSupervisorTest extends \PHPUnit_Framework_TestCase
             ->method('retire')
             ->with($this->equalTo($this->aWorkerId));
 
-        $process = new WorkerSupervisor();
+        $process = new Worker\Tracker();
         $process->associatedTo($this->worker);
         $process->cleanUp($this->repository);
     }
@@ -40,7 +42,7 @@ class WorkerSupervisorTest extends \PHPUnit_Framework_TestCase
         // the worker process and needs  to be retrieved in the supervisor
         // process. Here we use clone to simulate the fork of the memory
         // between the worker process and the supervisor process
-        $process = new WorkerSupervisor();
+        $process = new Worker\Tracker();
         $sameInstanceInSupervisorProcess = clone $process;
         $process->associatedTo($this->worker);
 
@@ -57,7 +59,7 @@ class WorkerSupervisorTest extends \PHPUnit_Framework_TestCase
      */
     public function testCannotCleanUpMoreThanOneTime()
     {
-        $process = new WorkerSupervisor();
+        $process = new Worker\Tracker();
         $process->associatedTo($this->worker);
         $process->cleanUp($this->repository);
         $process->cleanUp($this->repository);

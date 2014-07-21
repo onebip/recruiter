@@ -6,7 +6,6 @@ autoload();
 use Recruiter\Cli;
 use Recruiter\Option;
 use Recruiter\Recruiter;
-use Recruiter\WorkerSupervisor;
 use Recruiter\Worker;
 
 $cli = new Cli();
@@ -18,11 +17,11 @@ $cli->add('bootstrap', new Option\Bootstrap('bootstrap'));
 $cli->add('work-on', new Option\WorkOn('work-on'));
 $cli->parse();
 
-$process = new WorkerSupervisor();
+$tracker = new Worker\Tracker();
 
 $cli->get('supervisor')->applyTo(
 
-    GracefulDeath::around(function($life) use ($cli, $process) {
+    GracefulDeath::around(function($life) use ($cli, $tracker) {
         $cli->get('bootstrap')->load();
         $recruiter = $cli->get('recruiter');
         $memoryLimit = $cli->get('memory-limit');
@@ -30,7 +29,7 @@ $cli->get('supervisor')->applyTo(
         $filterJobToWorkOn = $cli->get('work-on');
 
         $worker = $filterJobToWorkOn->applyTo($recruiter->hire());
-        $process->associatedTo($worker);
+        $tracker->associatedTo($worker);
 
         printf('[WORKER][%d][%s] ready to work!' . PHP_EOL, posix_getpid(), date('c'));
         while (!$life->askedToStop()) {
@@ -44,8 +43,8 @@ $cli->get('supervisor')->applyTo(
     })
     ->doNotCaptureOutput()
     ->catchSignals([SIGTERM, SIGQUIT, SIGINT])
-    ->afterDeath(function() use ($process, $cli) {
-        $cli->get('recruiter')->cleanUpAfterWorkerProcessDied($process);
+    ->afterDeath(function() use ($tracker, $cli) {
+        $cli->get('recruiter')->cleanUpAfterWorkerProcessDied($tracker);
         printf(
             '[SUPERVISOR][%d][%s] %s' . PHP_EOL, posix_getpid(), date('c'),
             'cleaned up after the worker death'

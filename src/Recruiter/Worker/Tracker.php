@@ -1,11 +1,11 @@
 <?php
 
-namespace Recruiter;
+namespace Recruiter\Worker;
 
 use Exception;
 use Recruiter\Worker\Repository;
 
-class WorkerSupervisor
+class Tracker
 {
     private $workerId;
 
