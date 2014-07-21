@@ -7,28 +7,29 @@ use Recruiter\Worker\Repository;
 
 class Tracker
 {
-    private $workerPid;
+    private $process;
+    private $pidFilePath;
 
     public function __construct()
     {
-        $this->workerPidFilePath = tempnam(sys_get_temp_dir(), 'recruiter');
-        $this->ensureItIsPossibleToUse($this->workerPidFilePath);
+        $this->pidFilePath = tempnam(sys_get_temp_dir(), 'recruiter');
+        $this->ensureItIsPossibleToUse($this->pidFilePath);
     }
 
     public function associateTo($worker)
     {
-        file_put_contents($this->workerPidFilePath, $worker->pid());
+        file_put_contents($this->pidFilePath, $worker->pid());
     }
 
-    public function cleanUp(Repository $repository)
+    public function process()
     {
-        Process::withPid($this->workerPid($this->workerPidFilePath))->ifDead()->cleanUp($repository);
+        return $this->process = $this->process ?: Process::withPid($this->workerPid($this->pidFilePath));
     }
 
     private function workerPid($fileWithWorkerPid)
     {
         if (!file_exists($fileWithWorkerPid)) {
-            $this->failBecause('did you call cleanUp twice? Don\'t do that :-)');
+            $this->failBecause('did you tried to get the worker in two different processes?');
         }
         $workerPid = file_get_contents($fileWithWorkerPid);
         @unlink($fileWithWorkerPid);

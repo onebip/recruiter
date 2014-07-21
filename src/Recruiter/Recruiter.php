@@ -56,9 +56,9 @@ class Recruiter
         return $this->jobs->scheduled($id);
     }
 
-    public function cleanUpAfterWorkerProcessDied($process)
+    public function cleanUpForWorkerProcess($process)
     {
-        $process->cleanUp($this->workers);
+        $process->ifDead()->cleanUp($this->workers);
     }
 
     public function createCollectionsAndIndexes()

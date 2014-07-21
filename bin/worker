@@ -44,7 +44,7 @@ $cli->get('supervisor')->applyTo(
     ->doNotCaptureOutput()
     ->catchSignals([SIGTERM, SIGQUIT, SIGINT])
     ->afterDeath(function() use ($tracker, $cli) {
-        $cli->get('recruiter')->cleanUpAfterWorkerProcessDied($tracker);
+        $cli->get('recruiter')->cleanUpForWorkerProcess($tracker->process());
         printf(
             '[SUPERVISOR][%d][%s] %s' . PHP_EOL, posix_getpid(), date('c'),
             'cleaned up after the worker death'

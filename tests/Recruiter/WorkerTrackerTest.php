@@ -8,9 +8,9 @@ class WorkerTrackerTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $this->repository = $this->getMockBuilder('Recruiter\Worker\Repository')
-            ->disableOriginalConstructor()
-            ->getMock();
+        /* $this->repository = $this->getMockBuilder('Recruiter\Worker\Repository') */
+        /*     ->disableOriginalConstructor() */
+        /*     ->getMock(); */
 
         $this->aWorkerPid = 42;
         $this->worker = $this->getMockBuilder('Recruiter\Worker')
@@ -22,46 +22,40 @@ class WorkerTrackerTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue($this->aWorkerPid));
     }
 
-    public function testOnCleanUpIsGoingToRetireTheWorkerAssociatedTo()
-    {
-        $this->repository
-            ->expects($this->once())
-            ->method('retireWorkerWithPid')
-            ->with($this->equalTo($this->aWorkerPid));
-
-        $process = new Worker\Tracker();
-        $process->associateTo($this->worker);
-        $process->cleanUp($this->repository);
-    }
-
     public function testInAnotherProcessStillRememberTheWorkerAssociatedTo()
     {
         // We want to simulate the following condition: when a worker process
-        // dies the supervisor needs to know the worker associated to the died
-        // process. Problem is that the worker is associated to the worker in
-        // the worker process and needs  to be retrieved in the supervisor
-        // process. Here we use clone to simulate the fork of the memory
-        // between the worker process and the supervisor process
-        $process = new Worker\Tracker();
-        $sameInstanceInSupervisorProcess = clone $process;
-        $process->associateTo($this->worker);
+        // dies the supervisor needs to know the worker document associated to
+        // the died process. Here we use clone to simulate the fork of the
+        // memory between the worker process and the supervisor process
+        $tracker = new Worker\Tracker();
+        $trackerInAnotherProcess = clone $tracker;
+        $tracker->associateTo($this->worker);
 
-        $this->repository
-            ->expects($this->once())
-            ->method('retireWorkerWithPid')
-            ->with($this->equalTo($this->aWorkerPid));
+        $this->assertEquals(
+            Worker\Process::withPid($this->aWorkerPid),
+            $trackerInAnotherProcess->process()
+        );
+    }
 
-        $sameInstanceInSupervisorProcess->cleanUp($this->repository);
+    public function testGetWorkerProcessMultipleTimesInSameProcess()
+    {
+        $tracker = new Worker\Tracker();
+        $tracker->associateTo($this->worker);
+
+        $this->assertEquals($tracker->process(), $tracker->process());
     }
 
     /**
      * @expectedException Exception
      */
-    public function testCannotCleanUpMoreThanOneTime()
+    public function testRaiseExceptionWhenGetWorkerProcessMultipleTimesInTwoProcesses()
     {
-        $process = new Worker\Tracker();
-        $process->associateTo($this->worker);
-        $process->cleanUp($this->repository);
-        $process->cleanUp($this->repository);
+        $tracker = new Worker\Tracker();
+        $trackerInAnotherProcess = clone $tracker;
+        $tracker->associateTo($this->worker);
+
+        $tracker->process();
+        $trackerInAnotherProcess->process();
     }
 }
