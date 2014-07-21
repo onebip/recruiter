@@ -5,6 +5,7 @@ autoload();
 
 use Recruiter\Cli;
 use Recruiter\Option;
+use Recruiter\Process;
 use Recruiter\Recruiter;
 
 $cli = new Cli();
@@ -14,13 +15,14 @@ $cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '256MB'));
 $cli->add('supervisor', new Option\Supervisor('respawn'));
 $cli->parse();
 
-
 $cli->get('supervisor')->applyTo(
 
     GracefulDeath::around(function($life) use($cli) {
         $recruiter = $cli->get('recruiter');
         $waitStrategy = $cli->get('wait-strategy');
         $memoryLimit = $cli->get('memory-limit');
+
+        /* $recruiter->ensureIsTheOnlyOne(); */
 
         while (!$life->askedToStop()) {
             $memoryUsage = ByteUnits\bytes(memory_get_usage());
