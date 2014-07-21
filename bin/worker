@@ -29,7 +29,7 @@ $cli->get('supervisor')->applyTo(
         $filterJobToWorkOn = $cli->get('work-on');
 
         $worker = $filterJobToWorkOn->applyTo($recruiter->hire());
-        $tracker->associatedTo($worker);
+        $tracker->associateTo($worker);
 
         printf('[WORKER][%d][%s] ready to work!' . PHP_EOL, posix_getpid(), date('c'));
         while (!$life->askedToStop()) {

@@ -15,7 +15,7 @@ class Tracker
         $this->ensureItIsPossibleToUse($this->workerIdFilePath);
     }
 
-    public function associatedTo($worker)
+    public function associateTo($worker)
     {
         file_put_contents($this->workerIdFilePath, $worker->id());
     }

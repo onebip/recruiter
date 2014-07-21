@@ -30,7 +30,7 @@ class WorkerTrackerTest extends \PHPUnit_Framework_TestCase
             ->with($this->equalTo($this->aWorkerId));
 
         $process = new Worker\Tracker();
-        $process->associatedTo($this->worker);
+        $process->associateTo($this->worker);
         $process->cleanUp($this->repository);
     }
 
@@ -44,7 +44,7 @@ class WorkerTrackerTest extends \PHPUnit_Framework_TestCase
         // between the worker process and the supervisor process
         $process = new Worker\Tracker();
         $sameInstanceInSupervisorProcess = clone $process;
-        $process->associatedTo($this->worker);
+        $process->associateTo($this->worker);
 
         $this->repository
             ->expects($this->once())
@@ -60,7 +60,7 @@ class WorkerTrackerTest extends \PHPUnit_Framework_TestCase
     public function testCannotCleanUpMoreThanOneTime()
     {
         $process = new Worker\Tracker();
-        $process->associatedTo($this->worker);
+        $process->associateTo($this->worker);
         $process->cleanUp($this->repository);
         $process->cleanUp($this->repository);
     }
