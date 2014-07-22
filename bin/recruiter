@@ -23,7 +23,10 @@ $cli->get('supervisor')->applyTo(
         $memoryLimit = $cli->get('memory-limit');
 
         $recruiter->ensureIsTheOnlyOne($otherwise = function() {
-            printf('Unable to start more than one recruiter at a time' . PHP_EOL);
+            printf(
+                '[RECRUITER][%d][%s] unable to start more than one recruiter at a time, sorry space cowboy...' . PHP_EOL,
+                posix_getpid(), date('c')
+            );
             exit(0);
         });
 
