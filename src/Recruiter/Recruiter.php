@@ -15,6 +15,7 @@ class Recruiter
         $this->db = $db;
         $this->jobs = new Job\Repository($db);
         $this->workers = new Worker\Repository($db, $this);
+        $this->metadata = new Metadata($db);
     }
 
     public function hire()
@@ -27,6 +28,11 @@ class Recruiter
         return new JobToSchedule(
             Job::around($workable, $this->jobs)
         );
+    }
+
+    public function ensureIsTheOnlyOne()
+    {
+        (new OnlyOne($this->metadata, new ProcessTable()))->ensure();
     }
 
     public function assignJobsToWorkers()

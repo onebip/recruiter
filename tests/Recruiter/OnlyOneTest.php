@@ -8,8 +8,8 @@ class OnlyOneTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $this->aToken = 1;
         $this->aPid = 1;
+        $this->aToken = 1;
         $this->repository = $this->getMock('StdClass', ['get', 'initialize', 'lock']);
         $this->processTable = $this->getMock('StdClass', ['isAlive']);
         $this->onlyOne = new OnlyOne($this->repository, $this->processTable);

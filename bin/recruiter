@@ -22,7 +22,7 @@ $cli->get('supervisor')->applyTo(
         $waitStrategy = $cli->get('wait-strategy');
         $memoryLimit = $cli->get('memory-limit');
 
-        /* $recruiter->ensureIsTheOnlyOne(); */
+        $recruiter->ensureIsTheOnlyOne();
 
         while (!$life->askedToStop()) {
             $memoryUsage = ByteUnits\bytes(memory_get_usage());

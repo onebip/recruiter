@@ -43,7 +43,7 @@ class OnlyOne
         if ($this->processTable->isAlive($previousRecruiter['pid'])) {
             throw new AlreadyRunningException();
         }
-        $locked = $this->repository->lock($this->token, $this->pid);
+        $locked = $this->repository->lock($previousRecruiter['token'], $this->token, $this->pid);
         if (!$locked) {
             throw new AlreadyRunningException();
         }
