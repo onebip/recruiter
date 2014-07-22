@@ -8,10 +8,6 @@ class WorkerTrackerTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        /* $this->repository = $this->getMockBuilder('Recruiter\Worker\Repository') */
-        /*     ->disableOriginalConstructor() */
-        /*     ->getMock(); */
-
         $this->aWorkerPid = 42;
         $this->worker = $this->getMockBuilder('Recruiter\Worker')
             ->disableOriginalConstructor()
