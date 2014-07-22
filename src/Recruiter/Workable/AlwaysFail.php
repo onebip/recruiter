@@ -1,6 +1,9 @@
 <?php
 
-namespace Recruiter;
+namespace Recruiter\Workable;
+
+use Recruiter\Workable;
+use Recruiter\WorkableBehaviour;
 
 class AlwaysFail implements Workable
 {

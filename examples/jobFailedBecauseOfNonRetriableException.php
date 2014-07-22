@@ -6,7 +6,7 @@ require __DIR__ . '/../vendor/autoload.php';
 use Timeless as T;
 
 use Recruiter\Recruiter;
-use Recruiter\AlwaysFail;
+use Recruiter\Workable\AlwaysFail;
 use Recruiter\RetryPolicy;
 use Recruiter\Worker;
 
