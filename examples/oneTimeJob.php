@@ -4,7 +4,7 @@
 require __DIR__ . '/../vendor/autoload.php';
 
 use Recruiter\Recruiter;
-use Recruiter\LazyBones;
+use Recruiter\Workable\LazyBones;
 use Recruiter\Worker;
 
 $db = (new MongoClient())->selectDB('recruiter');

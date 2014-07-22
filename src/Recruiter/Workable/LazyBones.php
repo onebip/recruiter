@@ -1,6 +1,10 @@
 <?php
 
-namespace Recruiter;
+namespace Recruiter\Workable;
+
+
+use Recruiter\Workable;
+use Recruiter\WorkableBehaviour;
 
 class LazyBones implements Workable
 {

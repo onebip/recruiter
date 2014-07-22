@@ -4,7 +4,7 @@
 require __DIR__ . '/../vendor/autoload.php';
 
 use Recruiter\Recruiter;
-use Recruiter\LazyBones;
+use Recruiter\Workable\LazyBones;
 
 GracefulDeath::around(function() {
 
