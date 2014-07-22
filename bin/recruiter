@@ -22,7 +22,10 @@ $cli->get('supervisor')->applyTo(
         $waitStrategy = $cli->get('wait-strategy');
         $memoryLimit = $cli->get('memory-limit');
 
-        $recruiter->ensureIsTheOnlyOne();
+        $recruiter->ensureIsTheOnlyOne($otherwise = function() {
+            printf('Unable to start more than one recruiter at a time' . PHP_EOL);
+            exit(0);
+        });
 
         while (!$life->askedToStop()) {
             $memoryUsage = ByteUnits\bytes(memory_get_usage());

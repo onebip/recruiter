@@ -30,9 +30,13 @@ class Recruiter
         );
     }
 
-    public function ensureIsTheOnlyOne()
+    public function ensureIsTheOnlyOne($otherwise)
     {
-        (new OnlyOne($this->metadata, new ProcessTable()))->ensure();
+        try {
+            (new OnlyOne($this->metadata, new ProcessTable()))->ensure();
+        } catch(AlreadyRunningException $e) {
+            $otherwise();
+        }
     }
 
     public function assignJobsToWorkers()
