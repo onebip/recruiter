@@ -4,7 +4,7 @@
   "type": "project",
   "version": "0.0.1",
   "keywords": ["job", "jobs", "deferred", "offline", "delay", "background", "queue", "manager", "mongodb"],
-  "homepage": "https://github.com/gabrielelana/recruiter",
+  "homepage": "https://github.com/onebip/recruiter",
   "license": "MIT",
   "authors": [{
     "name": "gabriele.lana",
