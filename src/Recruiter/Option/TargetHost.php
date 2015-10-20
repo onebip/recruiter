@@ -1,5 +1,4 @@
 <?php
-
 namespace Recruiter\Option;
 
 use Recruiter;
@@ -62,9 +61,9 @@ class TargetHost implements Recruiter\Option
         }
     }
 
-    private function parse($target)
+    public static function parse($target)
     {
-        if (preg_match('/^(?P<host>[^:\/]+)(?::(?P<port>\d+))?(?:\/(?P<db>\w+))?/', $target, $matches)) {
+        if (preg_match('/^(mongodb:\/\/)?(?P<host>[^:\/]+)(?::(?P<port>\d+))?(?:\/(?P<db>\w+))?/', $target, $matches)) {
             if (empty($matches['port'])) {
                 $matches['port'] = '27017';
             }
