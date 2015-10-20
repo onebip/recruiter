@@ -1,5 +1,5 @@
 {
-  "name": "gabrielelana/recruiter",
+  "name": "onebip/recruiter",
   "description": "Job Queue Manager: high performance, high volume, persistent, fault tolerant. 100% PHP/MongoDB, 100% Awesome",
   "type": "project",
   "version": "0.0.1",
