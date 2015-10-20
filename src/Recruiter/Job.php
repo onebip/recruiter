@@ -204,7 +204,7 @@ class Job
     public static function lockAll(MongoCollection $collection, $jobs)
     {
         $collection->update(
-            ['_id' => ['$in' => $jobs]],
+            ['_id' => ['$in' => array_values($jobs)]],
             ['$set' => ['locked' => true]],
             ['multiple' => true]
         );
