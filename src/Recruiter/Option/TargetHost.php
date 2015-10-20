@@ -74,8 +74,8 @@ class TargetHost implements Recruiter\Option
         }
         throw new UnexpectedValueException(
             sprintf(
-                "Option '%s': Sorry, I don't recognize '%s' as valid MongoDB coordinates",
-                $this->name, $target
+                "Sorry, I don't recognize '%s' as valid MongoDB coordinates",
+                $target
             )
         );
     }
