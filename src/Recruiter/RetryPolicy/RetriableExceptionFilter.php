@@ -2,8 +2,8 @@
 
 namespace Recruiter\RetryPolicy;
 
+use Onebip;
 use InvalidArgumentException;
-use Underscore\Underscore as _;
 
 use Recruiter\RetryPolicy;
 use Recruiter\JobAfterFailure;
@@ -65,9 +65,11 @@ class RetriableExceptionFilter implements RetryPolicy
     private function isExceptionRetriable($exception)
     {
         if (!is_null($exception) && is_object($exception)) {
-            return _::some($this->retriableExceptions, function($retriableExceptionType) use ($exception) {
-                return ($exception instanceof $retriableExceptionType);
-            });
+            return Onebip\array_some(
+                $this->retriableExceptions,
+                function($retriableExceptionType) use ($exception) {
+                    return ($exception instanceof $retriableExceptionType);
+                });
         }
         return false;
     }

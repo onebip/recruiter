@@ -4,9 +4,9 @@ namespace Recruiter;
 
 use MongoId;
 use MongoCollection;
+use Onebip;
 
 use Timeless as T;
-use Underscore\Underscore as _;
 
 use Recruiter\Worker\Repository;
 
@@ -155,9 +155,12 @@ class Worker
         $numberOfWorkersWithJobs = 0;
         $workers = iterator_to_array($collection->find(['available' => true], ['_id' => 1, 'work_on' => 1]));
         if (count($workers) > 0) {
-            $unitsOfWorkers = _::group($workers, function($worker) {return $worker['work_on'];});
+            $unitsOfWorkers = Onebip\array_group_by(
+                $workers,
+                function($worker) {return $worker['work_on'];}
+            );
             foreach ($unitsOfWorkers as $workOn => $workersInUnit) {
-                $workersInUnit = _::pluck($workersInUnit, '_id');
+                $workersInUnit = Onebip\array_pluck($workersInUnit, '_id');
                 $workersInUnit = array_slice($workersInUnit, 0, min(count($workersInUnit), $workersPerUnit));
                 $numberOfWorkersWithJobs += $callback($workOn, $workersInUnit);
             }
@@ -172,7 +175,7 @@ class Worker
             ['$set' => [
                 'available' => false,
                 'assigned_to' => array_combine(
-                        _::transform($workers, function($id) {return (string)$id;}),
+                        Onebip\array_map($workers, function($id) {return (string)$id;}),
                         $jobs
                 ),
                 'assigned_since' => T\MongoDate::now()

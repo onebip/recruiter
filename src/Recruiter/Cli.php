@@ -2,10 +2,10 @@
 
 namespace Recruiter;
 
-use Recruiter\Option;
+use Onebip;
 use Ulrichsg\Getopt;
+use Recruiter\Option;
 use UnexpectedValueException;
-use Underscore\Underscore as _;
 
 class Cli
 {
@@ -32,7 +32,7 @@ class Cli
         $optionsFromCommandLine =
             new Getopt\Getopt(
                 $this->addHelpOption(
-                    _::transform($this->options, function($option) {
+                    Onebip\array_map($this->options, function($option) {
                         return $option->specification();
                     })
                 )

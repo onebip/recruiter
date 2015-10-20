@@ -2,13 +2,13 @@
 
 namespace Recruiter;
 
+use Onebip;
 use MongoId;
 use MongoCollection;
 use Exception;
 
 use Timeless as T;
 use Timeless\Moment;
-use Underscore\Underscore as _;
 
 use Recruiter\RetryPolicy;
 use Recruiter\Job\Repository;
@@ -172,7 +172,7 @@ class Job
 
     public static function pickReadyJobsForWorkers(MongoCollection $collection, $worksOn, $workers, $callback)
     {
-        $jobs = _::pluck(
+        $jobs = Onebip\array_pluck(
             iterator_to_array(
                 $collection
                     ->find(
