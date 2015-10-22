@@ -49,8 +49,11 @@ class TargetHost implements Recruiter\Option
     private function validate($target)
     {
         try {
-            list($host, $port, $db) = $this->parse($target ?: $this->defaultTarget);
-            return (new MongoClient($host . ':' . $port))->selectDB($db);
+            list($host, $port, $db, $options) = $this->parse($target ?: $this->defaultTarget);
+            return (new MongoClient(
+                $host . ':' . $port,
+                $options
+            ))->selectDB($db);
         } catch(MongoConnectionException $e) {
             throw new UnexpectedValueException(
                 sprintf(
@@ -63,14 +66,28 @@ class TargetHost implements Recruiter\Option
 
     public static function parse($target)
     {
-        if (preg_match('/^(mongodb:\/\/)?(?P<host>[^:\/]+)(?::(?P<port>\d+))?(?:\/(?P<db>\w+))?/', $target, $matches)) {
+        if (preg_match(
+                '/^' 
+                . '(mongodb:\/\/)?' 
+                . '(?P<host>[^:\/]+)' 
+                . '(?::(?P<port>\d+))?' 
+                . '(?:\/(?P<db>\w+))?' 
+                . '(\?(?P<qs>.*))?' 
+                . '/',
+                $target,
+                $matches
+            )) {
             if (empty($matches['port'])) {
                 $matches['port'] = '27017';
             }
             if (empty($matches['db'])) {
                 $matches['db'] = 'recruiter';
             }
-            return [$matches['host'], $matches['port'], $matches['db']];
+            if (empty($matches['qs'])) {
+                $matches['qs'] = '';
+            }
+            parse_str($matches['qs'], $queryString);
+            return [$matches['host'], $matches['port'], $matches['db'], $queryString];
         }
         throw new UnexpectedValueException(
             sprintf(
