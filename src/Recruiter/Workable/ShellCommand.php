@@ -4,6 +4,7 @@ namespace Recruiter\Workable;
 
 use Recruiter\Workable;
 use Recruiter\WorkableBehaviour;
+use RuntimeException;
 
 class ShellCommand implements Workable
 {
