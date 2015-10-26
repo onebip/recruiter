@@ -18,13 +18,16 @@ $recruiter = $cli->get('recruiter');
 $waitStrategy = $cli->get('wait-strategy');
 $memoryLimit = $cli->get('memory-limit');
 
-$recruiter->ensureIsTheOnlyOne($otherwise = function() {
-    printf(
-        '[RECRUITER][%d][%s] unable to start more than one recruiter at a time, sorry space cowboy...' . PHP_EOL,
-        posix_getpid(), date('c')
-    );
-    exit(0);
-});
+$recruiter->ensureIsTheOnlyOne(
+    $waitStrategy->timeToWaitAtMost(),
+    $otherwise = function() {
+        printf(
+            '[RECRUITER][%d][%s] unable to start more than one recruiter at a time, sorry space cowboy...' . PHP_EOL,
+            posix_getpid(), date('c')
+        );
+        exit(0);
+    }
+);
 
 foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
     pcntl_signal($signal, function($signal) use(&$askedToStop) {
@@ -47,6 +50,7 @@ while (!askedToStop()) {
         $numberOfAssignments, ($pickEndAt - $pickStartAt) * 1000
     );
     $memoryLimit->ensure($memoryUsage);
+    $recruiter->stillHere($waitStrategy->timeToWaitAtMost());
     ($numberOfAssignments === 0) ?
         $waitStrategy->wait()->backOff() :
         $waitStrategy->reset();

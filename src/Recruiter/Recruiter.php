@@ -3,19 +3,27 @@
 namespace Recruiter;
 
 use MongoDB;
+use Timeless\Interval;
+use Onebip\Concurrency\MongoLock;
+use Onebip\Concurrency\LockNotAvailableException;
 
 class Recruiter
 {
     private $db;
     private $jobs;
     private $workers;
+    private $lock;
+
+    const WAIT_FACTOR = 2;
+    const LOCK_FACTOR = 1.5;
+    const POLL_TIME = 5;
 
     public function __construct(MongoDB $db)
     {
         $this->db = $db;
         $this->jobs = new Job\Repository($db);
         $this->workers = new Worker\Repository($db, $this);
-        $this->metadata = new Metadata($db);
+        $this->lock = MongoLock::forProgram('RECRUITER', $db->selectCollection('metadata'));
     }
 
     public function hire()
@@ -30,13 +38,19 @@ class Recruiter
         );
     }
 
-    public function ensureIsTheOnlyOne($otherwise)
+    public function ensureIsTheOnlyOne(Interval $timeToWaitAtMost, $otherwise)
     {
         try {
-            (new OnlyOne($this->metadata, new ProcessTable()))->ensure();
-        } catch(AlreadyRunningException $e) {
+            $this->lock->wait(self::POLL_TIME, $timeToWaitAtMost->seconds() * self::WAIT_FACTOR);
+            $this->lock->acquire($timeToWaitAtMost->seconds() * self::LOCK_FACTOR);
+        } catch(LockNotAvailableException $e) {
             $otherwise();
         }
+    }
+
+    public function stillHere(Interval $timeToWaitAtMost)
+    {
+        $this->lock->refresh($timeToWaitAtMost->seconds() * self::LOCK_FACTOR);
     }
 
     public function assignJobsToWorkers()
@@ -91,8 +105,6 @@ class Recruiter
             'available' => 1,
         ]);
     }
-
-
 
     private function combineJobsWithWorkers($jobs, $workers)
     {

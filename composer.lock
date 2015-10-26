@@ -127,12 +127,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/onebip/onebip-concurrency.git",
-                "reference": "2316c3a9ca4860cc63b923e8237a0a415f2e3d55"
+                "reference": "033ac0dce8943a0001ac13e72b61d1a081abc064"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/onebip/onebip-concurrency/zipball/2316c3a9ca4860cc63b923e8237a0a415f2e3d55",
-                "reference": "2316c3a9ca4860cc63b923e8237a0a415f2e3d55",
+                "url": "https://api.github.com/repos/onebip/onebip-concurrency/zipball/033ac0dce8943a0001ac13e72b61d1a081abc064",
+                "reference": "033ac0dce8943a0001ac13e72b61d1a081abc064",
                 "shasum": ""
             },
             "require": {
@@ -152,7 +152,7 @@
             "license": [
                 "MIT"
             ],
-            "time": "2015-10-26 13:26:29"
+            "time": "2015-10-26 15:40:22"
         },
         {
             "name": "psr/log",

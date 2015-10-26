@@ -48,4 +48,9 @@ class WaitStrategy
         call_user_func($this->howToWait, $this->timeToWait * 1000);
         return $this;
     }
+
+    public function timeToWaitAtMost()
+    {
+        return new Interval($this->timeToWaitAtMost);
+    }
 }
