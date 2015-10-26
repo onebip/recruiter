@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "5218ae05251f4216e546e35d092845e0",
+    "hash": "a2d3e04d3b75c62435e3c67db9112aa1",
     "packages": [
         {
             "name": "gabrielelana/byte-units",
@@ -96,17 +96,17 @@
             "time": "2015-10-20 13:51:29"
         },
         {
-            "name": "onebip/onebip-concurrency",
+            "name": "onebip/onebip-clock",
             "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/onebip/onebip-concurrency.git",
-                "reference": "1b5efca6c0eb9e0affec19a687d1ce76dbe60652"
+                "url": "https://github.com/onebip/onebip-clock.git",
+                "reference": "3d22d6631ec382fe54888bb7fc8872036adb6bdd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/onebip/onebip-concurrency/zipball/1b5efca6c0eb9e0affec19a687d1ce76dbe60652",
-                "reference": "1b5efca6c0eb9e0affec19a687d1ce76dbe60652",
+                "url": "https://api.github.com/repos/onebip/onebip-clock/zipball/3d22d6631ec382fe54888bb7fc8872036adb6bdd",
+                "reference": "3d22d6631ec382fe54888bb7fc8872036adb6bdd",
                 "shasum": ""
             },
             "type": "library",
@@ -119,7 +119,40 @@
             "license": [
                 "MIT"
             ],
-            "time": "2015-10-26 13:09:06"
+            "time": "2015-09-30 10:17:53"
+        },
+        {
+            "name": "onebip/onebip-concurrency",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/onebip/onebip-concurrency.git",
+                "reference": "2316c3a9ca4860cc63b923e8237a0a415f2e3d55"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/onebip/onebip-concurrency/zipball/2316c3a9ca4860cc63b923e8237a0a415f2e3d55",
+                "reference": "2316c3a9ca4860cc63b923e8237a0a415f2e3d55",
+                "shasum": ""
+            },
+            "require": {
+                "onebip/onebip-clock": "dev-master"
+            },
+            "require-dev": {
+                "phake/phake": "~2.1",
+                "phpunit/phpunit": "@stable"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Onebip\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "time": "2015-10-26 13:26:29"
         },
         {
             "name": "psr/log",
@@ -1154,12 +1187,12 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "stability-flags": {
         "onebip/onebip-array": 20,
         "onebip/onebip-concurrency": 20
     },
-    "prefer-stable": false,
+    "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": ">=5.4.0"
