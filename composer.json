@@ -15,7 +15,8 @@
     "psr/log": "1.0.0",
     "gabrielelana/byte-units": "~0.1",
     "ulrichsg/getopt-php": "~2.1",
-    "onebip/onebip-array": "dev-master"
+    "onebip/onebip-array": "dev-master",
+    "onebip/onebip-concurrency": "dev-master"
   },
   "require-dev": {
     "phpunit/phpunit": "~4.0"

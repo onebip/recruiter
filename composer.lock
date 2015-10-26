@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "fdf402cd8183ff07c52b4f3d57788830",
+    "hash": "5218ae05251f4216e546e35d092845e0",
     "packages": [
         {
             "name": "gabrielelana/byte-units",
@@ -94,6 +94,32 @@
                 }
             ],
             "time": "2015-10-20 13:51:29"
+        },
+        {
+            "name": "onebip/onebip-concurrency",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/onebip/onebip-concurrency.git",
+                "reference": "1b5efca6c0eb9e0affec19a687d1ce76dbe60652"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/onebip/onebip-concurrency/zipball/1b5efca6c0eb9e0affec19a687d1ce76dbe60652",
+                "reference": "1b5efca6c0eb9e0affec19a687d1ce76dbe60652",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Onebip\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "time": "2015-10-26 13:09:06"
         },
         {
             "name": "psr/log",
@@ -580,16 +606,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "4.8.14",
+            "version": "4.8.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "b4900675926860bef091644849305399b986efa2"
+                "reference": "625f8c345606ed0f3a141dfb88f4116f0e22978e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/b4900675926860bef091644849305399b986efa2",
-                "reference": "b4900675926860bef091644849305399b986efa2",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/625f8c345606ed0f3a141dfb88f4116f0e22978e",
+                "reference": "625f8c345606ed0f3a141dfb88f4116f0e22978e",
                 "shasum": ""
             },
             "require": {
@@ -648,7 +674,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2015-10-17 15:03:30"
+            "time": "2015-10-23 06:48:33"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
@@ -1130,7 +1156,8 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "onebip/onebip-array": 20
+        "onebip/onebip-array": 20,
+        "onebip/onebip-concurrency": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
