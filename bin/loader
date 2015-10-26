@@ -6,46 +6,39 @@ require __DIR__ . '/../vendor/autoload.php';
 use Recruiter\Recruiter;
 use Recruiter\Workable\LazyBones;
 
-GracefulDeath::around(function() {
+$howManyJobsInBatch = 100;
+$howManyJobsToKeepAsScheduled = 2000;
 
-    $howManyJobsInBatch = 100;
-    $howManyJobsToKeepAsScheduled = 2000;
+$pid = posix_getpid();
+$options = array_merge(['host' => 'localhost:27017'], getopt('', ['host:']));
 
-    $pid = posix_getpid();
-    $options = array_merge(['host' => 'localhost:27017'], getopt('', ['host:']));
+$db = (new MongoClient($options['host']))->selectDB('recruiter');
+$recruiter = new Recruiter($db);
 
-    $db = (new MongoClient($options['host']))->selectDB('recruiter');
-    $recruiter = new Recruiter($db);
-
-    while(true) {
-        $howManyJobAreScheduled = $db->selectCollection('scheduled')->count();
-        $howManyJobsToCreate = $howManyJobsInBatch;
-        if ($howManyJobAreScheduled + $howManyJobsInBatch > $howManyJobsToKeepAsScheduled) {
-            $howManyJobsToCreate =
-                ($howManyJobsToKeepAsScheduled - $howManyJobAreScheduled) *
-                (rand(100, 200) / 100.0);
-        }
-        if ($howManyJobsToCreate > 0) {
-            printf(
-                '[LOADER][%d][%s] going to add %d jobs with %d already scheduled' . PHP_EOL,
-                $pid, date('c'), $howManyJobsToCreate, $howManyJobAreScheduled
-            );
-            for ($counter=0; $counter<$howManyJobsToCreate; $counter++) {
-                LazyBones::waitForMs(200, 100)
-                    ->asJobOf($recruiter)
-                    ->inBackground()
-                    ->execute();
-            }
-        } else {
-            printf(
-                '[LOADER][%d][%s] I\'m good with %d already scheduled' . PHP_EOL,
-                $pid, date('c'), $howManyJobAreScheduled
-            );
-            sleep(1);
-        }
+while(true) {
+    $howManyJobAreScheduled = $db->selectCollection('scheduled')->count();
+    $howManyJobsToCreate = $howManyJobsInBatch;
+    if ($howManyJobAreScheduled + $howManyJobsInBatch > $howManyJobsToKeepAsScheduled) {
+        $howManyJobsToCreate =
+            ($howManyJobsToKeepAsScheduled - $howManyJobAreScheduled) *
+            (rand(100, 200) / 100.0);
     }
-
-})
-->doNotCaptureOutput()
-->reanimationPolicy(true)
-->run();
+    if ($howManyJobsToCreate > 0) {
+        printf(
+            '[LOADER][%d][%s] going to add %d jobs with %d already scheduled' . PHP_EOL,
+            $pid, date('c'), $howManyJobsToCreate, $howManyJobAreScheduled
+        );
+        for ($counter=0; $counter<$howManyJobsToCreate; $counter++) {
+            LazyBones::waitForMs(200, 100)
+                ->asJobOf($recruiter)
+                ->inBackground()
+                ->execute();
+        }
+    } else {
+        printf(
+            '[LOADER][%d][%s] I\'m good with %d already scheduled' . PHP_EOL,
+            $pid, date('c'), $howManyJobAreScheduled
+        );
+        sleep(1);
+    }
+}

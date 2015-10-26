@@ -12,49 +12,52 @@ $cli = new Cli();
 $cli->add('recruiter', new Option\TargetHost('target'));
 $cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '30s'));
 $cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '64MB'));
-$cli->add('supervisor', new Option\Supervisor('respawn'));
 $cli->add('bootstrap', new Option\Bootstrap('bootstrap'));
 $cli->add('work-on', new Option\WorkOn('work-on'));
 $cli->parse();
 
 $tracker = new Worker\Tracker();
 
-$cli->get('supervisor')->applyTo(
+$cli->get('bootstrap')->load();
+$recruiter = $cli->get('recruiter');
+$memoryLimit = $cli->get('memory-limit');
+$waitStrategy = $cli->get('wait-strategy');
+$filterJobToWorkOn = $cli->get('work-on');
 
-    GracefulDeath::around(function($life) use ($cli, $tracker) {
-        $cli->get('bootstrap')->load();
-        $recruiter = $cli->get('recruiter');
-        $memoryLimit = $cli->get('memory-limit');
-        $waitStrategy = $cli->get('wait-strategy');
-        $filterJobToWorkOn = $cli->get('work-on');
+$askedToStop = false;
+$worker = $filterJobToWorkOn->applyTo($recruiter->hire());
+$tracker->associateTo($worker);
 
-        $worker = $filterJobToWorkOn->applyTo($recruiter->hire());
-        $tracker->associateTo($worker);
+foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
+    pcntl_signal($signal, function($signal) use(&$askedToStop) {
+        $askedToStop = true;
+    });
+}
 
-        printf('[WORKER][%d][%s] ready to work!' . PHP_EOL, posix_getpid(), date('c'));
-        while (!$life->askedToStop()) {
-            $doneSomeWork = $worker->work();
-            $memoryLimit->ensure(memory_get_usage());
-            ($doneSomeWork) ?
-                $waitStrategy->goForward() :
-                $waitStrategy->wait()->backOff();
-        }
-        printf('[WORKER][%d][%s] ok, see you space cowboy...' . PHP_EOL, posix_getpid(), date('c'));
-    })
-    ->doNotCaptureOutput()
-    ->catchSignals([SIGTERM, SIGQUIT, SIGINT])
-    ->afterDeath(function() use ($tracker, $cli) {
-        $cli->get('recruiter')->cleanUpForWorkerProcess($tracker->process());
-        printf(
-            '[SUPERVISOR][%d][%s] %s' . PHP_EOL, posix_getpid(), date('c'),
-            'cleaned up after the worker death'
-        );
-    })
-)
-->run();
+printf('[WORKER][%d][%s] ready to work!' . PHP_EOL, posix_getpid(), date('c'));
+while (!askedToStop()) {
+    $doneSomeWork = $worker->work();
+    $memoryLimit->ensure(memory_get_usage());
+    ($doneSomeWork) ?
+        $waitStrategy->goForward() :
+        $waitStrategy->wait()->backOff();
+}
+$cli->get('recruiter')->cleanUpForWorkerProcess($tracker->process());
+printf(
+    '[SUPERVISOR][%d][%s] %s' . PHP_EOL, posix_getpid(), date('c'),
+    'cleaned up after the worker death'
+);
+printf('[WORKER][%d][%s] ok, see you space cowboy...' . PHP_EOL, posix_getpid(), date('c'));
 
+function askedToStop()
+{
+    global $askedToStop;
+    pcntl_signal_dispatch();
+    return $askedToStop;
+}
 
-function autoload() {
+function autoload()
+{
     foreach (['/../vendor', '/../../..'] as $rp) {
         $file = __DIR__ . $rp . '/autoload.php';
         if (file_exists($file)) {

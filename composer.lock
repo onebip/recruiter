@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "60fb9c3ba14dbc82b8b4d1ba5697e6e3",
+    "hash": "fdf402cd8183ff07c52b4f3d57788830",
     "packages": [
         {
             "name": "gabrielelana/byte-units",
@@ -56,60 +56,6 @@
                 "units"
             ],
             "time": "2015-06-03 12:57:06"
-        },
-        {
-            "name": "gabrielelana/graceful-death",
-            "version": "0.7.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/gabrielelana/graceful-death.git",
-                "reference": "0fbb0e44e1da70a4321844b88deeab3d79e50a45"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/gabrielelana/graceful-death/zipball/0fbb0e44e1da70a4321844b88deeab3d79e50a45",
-                "reference": "0fbb0e44e1da70a4321844b88deeab3d79e50a45",
-                "shasum": ""
-            },
-            "require": {
-                "ext-pcntl": "*",
-                "ext-posix": "*",
-                "php": ">=5.4.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "~4.0"
-            },
-            "type": "library",
-            "autoload": {
-                "classmap": [
-                    "src"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Gabriele Lana",
-                    "email": "gabriele.lana@gmail.com"
-                }
-            ],
-            "description": "Library that let you catch fatal errors",
-            "homepage": "https://github.com/gabrielelana/graceful-death",
-            "keywords": [
-                "catch",
-                "cleanup",
-                "die",
-                "error",
-                "fatal",
-                "long",
-                "process",
-                "running",
-                "supervisor",
-                "try"
-            ],
-            "time": "2014-08-12 09:14:58"
         },
         {
             "name": "onebip/onebip-array",

@@ -12,49 +12,56 @@ $cli = new Cli();
 $cli->add('recruiter', new Option\TargetHost('target'));
 $cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '30s'));
 $cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '256MB'));
-$cli->add('supervisor', new Option\Supervisor('respawn'));
 $cli->parse();
 
-$cli->get('supervisor')->applyTo(
+$recruiter = $cli->get('recruiter');
+$waitStrategy = $cli->get('wait-strategy');
+$memoryLimit = $cli->get('memory-limit');
 
-    GracefulDeath::around(function($life) use($cli) {
-        $recruiter = $cli->get('recruiter');
-        $waitStrategy = $cli->get('wait-strategy');
-        $memoryLimit = $cli->get('memory-limit');
+$recruiter->ensureIsTheOnlyOne($otherwise = function() {
+    printf(
+        '[RECRUITER][%d][%s] unable to start more than one recruiter at a time, sorry space cowboy...' . PHP_EOL,
+        posix_getpid(), date('c')
+    );
+    exit(0);
+});
 
-        $recruiter->ensureIsTheOnlyOne($otherwise = function() {
-            printf(
-                '[RECRUITER][%d][%s] unable to start more than one recruiter at a time, sorry space cowboy...' . PHP_EOL,
-                posix_getpid(), date('c')
-            );
-            exit(0);
-        });
+foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
+    pcntl_signal($signal, function($signal) use(&$askedToStop) {
+        $askedToStop = true;
+    });
+}
 
-        while (!$life->askedToStop()) {
-            $memoryUsage = ByteUnits\bytes(memory_get_usage());
-            $pickStartAt = microtime(true);
-            $numberOfAssignments = $recruiter->assignJobsToWorkers();
-            $pickEndAt = microtime(true);
-            printf(
-                '[RECRUITER][%d][%s][%s] picked jobs for %d workers in %fms' . PHP_EOL,
-                posix_getpid(), date('c'), $memoryUsage->format(),
-                $numberOfAssignments, ($pickEndAt - $pickStartAt) * 1000
-            );
-            $memoryLimit->ensure($memoryUsage);
-            ($numberOfAssignments === 0) ?
-                $waitStrategy->wait()->backOff() :
-                $waitStrategy->reset();
-        }
-        printf(
-            '[RECRUITER][%d][%s] ok, see you space cowboy...' . PHP_EOL,
-            posix_getpid(), date('c')
-        );
-    })
-    ->doNotCaptureOutput()
-    ->catchSignals([SIGTERM, SIGQUIT, SIGINT])
-)
-->run();
+printf(
+    '[RECRUITER][%d][%s] ready to recruit!' . PHP_EOL,
+    posix_getpid(), date('c')
+);
+while (!askedToStop()) {
+    $memoryUsage = ByteUnits\bytes(memory_get_usage());
+    $pickStartAt = microtime(true);
+    $numberOfAssignments = $recruiter->assignJobsToWorkers();
+    $pickEndAt = microtime(true);
+    printf(
+        '[RECRUITER][%d][%s][%s] picked jobs for %d workers in %fms' . PHP_EOL,
+        posix_getpid(), date('c'), $memoryUsage->format(),
+        $numberOfAssignments, ($pickEndAt - $pickStartAt) * 1000
+    );
+    $memoryLimit->ensure($memoryUsage);
+    ($numberOfAssignments === 0) ?
+        $waitStrategy->wait()->backOff() :
+        $waitStrategy->reset();
+}
+printf(
+    '[RECRUITER][%d][%s] ok, see you space cowboy...' . PHP_EOL,
+    posix_getpid(), date('c')
+);
 
+function askedToStop()
+{
+    global $askedToStop;
+    pcntl_signal_dispatch();
+    return $askedToStop;
+}
 
 function autoload() {
     foreach (['/../vendor', '/../../..'] as $rp) {
