@@ -5,6 +5,7 @@ namespace Recruiter\Worker;
 use MongoId;
 use MongoDB;
 use MongoCollection;
+use MongoDate;
 use Recruiter\Recruiter;
 use Recruiter\Worker;
 
@@ -29,6 +30,21 @@ class Repository
         $worker->updateWith(
             $this->roster->findOne(['_id' => $worker->id()])
         );
+    }
+
+    public function deadWorkers($consideredDeadAt)
+    {
+        return $this->roster->find(
+            ['last_seen_at' => [
+                '$lt' => new MongoDate($consideredDeadAt->getTimestamp())]
+            ],
+            ['_id' => true, 'assigned_to' => true]
+        );
+    }
+
+    public function retireWorkerWithId($id)
+    {
+        $this->roster->remove(['_id' => $id]);
     }
 
     public function retireWorkerWithPid($pid)

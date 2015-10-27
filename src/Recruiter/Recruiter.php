@@ -4,6 +4,8 @@ namespace Recruiter;
 
 use MongoDB;
 use Timeless\Interval;
+
+use Onebip\Clock;
 use Onebip\Concurrency\MongoLock;
 use Onebip\Concurrency\LockNotAvailableException;
 
@@ -78,6 +80,13 @@ class Recruiter
     public function scheduledJob($id)
     {
         return $this->jobs->scheduled($id);
+    }
+
+    public function retireDeadWorkers(Clock $clock)
+    {
+        $this->jobs->releaseAll(
+            $jobsAssignedToDeadWorkers = Worker::retireDeadWorkers($this->workers, $clock)
+        );
     }
 
     public function cleanUpForWorkerProcess($process)

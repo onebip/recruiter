@@ -5,8 +5,9 @@ autoload();
 
 use Recruiter\Cli;
 use Recruiter\Option;
-use Recruiter\Process;
 use Recruiter\Recruiter;
+use Recruiter\Worker;
+use Onebip\Clock\SystemClock;
 
 $cli = new Cli();
 $cli->add('recruiter', new Option\TargetHost('target'));
@@ -51,6 +52,7 @@ while (!askedToStop()) {
     );
     $memoryLimit->ensure($memoryUsage);
     $recruiter->stillHere($waitStrategy->timeToWaitAtMost());
+    $recruiter->retireDeadWorkers(new SystemClock());
     ($numberOfAssignments === 0) ?
         $waitStrategy->wait()->backOff() :
         $waitStrategy->reset();
