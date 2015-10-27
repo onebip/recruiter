@@ -16,8 +16,6 @@ $cli->add('bootstrap', new Option\Bootstrap('bootstrap'));
 $cli->add('work-on', new Option\WorkOn('work-on'));
 $cli->parse();
 
-$tracker = new Worker\Tracker();
-
 $cli->get('bootstrap')->load();
 $recruiter = $cli->get('recruiter');
 $memoryLimit = $cli->get('memory-limit');
@@ -26,7 +24,6 @@ $filterJobToWorkOn = $cli->get('work-on');
 
 $askedToStop = false;
 $worker = $filterJobToWorkOn->applyTo($recruiter->hire());
-$tracker->associateTo($worker);
 
 foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
     pcntl_signal($signal, function($signal) use(&$askedToStop) {
@@ -42,7 +39,7 @@ while (!askedToStop()) {
         $waitStrategy->goForward() :
         $waitStrategy->wait()->backOff();
 }
-$cli->get('recruiter')->cleanUpForWorkerProcess($tracker->process());
+$worker->retire();
 printf(
     '[SUPERVISOR][%d][%s] %s' . PHP_EOL, posix_getpid(), date('c'),
     'cleaned up after the worker death'

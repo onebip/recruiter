@@ -94,11 +94,6 @@ class Recruiter
         );
     }
 
-    public function cleanUpForWorkerProcess($process)
-    {
-        $process->ifDead()->cleanUp($this->workers);
-    }
-
     public function createCollectionsAndIndexes()
     {
         $this->db->command(['collMod' => 'scheduled', 'usePowerOf2Sizes' => true]);

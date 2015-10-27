@@ -79,6 +79,14 @@ class Worker
         $this->save();
     }
 
+    public function retire()
+    {
+        if ($this->hasBeenAssignedToDoSomething()) {
+            throw new CannotRetireWorkerAtWorkException();
+        }
+        $this->repository->retireWorkerWithId($this->status['_id']);
+    }
+
     private function stillHere()
     {
         $this->status['last_seen_at'] = T\MongoDate::now();
