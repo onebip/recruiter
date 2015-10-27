@@ -50,6 +50,7 @@ class Worker
 
     public function work()
     {
+        $this->stillHere();
         $this->refresh();
         if ($this->hasBeenAssignedToDoSomething()) {
             $this->workOn(
@@ -72,9 +73,15 @@ class Worker
         $this->status = self::fromMongoDocumentToInternalStatus($document);
     }
 
-    public function workOnJobsTaggedAS($tag)
+    public function workOnJobsTaggedAs($tag)
     {
         $this->status['work_on'] = $tag;
+        $this->save();
+    }
+
+    private function stillHere()
+    {
+        $this->status['last_seen_at'] = T\MongoDate::now();
         $this->save();
     }
 
@@ -98,6 +105,7 @@ class Worker
         $this->status['working'] = false;
         $this->status['available'] = true;
         $this->status['available_since'] = T\MongoDate::now();
+        $this->status['last_seen_at'] = T\MongoDate::now();
         unset($this->status['working_on']);
         unset($this->status['working_since']);
         unset($this->status['assigned_to']);
@@ -139,6 +147,7 @@ class Worker
             'work_on' => '*',
             'available' => true,
             'available_since' => T\MongoDate::now(),
+            'last_seen_at' => T\MongoDate::now(),
             'created_at' => T\MongoDate::now(),
             'working' => false,
             'pid' => getmypid()
