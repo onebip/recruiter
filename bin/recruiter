@@ -57,6 +57,7 @@ while (!askedToStop()) {
         $waitStrategy->wait()->backOff() :
         $waitStrategy->reset();
 }
+$recruiter->bye();
 printf(
     '[RECRUITER][%d][%s] ok, see you space cowboy...' . PHP_EOL,
     posix_getpid(), date('c')

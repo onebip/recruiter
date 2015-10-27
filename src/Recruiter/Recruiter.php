@@ -55,6 +55,11 @@ class Recruiter
         $this->lock->refresh($timeToWaitAtMost->seconds() * self::LOCK_FACTOR);
     }
 
+    public function bye()
+    {
+        $this->lock->release();
+    }
+
     public function assignJobsToWorkers()
     {
         $roster = $this->db->selectCollection('roster');
