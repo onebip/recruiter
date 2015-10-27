@@ -113,6 +113,9 @@ class Recruiter
         $this->db->selectCollection('roster')->ensureIndex([
             'available' => 1,
         ]);
+        $this->db->selectCollection('roster')->ensureIndex([
+            'last_seen_at' => 1,
+        ]);
     }
 
     private function combineJobsWithWorkers($jobs, $workers)
