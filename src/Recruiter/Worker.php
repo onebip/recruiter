@@ -50,7 +50,6 @@ class Worker
 
     public function work()
     {
-        $this->stillHere();
         $this->refresh();
         if ($this->hasBeenAssignedToDoSomething()) {
             $this->workOn(
@@ -60,6 +59,7 @@ class Worker
             );
             return true;
         }
+        $this->stillHere();
         return false;
     }
 
@@ -105,6 +105,7 @@ class Worker
         $this->status['working'] = true;
         $this->status['working_on'] = $job->id();
         $this->status['working_since'] = T\MongoDate::now();
+        $this->status['last_seen_at'] = T\MongoDate::now();
         $this->save();
     }
 
