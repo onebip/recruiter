@@ -16,7 +16,7 @@ class Recruiter
     private $workers;
     private $lock;
 
-    const WAIT_FACTOR = 2;
+    const WAIT_FACTOR = 3;
     const LOCK_FACTOR = 1.5;
     const POLL_TIME = 5;
 
