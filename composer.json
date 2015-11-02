@@ -24,9 +24,9 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "bin": [
-		"bin/recruiter",
-    "bin/worker"
-	],
+      "bin/recruiter",
+      "bin/worker"
+  ],
   "autoload": {
     "psr-4": {
       "Recruiter\\": "src/Recruiter",
