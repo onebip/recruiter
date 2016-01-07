@@ -49,16 +49,16 @@ class TargetHost implements Recruiter\Option
     private function validate($target)
     {
         try {
-            list($host, $port, $db, $options) = $this->parse($target ?: $this->defaultTarget);
+            list($hosts, $db, $options) = $this->parse($target ?: $this->defaultTarget);
             return (new MongoClient(
-                $host . ':' . $port,
+                $hosts,
                 $options
             ))->selectDB($db);
         } catch(MongoConnectionException $e) {
             throw new UnexpectedValueException(
                 sprintf(
-                    "Option '%s': no MongoDB running at '%s:%s'",
-                    $this->name, $host, $port
+                    "Option '%s': no MongoDB running at '%s'",
+                    $this->name, $hosts
                 )
             );
         }
@@ -69,17 +69,13 @@ class TargetHost implements Recruiter\Option
         if (preg_match(
                 '/^' 
                 . '(mongodb:\/\/)?' 
-                . '(?P<host>[^:\/]+)' 
-                . '(?::(?P<port>\d+))?' 
+                . '(?P<hosts>[^\/]+)'
                 . '(?:\/(?P<db>\w+))?' 
                 . '(\?(?P<qs>.*))?' 
                 . '/',
                 $target,
                 $matches
             )) {
-            if (empty($matches['port'])) {
-                $matches['port'] = '27017';
-            }
             if (empty($matches['db'])) {
                 $matches['db'] = 'recruiter';
             }
@@ -87,7 +83,7 @@ class TargetHost implements Recruiter\Option
                 $matches['qs'] = '';
             }
             parse_str($matches['qs'], $queryString);
-            return [$matches['host'], $matches['port'], $matches['db'], $queryString];
+            return [$matches['hosts'], $matches['db'], $queryString];
         }
         throw new UnexpectedValueException(
             sprintf(

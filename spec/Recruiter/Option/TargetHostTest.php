@@ -8,7 +8,6 @@ class TargetHostTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             [
                 'localhost',
-                '27017',
                 'recruiter',
                 []
             ],
@@ -20,8 +19,7 @@ class TargetHostTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals(
             [
-                'localhost',
-                '27018',
+                'localhost:27018',
                 'db_name',
                 []
             ],
@@ -34,7 +32,6 @@ class TargetHostTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             [
                 'localhost',
-                '27017',
                 'db_name',
                 []
             ],
@@ -47,11 +44,22 @@ class TargetHostTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             [
                 'localhost',
-                '27017',
                 'db_name',
                 ['replicaSet' => 'rs'],
             ],
             TargetHost::parse("mongodb://localhost/db_name?replicaSet=rs")
+        );
+    }
+
+    public function testMultipleHosts()
+    {
+        $this->assertEquals(
+            [
+                'localhost:27017,localhost:27018,localhost',
+                'db_name',
+                ['replicaSet' => 'rs'],
+            ],
+            TargetHost::parse("mongodb://localhost:27017,localhost:27018,localhost/db_name?replicaSet=rs")
         );
     }
 }
