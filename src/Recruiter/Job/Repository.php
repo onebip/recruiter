@@ -18,6 +18,20 @@ class Repository
         $this->archived = $db->selectCollection('archived');
     }
 
+    public function all()
+    {
+        return $this->map(
+            $this->scheduled->find()
+        );
+    }
+
+    public function archiveAll()
+    {
+        foreach ($this->all() as $job) {
+            $this->archive($job);
+        }
+    }
+
     public function scheduled($id)
     {
         $found = $this->map($this->scheduled->find(['_id' => $id]));
