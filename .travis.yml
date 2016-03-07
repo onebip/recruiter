@@ -8,3 +8,4 @@ before_script:
 script: "vendor/bin/phpunit"
 services:
   - mongodb
+sudo: false
