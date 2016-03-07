@@ -1,7 +1,7 @@
 <phpunit bootstrap="spec/bootstrap.php" stopOnError="true" colors="true">
   <testsuites>
     <testsuite name="Recruiter">
-      <directory>tests</directory>
+      <directory>spec</directory>
     </testsuite>
   </testsuites>
 </phpunit>
