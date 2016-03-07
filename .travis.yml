@@ -2,7 +2,9 @@ language: php
 php:
   - 5.6
 
-before_script: "composer install"
+before_script: 
+  - phpenv config-add phpconfig.ini
+  - composer install
 script: "vendor/bin/phpunit"
 services:
   - mongodb
