@@ -170,12 +170,12 @@ class Job
         );
     }
 
-    public static function pickReadyJobsForWorkers(MongoCollection $collection, $worksOn, $workers, $callback)
+    public static function pickReadyJobsForWorkers(MongoCollection $collection, $worksOn, $workers)
     {
         $jobs = Onebip\array_pluck(
             iterator_to_array(
                 $collection
-                    ->find(
+                    ->find($query =
                         (Worker::canWorkOnAnyJobs($worksOn) ?
                             [   'scheduled_at' => ['$lt' => T\MongoDate::now()],
                                 'active' => true,
@@ -196,9 +196,8 @@ class Job
             '_id'
         );
         if (count($jobs) > 0) {
-            return $callback($worksOn, $workers, $jobs);
+            return [$worksOn, $workers, $jobs];
         }
-        return 0;
     }
 
     public static function lockAll(MongoCollection $collection, $jobs)

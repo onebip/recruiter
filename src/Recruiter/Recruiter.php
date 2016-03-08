@@ -66,20 +66,22 @@ class Recruiter
         $scheduled = $this->db->selectCollection('scheduled');
         $workersPerUnit = 42;
 
-        return Worker::pickAvailableWorkers($roster, $workersPerUnit,
-            function($worksOn, $workers) use ($scheduled, $roster)
-        {
-            return Job::pickReadyJobsForWorkers($scheduled, $worksOn, $workers,
-                function($worksOn, $workers, $jobs) use($scheduled, $roster)
-            {
+        $numberOfWorkersWithJobs = 0;
+        foreach (Worker::pickAvailableWorkers($roster, $workersPerUnit) as $resultRow) {
+            list ($worksOn, $workers) = $resultRow;
+
+            $result = Job::pickReadyJobsForWorkers($scheduled, $worksOn, $workers);
+            if ($result) {
+                list($worksOn, $workers, $jobs) = $result;
                 list($assignments, $jobs, $workers) = $this->combineJobsWithWorkers($jobs, $workers);
 
                 Job::lockAll($scheduled, $jobs);
                 Worker::assignJobsToWorkers($roster, $jobs, $workers);
 
-                return $assignments;
-            });
-        });
+                $numberOfWorkersWithJobs += $assignments;
+            }
+        }
+        return $numberOfWorkersWithJobs;
     }
 
     public function scheduledJob($id)

@@ -168,9 +168,9 @@ class Worker
         return $worksOn === '*';
     }
 
-    public static function pickAvailableWorkers(MongoCollection $collection, $workersPerUnit, $callback)
+    public static function pickAvailableWorkers(MongoCollection $collection, $workersPerUnit)
     {
-        $numberOfWorkersWithJobs = 0;
+        $result = [];
         $workers = iterator_to_array($collection->find(['available' => true], ['_id' => 1, 'work_on' => 1]));
         if (count($workers) > 0) {
             $unitsOfWorkers = Onebip\array_group_by(
@@ -180,10 +180,10 @@ class Worker
             foreach ($unitsOfWorkers as $workOn => $workersInUnit) {
                 $workersInUnit = Onebip\array_pluck($workersInUnit, '_id');
                 $workersInUnit = array_slice($workersInUnit, 0, min(count($workersInUnit), $workersPerUnit));
-                $numberOfWorkersWithJobs += $callback($workOn, $workersInUnit);
+                $result[] = [$workOn, $workersInUnit];
             }
         }
-        return $numberOfWorkersWithJobs;
+        return $result;
     }
 
     public static function assignJobsToWorkers(MongoCollection $collection, $jobs, $workers)

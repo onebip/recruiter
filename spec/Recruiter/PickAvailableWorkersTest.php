@@ -21,11 +21,9 @@ class PickAvailableWorkersTest extends \PHPUnit_Framework_TestCase
     {
         $this->withNoAvailableWorkers();
 
-        $picked = Worker::pickAvailableWorkers($this->repository, $this->workersPerUnit, function($worksOn, $workers) {
-            $this->fail('Should not be called when no workers are found');
-        });
+        $picked = Worker::pickAvailableWorkers($this->repository, $this->workersPerUnit);
 
-        $this->assertEquals(0, $picked);
+        $this->assertEquals([], $picked);
     }
 
     public function testFewWorkersWithNoSpecifiSkill()
@@ -33,18 +31,11 @@ class PickAvailableWorkersTest extends \PHPUnit_Framework_TestCase
         $callbackHasBeenCalled = false;
         $this->withAvailableWorkers(['*' => 3]);
 
-        $picked = Worker::pickAvailableWorkers(
-            $this->repository, $this->workersPerUnit,
-            function($worksOn, $workers) use (&$callbackHasBeenCalled)
-        {
-            $callbackHasBeenCalled = true;
-            $this->assertEquals('*', $worksOn);
-            $this->assertEquals(3, count($workers));
-            return count($workers);
-        });
+        $picked = Worker::pickAvailableWorkers($this->repository, $this->workersPerUnit);
 
-        $this->assertTrue($callbackHasBeenCalled, 'Callback should be called with available workers');
-        $this->assertEquals(3, $picked);
+        list ($worksOn, $workers) = $picked[0];
+        $this->assertEquals('*', $worksOn);
+        $this->assertEquals(3, count($workers));
     }
 
     public function testFewWorkersWithSameSkill()
@@ -52,73 +43,47 @@ class PickAvailableWorkersTest extends \PHPUnit_Framework_TestCase
         $callbackHasBeenCalled = false;
         $this->withAvailableWorkers(['send-emails' => 3]);
 
-        $picked = Worker::pickAvailableWorkers(
-            $this->repository, $this->workersPerUnit,
-            function($worksOn, $workers) use (&$callbackHasBeenCalled)
-        {
-            $callbackHasBeenCalled = true;
-            $this->assertEquals('send-emails', $worksOn);
-            $this->assertEquals(3, count($workers));
-            return count($workers);
-        });
+        $picked = Worker::pickAvailableWorkers($this->repository, $this->workersPerUnit);
 
-        $this->assertTrue($callbackHasBeenCalled, 'Callback should be called with available workers');
-        $this->assertEquals(3, $picked);
+        list ($worksOn, $workers) = $picked[0];
+        $this->assertEquals('send-emails', $worksOn);
+        $this->assertEquals(3, count($workers));
     }
 
     public function testFewWorkersWithSomeDifferentSkills()
     {
         $this->withAvailableWorkers(['send-emails' => 3, 'count-transactions' => 3]);
+        $picked = Worker::pickAvailableWorkers($this->repository, $this->workersPerUnit);
+
         $allSkillsGiven = [];
         $totalWorkersGiven = 0;
-
-        $picked = Worker::pickAvailableWorkers(
-            $this->repository, $this->workersPerUnit,
-            function($worksOn, $workers) use (&$allSkillsGiven, &$totalWorkersGiven)
-        {
+        foreach ($picked as $pickedRow) {
+            list ($worksOn, $workers) = $pickedRow;
             $allSkillsGiven[] = $worksOn;
             $totalWorkersGiven += count($workers);
-            return count($workers);
-        });
-
+        }
         $this->assertArrayAreEquals(['send-emails', 'count-transactions'], $allSkillsGiven);
         $this->assertEquals(6, $totalWorkersGiven);
-        $this->assertEquals(6, $picked);
     }
 
     public function testMoreWorkersThanAllowedPerUnit()
     {
         $this->withAvailableWorkers(['send-emails' => $this->workersPerUnit + 10]);
+
+        $picked = Worker::pickAvailableWorkers($this->repository, $this->workersPerUnit);
+
         $totalWorkersGiven = 0;
-
-        $picked = Worker::pickAvailableWorkers(
-            $this->repository, $this->workersPerUnit,
-            function($worksOn, $workers) use (&$totalWorkersGiven)
-        {
+        foreach ($picked as $pickedRow) {
+            list ($worksOn, $workers) = $pickedRow;
             $totalWorkersGiven += count($workers);
-            return count($workers);
-        });
-
+        }
         $this->assertEquals($this->workersPerUnit, $totalWorkersGiven);
-        $this->assertEquals($this->workersPerUnit, $picked);
     }
 
     public function testPickedIsTheSumOfTheCallbackResults()
     {
-        $numberOfUnits = 2;
-        $forEachUnitReturn = 2;
-        $this->withAvailableWorkers(['send-emails' => 3, 'count-transactions' => 3]);
-
-        $picked = Worker::pickAvailableWorkers(
-            $this->repository, $this->workersPerUnit,
-            function($worksOn, $workers) use ($forEachUnitReturn)
-        {
-            return $forEachUnitReturn;
-        });
-
-        $this->assertEquals($forEachUnitReturn * $numberOfUnits, $picked);
+        $this->markTestIncomplete('Move on RecruiterTest');
     }
-
 
     private function withAvailableWorkers($workers)
     {
