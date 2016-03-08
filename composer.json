@@ -22,7 +22,8 @@
     "symfony/console": "In order to use Recruiter\\Command\\RecruiterJobCommand."
   },
   "require-dev": {
-    "phpunit/phpunit": "~4.0"
+    "phpunit/phpunit": "~4.0",
+    "giorgiosironi/eris": "0.7.0"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,

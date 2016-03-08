@@ -11,7 +11,7 @@ class WorkerRepositoryTest extends BaseAcceptanceTest
     {
         parent::setUp();
         $this->repository = new Repository(
-            $this->recruiter, new Recruiter($this->recruiter)
+            $this->recruiterDb, $this->recruiter
         );
     }
 

@@ -62,6 +62,14 @@ class Repository
         );
     }
 
+    /**
+     * @param int
+     */
+    public function countArchived()
+    {
+        return $this->archived->count();
+    }
+
     private function map($cursor)
     {
         $jobs = [];
