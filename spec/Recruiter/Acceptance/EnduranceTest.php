@@ -6,6 +6,7 @@ use Recruiter\Job\Repository;
 use Onebip\Concurrency\Timeout;
 use Eris;
 use Eris\Generator;
+use Eris\Listener;
 
 class EnduranceTest extends BaseAcceptanceTest
 {
@@ -15,30 +16,64 @@ class EnduranceTest extends BaseAcceptanceTest
     {
         parent::setUp();
         $this->jobRepository = new Repository($this->recruiterDb);
-        $this->processRecruiter = $this->startRecruiter();
-        $this->processWorker = $this->startWorker();
+        $this->jobs = 0;
     }
 
     public function tearDown()
     {
-        $this->stopProcessWithSignal($this->processRecruiter, SIGTERM);
-        $this->stopProcessWithSignal($this->processWorker, SIGTERM);
+        // TODO: try SIGKILL
+        $this->terminateProcesses(SIGTERM);
     }
     
     public function testNotWithstandingCrashesJobsAreEventuallyPerformed()
     {
+
         $this
             ->limitTo(10)
-            ->forAll(Generator\elements([
+            ->forAll(Generator\seq(Generator\elements([
                 'enqueueJob',
-            ]))
-            ->then(function($action) {
-                $this->$action();
+                'restartWorker',
+            ])))
+            ->hook(Listener\collectFrequencies(function($actions) {
+                return '[' . implode(',', $actions) . ']';
+            }))
+            ->then(function($actions) {
+                $this->clean();
+                $this->start();
+                foreach ($actions as $action) {
+                    $this->$action();
+                }
+                $estimatedTime = $this->jobs * 2;
+                Timeout::inSeconds($estimatedTime, "all $this->jobs jobs to be performed (actions: " . var_export($actions, true) . ")")
+                    ->until(function() {
+                        return $this->jobRepository->countArchived() === $this->jobs;
+                    });
             });
-        Timeout::inSeconds(30, "all 10 jobs to be performed")
-            ->until(function() {
-                return $this->jobRepository->countArchived() == 10;
-            });
+    }
+
+    private function clean()
+    {
+        $this->terminateProcesses(SIGKILL);
+        $this->cleanDb();
+        $this->jobs = 0;
+    }
+
+    private function terminateProcesses($signal)
+    {
+        if ($this->processRecruiter) {
+            $this->stopProcessWithSignal($this->processRecruiter, $signal);
+            $this->processRecruiter = null;
+        }
+        if ($this->processWorker) {
+            $this->stopProcessWithSignal($this->processWorker, $signal);
+            $this->processWorker = null;
+        }
+    }
+
+    private function start()
+    {
+        $this->processRecruiter = $this->startRecruiter();
+        $this->processWorker = $this->startWorker();
     }
 
     protected function enqueueJob()
@@ -48,5 +83,12 @@ class EnduranceTest extends BaseAcceptanceTest
             ->asJobOf($this->recruiter)
             ->inBackground()
             ->execute();
+        $this->jobs++;
+    }
+
+    protected function restartWorker()
+    {
+        $this->stopProcessWithSignal($this->processWorker, SIGTERM);
+        $this->processWorker = $this->startWorker();
     }
 }
