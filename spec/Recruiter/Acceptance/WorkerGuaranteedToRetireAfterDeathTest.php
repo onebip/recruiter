@@ -1,6 +1,6 @@
 <?php
 
-namespace Recruiter;
+namespace Recruiter\Acceptance;
 
 class WorkerGuaranteedToRetireAfterDeathTest extends BaseAcceptanceTest
 {

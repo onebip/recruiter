@@ -1,6 +1,6 @@
 <?php
 
-namespace Recruiter;
+namespace Recruiter\Acceptance;
 
 use MongoClient;
 use Onebip\Concurrency\Timeout;
@@ -34,7 +34,7 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
             1 => ['pipe', 'w'],
             2 => ['pipe', 'w'],
         ];
-        $cwd = __DIR__ . '/../../';
+        $cwd = __DIR__ . '/../../../';
         $process = proc_open('php bin/worker --bootstrap=examples/bootstrap.php', $descriptors, $pipes, $cwd);
         stream_set_blocking($pipes[1], 0);
         stream_set_blocking($pipes[2], 0);

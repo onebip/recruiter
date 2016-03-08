@@ -1,8 +1,9 @@
 <?php
 
-namespace Recruiter;
+namespace Recruiter\Acceptance;
 
 use Recruiter\Worker\Repository;
+use Recruiter\Recruiter;
 
 class WorkerRepositoryTest extends BaseAcceptanceTest
 {
