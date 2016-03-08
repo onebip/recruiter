@@ -1,7 +1,6 @@
 <?php
 namespace Recruiter\Acceptance;
 
-use Recruiter\Workable\ShellCommand;
 use Recruiter\Job\Repository;
 use Onebip\Concurrency\Timeout;
 use Eris;
@@ -16,7 +15,6 @@ class EnduranceTest extends BaseAcceptanceTest
     {
         parent::setUp();
         $this->jobRepository = new Repository($this->recruiterDb);
-        $this->jobs = 0;
     }
 
     public function tearDown()
@@ -26,7 +24,7 @@ class EnduranceTest extends BaseAcceptanceTest
     
     public function testNotWithstandingCrashesJobsAreEventuallyPerformed()
     {
-
+        $this->markTestSkipped();
         $this
             ->limitTo(20)
             ->forAll(Generator\seq(Generator\elements([
@@ -91,16 +89,6 @@ class EnduranceTest extends BaseAcceptanceTest
     {
         $this->processRecruiter = $this->startRecruiter();
         $this->processWorker = $this->startWorker();
-    }
-
-    protected function enqueueJob()
-    {
-        $workable = ShellCommand::fromCommandLine('echo 42');
-        $workable
-            ->asJobOf($this->recruiter)
-            ->inBackground()
-            ->execute();
-        $this->jobs++;
     }
 
     protected function restartWorker()

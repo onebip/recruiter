@@ -1,8 +1,8 @@
 <?php
-
 namespace Recruiter\Acceptance;
 
 use Recruiter\Recruiter;
+use Recruiter\Workable\ShellCommand;
 use MongoClient;
 use Onebip\Concurrency\Timeout;
 
@@ -15,6 +15,7 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
         $this->roster = $this->recruiterDb->selectCollection('roster');
         $this->recruiter = new Recruiter($this->recruiterDb);
         $this->output = '';
+        $this->jobs = 0;
     }
 
     public function cleanDb()
@@ -90,4 +91,15 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
                 return $status['running'] == false;
             });
     }
+
+    protected function enqueueJob()
+    {
+        $workable = ShellCommand::fromCommandLine('echo 42');
+        $workable
+            ->asJobOf($this->recruiter)
+            ->inBackground()
+            ->execute();
+        $this->jobs++;
+    }
+
 }
