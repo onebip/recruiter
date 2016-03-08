@@ -9,7 +9,9 @@ class FaultToleranceTest extends BaseAcceptanceTest
         $this->enqueueJob();
         $worker = $this->recruiter->hire();
 
-        $assignments = $this->recruiter->assignJobsToWorkers1();
+        $assignments = $this->recruiter->bookJobsForWorkers();
+
+        $this->recruiter->rollbackLockedJobs();
         $assignments = $this->recruiter->assignJobsToWorkers();
         $this->assertEquals(1, $assignments);
     }

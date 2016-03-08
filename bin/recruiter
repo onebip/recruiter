@@ -40,6 +40,7 @@ printf(
     '[RECRUITER][%d][%s] ready to recruit!' . PHP_EOL,
     posix_getpid(), date('c')
 );
+$recruiter->init();
 while (!askedToStop()) {
     $memoryUsage = ByteUnits\bytes(memory_get_usage());
     $pickStartAt = microtime(true);

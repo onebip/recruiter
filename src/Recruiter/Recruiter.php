@@ -50,11 +50,31 @@ class Recruiter
         }
     }
 
+    public function init()
+    {
+        $this->rollbackLockedJobs();
+    }
+
+    /**
+     * @step
+     */
+    public function rollbackLockedJobs()
+    {
+        $assignedJobs = Worker::assignedJobs($this->db->selectCollection('roster'));
+        Job::rollbackLockedNotIn($this->db->selectCollection('scheduled'), $assignedJobs);
+    }
+
+    /**
+     * @step
+     */
     public function stillHere(Interval $timeToWaitAtMost)
     {
         $this->lock->refresh($timeToWaitAtMost->seconds() * self::LOCK_FACTOR);
     }
 
+    /**
+     * @step
+     */
     public function bye()
     {
         $this->lock->release();
@@ -62,12 +82,15 @@ class Recruiter
 
     public function assignJobsToWorkers()
     {
-        $bookedJobs = $this->assignJobsToWorkers1();
+        $bookedJobs = $this->bookJobsForWorkers();
 
-        return $this->assignJobsToWorkers2($bookedJobs);
+        return $this->assignLockedJobsToWorkers($bookedJobs);
     }
 
-    public function assignJobsToWorkers1()
+    /**
+     * @step
+     */
+    public function bookJobsForWorkers()
     {
         $roster = $this->db->selectCollection('roster');
         $scheduled = $this->db->selectCollection('scheduled');
@@ -89,7 +112,10 @@ class Recruiter
         return $bookedJobs;
     }
 
-    public function assignJobsToWorkers2($bookedJobs)
+    /**
+     * @step
+     */
+    public function assignLockedJobsToWorkers($bookedJobs)
     {
         $numberOfWorkersWithJobs = 0;
         $roster = $this->db->selectCollection('roster');
@@ -106,6 +132,9 @@ class Recruiter
         return $this->jobs->scheduled($id);
     }
 
+    /**
+     * @step
+     */
     public function retireDeadWorkers(Clock $clock)
     {
         $this->jobs->releaseAll(

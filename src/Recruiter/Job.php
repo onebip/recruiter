@@ -175,7 +175,7 @@ class Job
         $jobs = Onebip\array_pluck(
             iterator_to_array(
                 $collection
-                    ->find($query =
+                    ->find(
                         (Worker::canWorkOnAnyJobs($worksOn) ?
                             [   'scheduled_at' => ['$lt' => T\MongoDate::now()],
                                 'active' => true,
@@ -198,6 +198,24 @@ class Job
         if (count($jobs) > 0) {
             return [$worksOn, $workers, $jobs];
         }
+    }
+
+    public static function rollbackLockedNotIn(MongoCollection $collection, array $excluded)
+    {
+        $collection->update(
+            [
+                'locked' => true,
+                '_id' => ['$nin' => $excluded],
+            ],
+            [
+                '$set' => [
+                    'locked' => false,
+                ]
+            ],
+            [
+                'multiple' => true,
+            ]
+        );
     }
 
     public static function lockAll(MongoCollection $collection, $jobs)

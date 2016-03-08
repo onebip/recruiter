@@ -202,6 +202,18 @@ class Worker
         );
     }
 
+    public static function assignedJobs(MongoCollection $collection)
+    {
+        $cursor = $collection->find([], ['assigned_to' => 1]);
+        $jobs = [];
+        foreach ($cursor as $document) {
+            if (array_key_exists('assigned_to', $document)) {
+                $jobs = array_merge($jobs, array_values($document['assigned_to']));
+            }
+        }
+        return array_unique($jobs);
+    }
+
     public static function retireDeadWorkers(Repository $roster, Clock $clock)
     {
         $now = $clock->current();
