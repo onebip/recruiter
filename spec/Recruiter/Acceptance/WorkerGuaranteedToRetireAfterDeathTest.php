@@ -9,12 +9,16 @@ class WorkerGuaranteedToRetireAfterDeathTest extends BaseAcceptanceTest
      */
     public function testRetireAfterAskedToStop()
     {
-        $this->markTestSkipped();
         $numberOfWorkersBefore = $this->numberOfWorkers();
-        $this->startWorker(function($process) use ($numberOfWorkersBefore) {
-            $this->assertEquals($numberOfWorkersBefore + 1, $this->numberOfWorkers());
-            $this->stopWorkerWithSignal($process, SIGTERM, function($stdout, $stderr) use ($numberOfWorkersBefore) {
-                $this->assertEquals($numberOfWorkersBefore, $this->numberOfWorkers());
+        $this->startWorker(function($processAndPipes) use ($numberOfWorkersBefore) {
+            $this->waitForNumberOfWorkersToBe($numberOfWorkersBefore + 1);
+            $this->stopWorkerWithSignal($processAndPipes, SIGTERM, function($stdout, $stderr) use ($numberOfWorkersBefore) {
+                $numberOfWorkersCurrently = $this->numberOfWorkers();
+                $this->assertEquals(
+                    $numberOfWorkersBefore,
+                    $numberOfWorkersCurrently,
+                    "The number of workers before was $numberOfWorkersBefore and now after starting and stopping 1 we have $numberOfWorkersCurrently"
+                );
             });
         });
     }

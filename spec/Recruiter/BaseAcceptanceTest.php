@@ -3,6 +3,7 @@
 namespace Recruiter;
 
 use MongoClient;
+use Onebip\Concurrency\Timeout;
 
 abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
 {
@@ -18,6 +19,14 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
         return $this->roster->count();
     }
 
+    protected function waitForNumberOfWorkersToBe($expectedNumber)
+    {
+        Timeout::inSeconds(1, "workers to be $expectedNumber")
+            ->until(function() use ($expectedNumber) {
+                return $this->numberOfWorkers() == $expectedNumber;
+            });
+    }
+
     protected function startWorker($callback)
     {
         $descriptors = [
@@ -29,20 +38,18 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
         $process = proc_open('php bin/worker --bootstrap=examples/bootstrap.php', $descriptors, $pipes, $cwd);
         stream_set_blocking($pipes[1], 0);
         stream_set_blocking($pipes[2], 0);
-        usleep(100000);
+        // proc_get_status($process);
         $callback([$process, $pipes]);
     }
 
-    protected function stopWorkerWithSignal($process, $signal, $callback)
+    protected function stopWorkerWithSignal(array $processAndPipes, $signal, $callback)
     {
-        list($process, $pipes) = $process;
+        list($process, $pipes) = $processAndPipes;
         proc_terminate($process, $signal);
-        usleep(100000); // Wait until the signal will be dispatched by the supervisor process
-        $stdout = stream_get_contents($pipes[1]);
-        $stderr = stream_get_contents($pipes[2]);
-        fclose($pipes[1]);
-        fclose($pipes[2]);
-        proc_close($process);
-        $callback($stdout, $stderr);
+        Timeout::inSeconds(1, 'termination of worker')
+            ->until(function() use ($process) {
+                $status = proc_get_status($process);
+                return $status['running'] == false;
+            });
     }
 }
