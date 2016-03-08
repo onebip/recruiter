@@ -21,18 +21,18 @@ class EnduranceTest extends BaseAcceptanceTest
 
     public function tearDown()
     {
-        // TODO: try SIGKILL
-        $this->terminateProcesses(SIGTERM);
+        $this->terminateProcesses(SIGKILL);
     }
     
     public function testNotWithstandingCrashesJobsAreEventuallyPerformed()
     {
 
         $this
-            ->limitTo(10)
+            ->limitTo(20)
             ->forAll(Generator\seq(Generator\elements([
                 'enqueueJob',
                 'restartWorker',
+                'restartRecruiter',
             ])))
             ->hook(Listener\collectFrequencies(function($actions) {
                 return '[' . implode(',', $actions) . ']';
@@ -41,11 +41,19 @@ class EnduranceTest extends BaseAcceptanceTest
                 $this->clean();
                 $this->start();
                 foreach ($actions as $action) {
+                    $this->output .= "[ACTION_BEGIN][PHPUNIT][...] $action" . PHP_EOL;
                     $this->$action();
+                    $this->drainOutput();
                 }
-                $estimatedTime = $this->jobs * 2;
-                Timeout::inSeconds($estimatedTime, "all $this->jobs jobs to be performed (actions: " . var_export($actions, true) . ")")
+
+                $estimatedTime = count($actions) * 3;
+                $details = [
+                    //'actions' => $actions,
+                    'output' => $this->output,
+                ];
+                Timeout::inSeconds($estimatedTime, "all $this->jobs jobs to be performed. " . var_export($details, true))
                     ->until(function() {
+                        $this->drainOutput();
                         return $this->jobRepository->countArchived() === $this->jobs;
                     });
             });
@@ -55,6 +63,7 @@ class EnduranceTest extends BaseAcceptanceTest
     {
         $this->terminateProcesses(SIGKILL);
         $this->cleanDb();
+        $this->output = '';
         $this->jobs = 0;
     }
 
@@ -68,6 +77,14 @@ class EnduranceTest extends BaseAcceptanceTest
             $this->stopProcessWithSignal($this->processWorker, $signal);
             $this->processWorker = null;
         }
+    }
+
+    private function drainOutput()
+    {
+        $this->output .= stream_get_contents($this->processRecruiter[1][1]);
+        $this->output .= stream_get_contents($this->processRecruiter[1][2]);
+        $this->output .= stream_get_contents($this->processWorker[1][1]);
+        $this->output .= stream_get_contents($this->processWorker[1][2]);
     }
 
     private function start()
@@ -89,6 +106,14 @@ class EnduranceTest extends BaseAcceptanceTest
     protected function restartWorker()
     {
         $this->stopProcessWithSignal($this->processWorker, SIGTERM);
+        $this->drainOutput();
         $this->processWorker = $this->startWorker();
+    }
+
+    protected function restartRecruiter()
+    {
+        $this->stopProcessWithSignal($this->processRecruiter, SIGTERM);
+        $this->drainOutput();
+        $this->processRecruiter = $this->startRecruiter();
     }
 }

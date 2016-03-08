@@ -14,6 +14,7 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
         $this->cleanDb();
         $this->roster = $this->recruiterDb->selectCollection('roster');
         $this->recruiter = new Recruiter($this->recruiterDb);
+        $this->output = '';
     }
 
     public function cleanDb()
@@ -53,7 +54,7 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
         if ($callback !== null) {
             $callback([$process, $pipes]);
         }
-        return [$process, $pipes];
+        return [$process, $pipes, 'recruiter'];
     }
 
     protected function startWorker($callback = null)
@@ -76,12 +77,12 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
         if ($callback !== null) {
             $callback([$process, $pipes]);
         }
-        return [$process, $pipes];
+        return [$process, $pipes, 'worker'];
     }
 
     protected function stopProcessWithSignal(array $processAndPipes, $signal)
     {
-        list($process, $pipes) = $processAndPipes;
+        list($process, $pipes, $name) = $processAndPipes;
         proc_terminate($process, $signal);
         Timeout::inSeconds(1, 'termination of worker')
             ->until(function() use ($process) {
