@@ -15,12 +15,18 @@ class EnduranceTest extends BaseAcceptanceTest
     {
         parent::setUp();
         $this->jobRepository = new Repository($this->recruiterDb);
+        $this->processRecruiter = $this->startRecruiter();
+        $this->processWorker = $this->startWorker();
+    }
+
+    public function tearDown()
+    {
+        $this->stopProcessWithSignal($this->processRecruiter, SIGTERM);
+        $this->stopProcessWithSignal($this->processWorker, SIGTERM);
     }
     
     public function testNotWithstandingCrashesJobsAreEventuallyPerformed()
     {
-        $recruiter = $this->startRecruiter();
-        $worker = $this->startWorker();
         $this
             ->limitTo(10)
             ->forAll(Generator\elements([

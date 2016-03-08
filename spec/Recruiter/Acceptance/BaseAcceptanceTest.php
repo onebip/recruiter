@@ -74,7 +74,7 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
         return [$process, $pipes];
     }
 
-    protected function stopWorkerWithSignal(array $processAndPipes, $signal, $callback)
+    protected function stopProcessWithSignal(array $processAndPipes, $signal)
     {
         list($process, $pipes) = $processAndPipes;
         proc_terminate($process, $signal);
