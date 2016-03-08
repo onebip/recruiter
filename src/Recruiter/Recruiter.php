@@ -62,11 +62,18 @@ class Recruiter
 
     public function assignJobsToWorkers()
     {
+        $bookedJobs = $this->assignJobsToWorkers1();
+
+        return $this->assignJobsToWorkers2($bookedJobs);
+    }
+
+    public function assignJobsToWorkers1()
+    {
         $roster = $this->db->selectCollection('roster');
         $scheduled = $this->db->selectCollection('scheduled');
         $workersPerUnit = 42;
 
-        $numberOfWorkersWithJobs = 0;
+        $bookedJobs = [];
         foreach (Worker::pickAvailableWorkers($roster, $workersPerUnit) as $resultRow) {
             list ($worksOn, $workers) = $resultRow;
 
@@ -76,10 +83,20 @@ class Recruiter
                 list($assignments, $jobs, $workers) = $this->combineJobsWithWorkers($jobs, $workers);
 
                 Job::lockAll($scheduled, $jobs);
-                Worker::assignJobsToWorkers($roster, $jobs, $workers);
-
-                $numberOfWorkersWithJobs += $assignments;
+                $bookedJobs[] = [$jobs, $workers, $assignments];
             }
+        }
+        return $bookedJobs;
+    }
+
+    public function assignJobsToWorkers2($bookedJobs)
+    {
+        $numberOfWorkersWithJobs = 0;
+        $roster = $this->db->selectCollection('roster');
+        foreach ($bookedJobs as $row) {
+            list ($jobs, $workers, $assignments) = $row;
+            Worker::assignJobsToWorkers($roster, $jobs, $workers);
+            $numberOfWorkersWithJobs += $assignments;
         }
         return $numberOfWorkersWithJobs;
     }
