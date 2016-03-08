@@ -35,13 +35,19 @@ printf('[WORKER][%d][%s] ready to work!' . PHP_EOL, posix_getpid(), date('c'));
 while (!askedToStop()) {
     $doneSomeWork = $worker->work();
     $memoryLimit->ensure(memory_get_usage());
+    if ($doneSomeWork) {
+        printf(
+            '[WORKER][%d][%s] executed job' . PHP_EOL,
+            posix_getpid(), date('c')
+        );
+    }
     ($doneSomeWork) ?
         $waitStrategy->goForward() :
         $waitStrategy->wait()->backOff();
 }
 $worker->retire();
 printf(
-    '[SUPERVISOR][%d][%s] %s' . PHP_EOL, posix_getpid(), date('c'),
+    '[WORKER][%d][%s] %s' . PHP_EOL, posix_getpid(), date('c'),
     'cleaned up after the worker death'
 );
 printf('[WORKER][%d][%s] ok, see you space cowboy...' . PHP_EOL, posix_getpid(), date('c'));
