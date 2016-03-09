@@ -15,6 +15,8 @@ class EnduranceTest extends BaseAcceptanceTest
     {
         parent::setUp();
         $this->jobRepository = new Repository($this->recruiterDb);
+        $this->actionLog = '/tmp/actions.log';
+        $this->files[] = $this->actionLog;
     }
 
     public function tearDown()
@@ -24,7 +26,6 @@ class EnduranceTest extends BaseAcceptanceTest
     
     public function testNotWithstandingCrashesJobsAreEventuallyPerformed()
     {
-        $this->markTestSkipped();
         $this
             ->limitTo(20)
             ->forAll(Generator\seq(Generator\elements([
@@ -39,19 +40,13 @@ class EnduranceTest extends BaseAcceptanceTest
                 $this->clean();
                 $this->start();
                 foreach ($actions as $action) {
-                    $this->output .= "[ACTION_BEGIN][PHPUNIT][...] $action" . PHP_EOL;
+                    $this->logAction($action);
                     $this->$action();
-                    $this->drainOutput();
                 }
 
                 $estimatedTime = count($actions) * 3;
-                $details = [
-                    //'actions' => $actions,
-                    'output' => $this->output,
-                ];
-                Timeout::inSeconds($estimatedTime, "all $this->jobs jobs to be performed. " . var_export($details, true))
+                Timeout::inSeconds($estimatedTime, "all $this->jobs jobs to be performed. See: " . var_export($this->files, true))
                     ->until(function() {
-                        $this->drainOutput();
                         return $this->jobRepository->countArchived() === $this->jobs;
                     });
             });
@@ -60,9 +55,21 @@ class EnduranceTest extends BaseAcceptanceTest
     private function clean()
     {
         $this->terminateProcesses(SIGKILL);
+        $this->cleanLogs();
         $this->cleanDb();
-        $this->output = '';
         $this->jobs = 0;
+    }
+
+    private function logAction($text)
+    {
+        file_put_contents(
+            $this->actionLog,
+            sprintf(
+                "[ACTIONS][PHPUNIT][%s] %s" . PHP_EOL,
+                date('c'), $text
+            ),
+            FILE_APPEND
+        );
     }
 
     private function terminateProcesses($signal)
@@ -77,14 +84,6 @@ class EnduranceTest extends BaseAcceptanceTest
         }
     }
 
-    private function drainOutput()
-    {
-        $this->output .= stream_get_contents($this->processRecruiter[1][1]);
-        $this->output .= stream_get_contents($this->processRecruiter[1][2]);
-        $this->output .= stream_get_contents($this->processWorker[1][1]);
-        $this->output .= stream_get_contents($this->processWorker[1][2]);
-    }
-
     private function start()
     {
         $this->processRecruiter = $this->startRecruiter();
@@ -94,14 +93,12 @@ class EnduranceTest extends BaseAcceptanceTest
     protected function restartWorker()
     {
         $this->stopProcessWithSignal($this->processWorker, SIGTERM);
-        $this->drainOutput();
         $this->processWorker = $this->startWorker();
     }
 
     protected function restartRecruiter()
     {
         $this->stopProcessWithSignal($this->processRecruiter, SIGTERM);
-        $this->drainOutput();
         $this->processRecruiter = $this->startRecruiter();
     }
 }
