@@ -8,6 +8,7 @@ use Timeless\Interval;
 use Onebip\Clock;
 use Onebip\Concurrency\MongoLock;
 use Onebip\Concurrency\LockNotAvailableException;
+use RuntimeException;
 
 class Recruiter
 {
@@ -122,9 +123,12 @@ class Recruiter
         $roster = $this->db->selectCollection('roster');
         foreach ($bookedJobs as $row) {
             list ($jobs, $workers, ) = $row;
+            $newAssignments = Worker::assignJobsToWorkers($roster, $jobs, $workers);
+            if (array_intersect_key($assignments, $newAssignments)) {
+                throw new RuntimeException("Conflicting assignments: current were " . var_export($assignments, true) . " and we want to also assign " . var_export($newAssignments, true));
+            }
             $assignments = array_merge(
-                $assignments,
-                Worker::assignJobsToWorkers($roster, $jobs, $workers)
+                $assignments, $newAssignments
             );
         }
         return array_map(function($value) { return (string) $value; }, $assignments);
