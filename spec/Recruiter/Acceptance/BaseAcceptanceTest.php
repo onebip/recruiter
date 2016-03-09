@@ -85,7 +85,7 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
     {
         list($process, $pipes, $name) = $processAndPipes;
         proc_terminate($process, $signal);
-        Timeout::inSeconds(1, 'termination of worker')
+        Timeout::inSeconds(30, 'termination of process')
             ->until(function() use ($process) {
                 $status = proc_get_status($process);
                 return $status['running'] == false;

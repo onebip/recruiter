@@ -11,7 +11,7 @@ use Onebip\Clock\SystemClock;
 
 $cli = new Cli();
 $cli->add('recruiter', new Option\TargetHost('target'));
-$cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '30s'));
+$cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '12800ms'));
 $cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '256MB'));
 $cli->parse();
 

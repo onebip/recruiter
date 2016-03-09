@@ -41,6 +41,13 @@ class EnduranceTest extends BaseAcceptanceTest
                 )
             )))
             ->hook(Listener\collectFrequencies(function($actions) {
+                $actions = array_map(function($action) {
+                    if (is_array($action)) {
+                        return '(' . implode(',', $action) . ')';
+                    } else {
+                        return $action;
+                    }
+                }, $actions);
                 return '[' . implode(',', $actions) . ']';
             }))
             ->then(function($actions) {
