@@ -53,14 +53,15 @@ class Worker
         $this->refresh();
         if ($this->hasBeenAssignedToDoSomething()) {
             $this->workOn(
-                $this->recruiter->scheduledJob(
+                $job = $this->recruiter->scheduledJob(
                     $this->status['assigned_to'][(string)$this->status['_id']]
                 )
             );
-            return true;
+            return (string) $job->id();
+        } else {
+            $this->stillHere();
+            return false;
         }
-        $this->stillHere();
-        return false;
     }
 
     public function export()
@@ -89,8 +90,9 @@ class Worker
 
     private function stillHere()
     {
-        $this->status['last_seen_at'] = T\MongoDate::now();
-        $this->save();
+        $lastSeenAt = T\MongoDate::now();
+        $this->status['last_seen_at'] = $lastSeenAt;
+        $this->repository->atomicUpdate($this, ['last_seen_at' => $lastSeenAt]);
     }
 
     private function workOn($job)
@@ -192,9 +194,9 @@ class Worker
             Onebip\array_map($workers, function($id) {return (string)$id;}),
             $jobs
         );
-        $collection->update(
-            ['_id' => ['$in' => array_values($workers)]],
-            ['$set' => [
+        $result = $collection->update(
+            $where = ['_id' => ['$in' => array_values($workers)]],
+            $update = ['$set' => [
                 'available' => false,
                 'assigned_to' => $assignment,
                 'assigned_since' => T\MongoDate::now()

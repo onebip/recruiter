@@ -15,6 +15,6 @@ class AssignmentTest extends BaseAcceptanceTest
         $worker = $this->recruiter->hire();
         $assignments = $this->recruiter->assignJobsToWorkers();
         $this->assertEquals(1, count($assignments));
-        $this->assertTrue($worker->work());
+        $this->assertTrue((bool) $worker->work());
     }
 }

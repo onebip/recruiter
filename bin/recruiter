@@ -19,6 +19,13 @@ $recruiter = $cli->get('recruiter');
 $waitStrategy = $cli->get('wait-strategy');
 $memoryLimit = $cli->get('memory-limit');
 
+$askedToStop = false;
+foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
+    pcntl_signal($signal, function($signal) use(&$askedToStop) {
+        $askedToStop = true;
+    });
+}
+
 $recruiter->ensureIsTheOnlyOne(
     $waitStrategy->timeToWaitAtMost(),
     $otherwise = function() {
@@ -30,11 +37,6 @@ $recruiter->ensureIsTheOnlyOne(
     }
 );
 
-foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
-    pcntl_signal($signal, function($signal) use(&$askedToStop) {
-        $askedToStop = true;
-    });
-}
 
 printf(
     '[RECRUITER][%d][%s] ready to recruit!' . PHP_EOL,
@@ -69,9 +71,9 @@ while (!askedToStop()) {
         '[RECRUITER][%d][%s] unlocked %d jobs due to dead workers' . PHP_EOL,
         posix_getpid(), date('c'), $unlockedJobs
     );
-    (count($assignment) === 0) ?
-        $waitStrategy->wait()->backOff() :
-        $waitStrategy->reset();
+    (count($assignment) > 0) ?
+        $waitStrategy->reset() :
+        $waitStrategy->wait()->backOff();
 }
 $recruiter->bye();
 printf(

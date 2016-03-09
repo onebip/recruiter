@@ -25,6 +25,14 @@ class Repository
         $this->roster->save($worker->export());
     }
 
+    public function atomicUpdate($worker, array $changeSet)
+    {
+        $this->roster->update(
+            ['_id' => $worker->id()],
+            ['$set' => $changeSet]
+        );
+    }
+
     public function refresh($worker)
     {
         $worker->updateWith(

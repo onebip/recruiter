@@ -23,7 +23,6 @@ $waitStrategy = $cli->get('wait-strategy');
 $filterJobToWorkOn = $cli->get('work-on');
 
 $askedToStop = false;
-$worker = $filterJobToWorkOn->applyTo($recruiter->hire());
 
 foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
     pcntl_signal($signal, function($signal) use(&$askedToStop) {
@@ -31,14 +30,16 @@ foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
     });
 }
 
+$worker = $filterJobToWorkOn->applyTo($recruiter->hire());
+
 printf('[WORKER][%d][%s] worker %s ready to work!' . PHP_EOL, posix_getpid(), date('c'), $worker->id());
 while (!askedToStop()) {
     $doneSomeWork = $worker->work();
     $memoryLimit->ensure(memory_get_usage());
     if ($doneSomeWork) {
         printf(
-            '[WORKER][%d][%s] executed job' . PHP_EOL,
-            posix_getpid(), date('c')
+            '[WORKER][%d][%s] executed job %s' . PHP_EOL,
+            posix_getpid(), date('c'), $doneSomeWork
         );
     }
     ($doneSomeWork) ?
