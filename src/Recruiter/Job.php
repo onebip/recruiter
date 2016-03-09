@@ -202,7 +202,7 @@ class Job
 
     public static function rollbackLockedNotIn(MongoCollection $collection, array $excluded)
     {
-        $collection->update(
+        return $collection->update(
             [
                 'locked' => true,
                 '_id' => ['$nin' => $excluded],
@@ -215,7 +215,7 @@ class Job
             [
                 'multiple' => true,
             ]
-        );
+        )['n'];
     }
 
     public static function lockAll(MongoCollection $collection, $jobs)

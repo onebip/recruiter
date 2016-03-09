@@ -55,11 +55,11 @@ class Repository
 
     public function releaseAll($jobIds)
     {
-        $this->scheduled->update(
+        return $this->scheduled->update(
             ['_id' => ['$in' => $jobIds]],
             ['$set' => ['active' => true, 'locked' => false]],
             ['multiple' => true]
-        );
+        )['n'];
     }
 
     /**

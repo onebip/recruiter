@@ -52,16 +52,17 @@ class Recruiter
 
     public function init()
     {
-        $this->rollbackLockedJobs();
+        return $this->rollbackLockedJobs();
     }
 
     /**
      * @step
+     * @return integer  how many
      */
     public function rollbackLockedJobs()
     {
         $assignedJobs = Worker::assignedJobs($this->db->selectCollection('roster'));
-        Job::rollbackLockedNotIn($this->db->selectCollection('scheduled'), $assignedJobs);
+        return Job::rollbackLockedNotIn($this->db->selectCollection('scheduled'), $assignedJobs);
     }
 
     /**
@@ -134,10 +135,11 @@ class Recruiter
 
     /**
      * @step
+     * @return integer  how many jobs were unlocked as a result
      */
     public function retireDeadWorkers(Clock $clock)
     {
-        $this->jobs->releaseAll(
+        return $this->jobs->releaseAll(
             $jobsAssignedToDeadWorkers = Worker::retireDeadWorkers($this->workers, $clock)
         );
     }

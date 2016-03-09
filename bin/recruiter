@@ -40,7 +40,11 @@ printf(
     '[RECRUITER][%d][%s] ready to recruit!' . PHP_EOL,
     posix_getpid(), date('c')
 );
-$recruiter->init();
+$rolledBack = $recruiter->init();
+printf(
+    '[RECRUITER][%d][%s] rolled back %d jobs' . PHP_EOL,
+    posix_getpid(), date('c'), $rolledBack
+);
 while (!askedToStop()) {
     $memoryUsage = ByteUnits\bytes(memory_get_usage());
     $pickStartAt = microtime(true);
@@ -53,7 +57,11 @@ while (!askedToStop()) {
     );
     $memoryLimit->ensure($memoryUsage);
     $recruiter->stillHere($waitStrategy->timeToWaitAtMost());
-    $recruiter->retireDeadWorkers(new SystemClock());
+    $unlockedJobs = $recruiter->retireDeadWorkers(new SystemClock());
+    printf(
+        '[RECRUITER][%d][%s] unlocked %d jobs due to dead workers' . PHP_EOL,
+        posix_getpid(), date('c'), $unlockedJobs
+    );
     ($numberOfAssignments === 0) ?
         $waitStrategy->wait()->backOff() :
         $waitStrategy->reset();
