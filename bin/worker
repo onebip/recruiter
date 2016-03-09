@@ -31,7 +31,7 @@ foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
     });
 }
 
-printf('[WORKER][%d][%s] ready to work!' . PHP_EOL, posix_getpid(), date('c'));
+printf('[WORKER][%d][%s] worker %s ready to work!' . PHP_EOL, posix_getpid(), date('c'), $worker->id());
 while (!askedToStop()) {
     $doneSomeWork = $worker->work();
     $memoryLimit->ensure(memory_get_usage());
