@@ -5,6 +5,7 @@ use Recruiter\Job\Repository;
 use Onebip\Concurrency\Timeout;
 use Eris;
 use Eris\Generator;
+use Eris\Generator\ConstantGenerator;
 use Eris\Listener;
 
 class EnduranceTest extends BaseAcceptanceTest
@@ -28,11 +29,17 @@ class EnduranceTest extends BaseAcceptanceTest
     {
         $this
             ->limitTo(100)
-            ->forAll(Generator\seq(Generator\elements([
-                'enqueueJob',
-                'restartWorker',
-                'restartRecruiter',
-            ])))
+            ->forAll(Generator\seq(Generator\oneOf(
+                ConstantGenerator::box('enqueueJob'),
+                ConstantGenerator::box('restartWorker'),
+                ConstantGenerator::box('restartRecruiter'),
+                Generator\map(
+                    function($milliseconds) {
+                        return ['sleep', $milliseconds];
+                    },
+                    Generator\choose(1, 1000)
+                )
+            )))
             ->hook(Listener\collectFrequencies(function($actions) {
                 return '[' . implode(',', $actions) . ']';
             }))
@@ -41,7 +48,16 @@ class EnduranceTest extends BaseAcceptanceTest
                 $this->start();
                 foreach ($actions as $action) {
                     $this->logAction($action);
-                    $this->$action();
+                    if (is_array($action)) {
+                        $arguments = $action;
+                        $method = array_shift($arguments);
+                        call_user_func_array(
+                            [$this, $method],
+                            $arguments
+                        );
+                    } else {
+                        $this->$action();
+                    }
                 }
 
                 $estimatedTime = count($actions) * 3;
@@ -105,5 +121,10 @@ class EnduranceTest extends BaseAcceptanceTest
     {
         $this->stopProcessWithSignal($this->processRecruiter, SIGTERM);
         $this->processRecruiter = $this->startRecruiter();
+    }
+
+    protected function sleep($milliseconds)
+    {
+        usleep($milliseconds * 1000);
     }
 }

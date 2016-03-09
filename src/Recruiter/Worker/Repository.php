@@ -50,6 +50,11 @@ class Repository
         );
     }
 
+    public function retireWorkerWithIdIfNotAssigned($id)
+    {
+        return $this->roster->remove(['_id' => $id, 'available' => true])['n'] > 0;
+    }
+
     public function retireWorkerWithId($id)
     {
         $this->roster->remove(['_id' => $id]);

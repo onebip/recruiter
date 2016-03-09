@@ -80,6 +80,11 @@ class Worker
         $this->save();
     }
 
+    public function retireIfNotAssigned()
+    {
+        return $this->repository->retireWorkerWithIdIfNotAssigned($this->status['_id']);
+    }
+
     public function retire()
     {
         if ($this->hasBeenAssignedToDoSomething()) {

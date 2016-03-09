@@ -33,7 +33,12 @@ foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
 $worker = $filterJobToWorkOn->applyTo($recruiter->hire());
 
 printf('[WORKER][%d][%s] worker %s ready to work!' . PHP_EOL, posix_getpid(), date('c'), $worker->id());
-while (!askedToStop()) {
+while (true) {
+    if (askedToStop()) {
+        if ($worker->retireIfNotAssigned()) {
+            break;
+        }
+    }
     $doneSomeWork = $worker->work();
     $memoryLimit->ensure(memory_get_usage());
     if ($doneSomeWork) {
@@ -46,7 +51,6 @@ while (!askedToStop()) {
         $waitStrategy->reset() :
         $waitStrategy->wait()->backOff();
 }
-$worker->retire();
 printf(
     '[WORKER][%d][%s] %s' . PHP_EOL, posix_getpid(), date('c'),
     'cleaned up after the worker death'
