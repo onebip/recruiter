@@ -42,7 +42,7 @@ while (!askedToStop()) {
         );
     }
     ($doneSomeWork) ?
-        $waitStrategy->goForward() :
+        $waitStrategy->reset() :
         $waitStrategy->wait()->backOff();
 }
 $worker->retire();
