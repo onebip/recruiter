@@ -107,7 +107,7 @@ class Recruiter
                 list($assignments, $jobs, $workers) = $this->combineJobsWithWorkers($jobs, $workers);
 
                 Job::lockAll($scheduled, $jobs);
-                $bookedJobs[] = [$jobs, $workers, $assignments];
+                $bookedJobs[] = [$jobs, $workers];
             }
         }
         return $bookedJobs;
@@ -118,14 +118,16 @@ class Recruiter
      */
     public function assignLockedJobsToWorkers($bookedJobs)
     {
-        $numberOfWorkersWithJobs = 0;
+        $assignments = [];
         $roster = $this->db->selectCollection('roster');
         foreach ($bookedJobs as $row) {
-            list ($jobs, $workers, $assignments) = $row;
-            Worker::assignJobsToWorkers($roster, $jobs, $workers);
-            $numberOfWorkersWithJobs += $assignments;
+            list ($jobs, $workers, ) = $row;
+            $assignments = array_merge(
+                $assignments,
+                Worker::assignJobsToWorkers($roster, $jobs, $workers)
+            );
         }
-        return $numberOfWorkersWithJobs;
+        return array_map(function($value) { return (string) $value; }, $assignments);
     }
 
     public function scheduledJob($id)

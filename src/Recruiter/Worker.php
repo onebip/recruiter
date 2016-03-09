@@ -188,18 +188,20 @@ class Worker
 
     public static function assignJobsToWorkers(MongoCollection $collection, $jobs, $workers)
     {
+        $assignment = array_combine(
+            Onebip\array_map($workers, function($id) {return (string)$id;}),
+            $jobs
+        );
         $collection->update(
             ['_id' => ['$in' => array_values($workers)]],
             ['$set' => [
                 'available' => false,
-                'assigned_to' => array_combine(
-                        Onebip\array_map($workers, function($id) {return (string)$id;}),
-                        $jobs
-                ),
+                'assigned_to' => $assignment,
                 'assigned_since' => T\MongoDate::now()
             ]],
             ['multiple' => true]
         );
+        return $assignment;
     }
 
     public static function assignedJobs(MongoCollection $collection)

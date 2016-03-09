@@ -48,12 +48,19 @@ printf(
 while (!askedToStop()) {
     $memoryUsage = ByteUnits\bytes(memory_get_usage());
     $pickStartAt = microtime(true);
-    $numberOfAssignments = $recruiter->assignJobsToWorkers();
+    $assignment = $recruiter->assignJobsToWorkers();
     $pickEndAt = microtime(true);
+    foreach ($assignment as $worker => $job) {
+        printf(
+            '[RECRUITER][%d][%s][%s] assigned job %s to worker %s' . PHP_EOL,
+            posix_getpid(), date('c'), $memoryUsage->format(),
+            $job, $worker
+        );
+    }
     printf(
         '[RECRUITER][%d][%s][%s] picked jobs for %d workers in %fms' . PHP_EOL,
         posix_getpid(), date('c'), $memoryUsage->format(),
-        $numberOfAssignments, ($pickEndAt - $pickStartAt) * 1000
+        count($assignment), ($pickEndAt - $pickStartAt) * 1000
     );
     $memoryLimit->ensure($memoryUsage);
     $recruiter->stillHere($waitStrategy->timeToWaitAtMost());
@@ -62,7 +69,7 @@ while (!askedToStop()) {
         '[RECRUITER][%d][%s] unlocked %d jobs due to dead workers' . PHP_EOL,
         posix_getpid(), date('c'), $unlockedJobs
     );
-    ($numberOfAssignments === 0) ?
+    (count($assignment) === 0) ?
         $waitStrategy->wait()->backOff() :
         $waitStrategy->reset();
 }
