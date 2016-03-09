@@ -27,7 +27,7 @@ class EnduranceTest extends BaseAcceptanceTest
     public function testNotWithstandingCrashesJobsAreEventuallyPerformed()
     {
         $this
-            ->limitTo(20)
+            ->limitTo(100)
             ->forAll(Generator\seq(Generator\elements([
                 'enqueueJob',
                 'restartWorker',
@@ -45,7 +45,12 @@ class EnduranceTest extends BaseAcceptanceTest
                 }
 
                 $estimatedTime = count($actions) * 3;
-                Timeout::inSeconds($estimatedTime, "all $this->jobs jobs to be performed. See: " . var_export($this->files, true))
+                Timeout::inSeconds(
+                    $estimatedTime,
+                    function() {
+                        return "all $this->jobs jobs to be performed. Now is " . date('c') . " See: " . var_export($this->files, true);
+                    }
+                )
                     ->until(function() {
                         return $this->jobRepository->countArchived() === $this->jobs;
                     });
