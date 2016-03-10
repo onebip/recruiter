@@ -5,6 +5,7 @@ namespace Recruiter;
 use MongoId;
 use MongoCollection;
 use Timeless as T;
+use Timeless\Interval;
 use Recruiter\Worker\Repository;
 use Onebip;
 use Onebip\Clock;
@@ -226,12 +227,11 @@ class Worker
         return array_values(array_unique($jobs));
     }
 
-    public static function retireDeadWorkers(Repository $roster, Clock $clock)
+    public static function retireDeadWorkers(Repository $roster, Clock $clock, Interval $consideredDeadAfter)
     {
         $now = $clock->current();
-        $consideredDeadAfter = new DateInterval("PT30M");
         $consideredDeadAt = clone $now;
-        $consideredDeadAt->sub($consideredDeadAfter);
+        $consideredDeadAt->sub($consideredDeadAfter->toDateInterval());
         $deadWorkers = $roster->deadWorkers($consideredDeadAt);
         $jobsToReassign = [];
         foreach ($deadWorkers as $deadWorker) {

@@ -13,11 +13,13 @@ $cli = new Cli();
 $cli->add('recruiter', new Option\TargetHost('target'));
 $cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '12800ms'));
 $cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '256MB'));
+$cli->add('considered-dead-after', new Option\ConsideredDeadAfter('considered-dead-after', '30m'));
 $cli->parse();
 
 $recruiter = $cli->get('recruiter');
 $waitStrategy = $cli->get('wait-strategy');
 $memoryLimit = $cli->get('memory-limit');
+$consideredDeadAfter = $cli->get('considered-dead-after');
 
 $askedToStop = false;
 foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
@@ -67,7 +69,10 @@ while (!askedToStop()) {
     );
     $memoryLimit->ensure($memoryUsage);
     $recruiter->stillHere($waitStrategy->timeToWaitAtMost());
-    $unlockedJobs = $recruiter->retireDeadWorkers(new SystemClock());
+    $unlockedJobs = $recruiter->retireDeadWorkers(
+        new SystemClock(),
+        $consideredDeadAfter
+    );
     printf(
         '[RECRUITER][%d][%s] unlocked %d jobs due to dead workers' . PHP_EOL,
         posix_getpid(), date('c'), $unlockedJobs

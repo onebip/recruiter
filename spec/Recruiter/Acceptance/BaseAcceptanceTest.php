@@ -54,7 +54,7 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
             2 => ['pipe', 'w'],
         ];
         $cwd = __DIR__ . '/../../../';
-        $process = proc_open('exec php bin/recruiter >> /tmp/recruiter.log 2>&1', $descriptors, $pipes, $cwd);
+        $process = proc_open('exec php bin/recruiter --backoff-to=5s --considered-dead-after 20s >> /tmp/recruiter.log 2>&1', $descriptors, $pipes, $cwd);
         Timeout::inSeconds(1, "recruiter to be up")
             ->until(function() use ($process) {
                 $status = proc_get_status($process);
@@ -71,7 +71,7 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
             2 => ['pipe', 'w'],
         ];
         $cwd = __DIR__ . '/../../../';
-        $process = proc_open('exec php bin/worker --bootstrap=examples/bootstrap.php >> /tmp/worker.log 2>&1', $descriptors, $pipes, $cwd);
+        $process = proc_open('exec php bin/worker --bootstrap=examples/bootstrap.php --backoff-to 15s >> /tmp/worker.log 2>&1', $descriptors, $pipes, $cwd);
         Timeout::inSeconds(1, "worker to be up")
             ->until(function() use ($process) {
                 $status = proc_get_status($process);

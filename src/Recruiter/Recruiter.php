@@ -45,7 +45,7 @@ class Recruiter
     {
         try {
             $this->lock->wait(self::POLL_TIME, $timeToWaitAtMost->seconds() * self::WAIT_FACTOR);
-            $this->lock->acquire($timeToWaitAtMost->seconds() * self::LOCK_FACTOR);
+            $this->lock->acquire($this->leaseTimeOfLock($timeToWaitAtMost));
         } catch(LockNotAvailableException $e) {
             $otherwise();
         }
@@ -66,7 +66,7 @@ class Recruiter
      */
     public function stillHere(Interval $timeToWaitAtMost)
     {
-        $this->lock->refresh($timeToWaitAtMost->seconds() * self::LOCK_FACTOR);
+        $this->lock->refresh($this->leaseTimeOfLock($timeToWaitAtMost));
     }
 
     /**
@@ -143,10 +143,10 @@ class Recruiter
      * @step
      * @return integer  how many jobs were unlocked as a result
      */
-    public function retireDeadWorkers(Clock $clock)
+    public function retireDeadWorkers(Clock $clock, Interval $consideredDeadAfter)
     {
         return $this->jobs->releaseAll(
-            $jobsAssignedToDeadWorkers = Worker::retireDeadWorkers($this->workers, $clock)
+            $jobsAssignedToDeadWorkers = Worker::retireDeadWorkers($this->workers, $clock, $consideredDeadAfter)
         );
     }
 
@@ -180,5 +180,13 @@ class Recruiter
         $workers = array_slice($workers, 0, $assignments);
         $jobs = array_slice($jobs, 0, $assignments);
         return [$assignments, $jobs, $workers];
+    }
+
+    /**
+     * @return integer  seconds
+     */
+    private function leaseTimeOfLock(Interval $maximumBackoff)
+    {
+        return round($maximumBackoff->seconds() * self::LOCK_FACTOR);
     }
 }

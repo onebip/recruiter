@@ -44,11 +44,17 @@ class EnduranceTest extends BaseAcceptanceTest
                                 Generator\constant('enqueueJob'),
                                 Generator\map(
                                     function($workerIndex) {
-                                        return ['restartWorker', $workerIndex];
+                                        return ['restartWorkerGracefully', $workerIndex];
                                     },
                                     Generator\choose(0, $workers - 1)
                                 ),
-                                Generator\constant('restartRecruiter'),
+                                Generator\map(
+                                    function($workerIndex) {
+                                        return ['restartWorkerByKilling', $workerIndex];
+                                    },
+                                    Generator\choose(0, $workers - 1)
+                                ),
+                                Generator\constant('restartRecruiterGracefully'),
                                 Generator\map(
                                     function($milliseconds) {
                                         return ['sleep', $milliseconds];
@@ -82,7 +88,7 @@ class EnduranceTest extends BaseAcceptanceTest
                     }
                 }
 
-                $estimatedTime = count($actions) * 3;
+                $estimatedTime = max(count($actions) * 4, 60);
                 Timeout::inSeconds(
                     $estimatedTime,
                     function() {
@@ -136,13 +142,19 @@ class EnduranceTest extends BaseAcceptanceTest
         }
     }
 
-    protected function restartWorker($workerIndex)
+    protected function restartWorkerGracefully($workerIndex)
     {
         $this->stopProcessWithSignal($this->processWorkers[$workerIndex], SIGTERM);
         $this->processWorkers[$workerIndex] = $this->startWorker();
     }
 
-    protected function restartRecruiter()
+    protected function restartWorkerByKilling($workerIndex)
+    {
+        $this->stopProcessWithSignal($this->processWorkers[$workerIndex], SIGKILL);
+        $this->processWorkers[$workerIndex] = $this->startWorker();
+    }
+
+    protected function restartRecruiterGracefully()
     {
         $this->stopProcessWithSignal($this->processRecruiter, SIGTERM);
         $this->processRecruiter = $this->startRecruiter();

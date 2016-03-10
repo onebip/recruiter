@@ -1,6 +1,7 @@
 <?php
-
 namespace Timeless;
+
+use DateInterval;
 
 class Interval
 {
@@ -72,6 +73,14 @@ class Interval
     public function years()
     {
         return (int) floor($this->ms / self::MILLISECONDS_IN_YEARS);
+    }
+
+    /**
+     * @return DateInterval
+     */
+    public function toDateInterval()
+    {
+        return new DateInterval("PT{$this->seconds()}S");
     }
 
     public function multiplyBy($multiplier)
