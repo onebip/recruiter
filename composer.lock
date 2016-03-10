@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "967491931a4380ff331544ce11544029",
-    "content-hash": "5cd488f55180b60dd0d99acc2aa2172b",
+    "hash": "be7b5e3d362b2836c431111e64e99c27",
+    "content-hash": "51547e454dec7204842b08d82c390789",
     "packages": [
         {
             "name": "gabrielelana/byte-units",
@@ -295,16 +295,16 @@
         },
         {
             "name": "giorgiosironi/eris",
-            "version": "0.7.0",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giorgiosironi/eris.git",
-                "reference": "5dbea760dc5402f8a61af9d9736bbb658858a391"
+                "reference": "d33c03273e65f0772aa662e3a6a009fa8d325ee1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giorgiosironi/eris/zipball/5dbea760dc5402f8a61af9d9736bbb658858a391",
-                "reference": "5dbea760dc5402f8a61af9d9736bbb658858a391",
+                "url": "https://api.github.com/repos/giorgiosironi/eris/zipball/d33c03273e65f0772aa662e3a6a009fa8d325ee1",
+                "reference": "d33c03273e65f0772aa662e3a6a009fa8d325ee1",
                 "shasum": ""
             },
             "require": {
@@ -345,7 +345,7 @@
                 }
             ],
             "description": "PHP library for property-based testing. Integrates with PHPUnit.",
-            "time": "2016-03-04 11:14:01"
+            "time": "2016-03-09 15:55:59"
         },
         {
             "name": "phpdocumentor/reflection-docblock",
@@ -1251,7 +1251,8 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "onebip/onebip-array": 20,
-        "onebip/onebip-concurrency": 20
+        "onebip/onebip-concurrency": 20,
+        "giorgiosironi/eris": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

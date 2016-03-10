@@ -18,6 +18,8 @@ class EnduranceTest extends BaseAcceptanceTest
         $this->jobRepository = new Repository($this->recruiterDb);
         $this->actionLog = '/tmp/actions.log';
         $this->files[] = $this->actionLog;
+        $this->processRecruiter = null;
+        $this->processWorkers = [];
     }
 
     public function tearDown()
@@ -29,30 +31,40 @@ class EnduranceTest extends BaseAcceptanceTest
     {
         $this
             ->limitTo(100)
-            ->forAll(Generator\seq(Generator\oneOf(
-                ConstantGenerator::box('enqueueJob'),
-                ConstantGenerator::box('restartWorker'),
-                ConstantGenerator::box('restartRecruiter'),
-                Generator\map(
-                    function($milliseconds) {
-                        return ['sleep', $milliseconds];
-                    },
-                    Generator\choose(1, 1000)
-                )
-            )))
-            ->hook(Listener\collectFrequencies(function($actions) {
-                $actions = array_map(function($action) {
-                    if (is_array($action)) {
-                        return '(' . implode(',', $action) . ')';
-                    } else {
-                        return $action;
+            ->forAll(
+                Generator\bind(
+                    Generator\choose(1, 4),
+                    function($workers) {
+                        return Generator\tuple(
+                            Generator\constant($workers),
+                            Generator\seq(Generator\oneOf(
+                                Generator\constant('enqueueJob'),
+                                Generator\map(
+                                    function($workerIndex) {
+                                        return ['restartWorker', $workerIndex];
+                                    },
+                                    Generator\choose(0, $workers - 1)
+                                ),
+                                Generator\constant('restartRecruiter'),
+                                Generator\map(
+                                    function($milliseconds) {
+                                        return ['sleep', $milliseconds];
+                                    },
+                                    Generator\choose(1, 1000)
+                                )
+                            ))
+                        );
                     }
-                }, $actions);
-                return '[' . implode(',', $actions) . ']';
+                )
+            )
+            ->hook(Listener\collectFrequencies(function($actions) {
+                // TODO: upgrade Eris and remove this custom function
+                return json_encode($actions);
             }))
-            ->then(function($actions) {
+            ->then(function($tuple) {
+                list ($workers, $actions) = $tuple;
                 $this->clean();
-                $this->start();
+                $this->start($workers);
                 foreach ($actions as $action) {
                     $this->logAction($action);
                     if (is_array($action)) {
@@ -88,13 +100,13 @@ class EnduranceTest extends BaseAcceptanceTest
         $this->jobs = 0;
     }
 
-    private function logAction($text)
+    private function logAction($action)
     {
         file_put_contents(
             $this->actionLog,
             sprintf(
                 "[ACTIONS][PHPUNIT][%s] %s" . PHP_EOL,
-                date('c'), $text
+                date('c'), json_encode($action)
             ),
             FILE_APPEND
         );
@@ -106,22 +118,25 @@ class EnduranceTest extends BaseAcceptanceTest
             $this->stopProcessWithSignal($this->processRecruiter, $signal);
             $this->processRecruiter = null;
         }
-        if ($this->processWorker) {
-            $this->stopProcessWithSignal($this->processWorker, $signal);
-            $this->processWorker = null;
+        foreach ($this->processWorkers as $processWorker) {
+            $this->stopProcessWithSignal($processWorker, $signal);
+        }
+        $this->processWorkers = [];
+    }
+
+    private function start($workers)
+    {
+        $this->processRecruiter = $this->startRecruiter();
+        $this->processWorkers = [];
+        for ($i = 0; $i < $workers; $i++) {
+            $this->processWorkers[$i] = $this->startWorker();
         }
     }
 
-    private function start()
+    protected function restartWorker($workerIndex)
     {
-        $this->processRecruiter = $this->startRecruiter();
-        $this->processWorker = $this->startWorker();
-    }
-
-    protected function restartWorker()
-    {
-        $this->stopProcessWithSignal($this->processWorker, SIGTERM);
-        $this->processWorker = $this->startWorker();
+        $this->stopProcessWithSignal($this->processWorkers[$workerIndex], SIGTERM);
+        $this->processWorkers[$workerIndex] = $this->startWorker();
     }
 
     protected function restartRecruiter()

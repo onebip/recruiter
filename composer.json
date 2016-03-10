@@ -23,7 +23,7 @@
   },
   "require-dev": {
     "phpunit/phpunit": "~4.0",
-    "giorgiosironi/eris": "0.7.0"
+    "giorgiosironi/eris": "dev-master"
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
