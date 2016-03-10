@@ -43,7 +43,7 @@ printf(
     posix_getpid(), date('c')
 );
 while (!askedToStop()) {
-    $rolledBack = $recruiter->init();
+    $rolledBack = $recruiter->rollbackLockedJobs();
     printf(
         '[RECRUITER][%d][%s] rolled back %d jobs' . PHP_EOL,
         posix_getpid(), date('c'), $rolledBack

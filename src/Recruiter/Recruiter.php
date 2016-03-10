@@ -51,11 +51,6 @@ class Recruiter
         }
     }
 
-    public function init()
-    {
-        return $this->rollbackLockedJobs();
-    }
-
     /**
      * @step
      * @return integer  how many
