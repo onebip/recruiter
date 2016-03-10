@@ -8,6 +8,9 @@ use Eris\Generator;
 use Eris\Generator\ConstantGenerator;
 use Eris\Listener;
 
+/**
+ * @group long
+ */
 class EnduranceTest extends BaseAcceptanceTest
 {
     use Eris\TestTrait; 
