@@ -211,6 +211,9 @@ class Worker
         return [$assignment, $result['n']];
     }
 
+    /**
+     * @return array  of MongoId
+     */
     public static function assignedJobs(MongoCollection $collection)
     {
         $cursor = $collection->find([], ['assigned_to' => 1]);
@@ -220,7 +223,7 @@ class Worker
                 $jobs = array_merge($jobs, array_values($document['assigned_to']));
             }
         }
-        return array_unique($jobs);
+        return array_values(array_unique($jobs));
     }
 
     public static function retireDeadWorkers(Repository $roster, Clock $clock)
