@@ -5,7 +5,9 @@ namespace Recruiter;
 use Onebip;
 use MongoId;
 use MongoCollection;
+use MongoWriteConcernException;
 use Exception;
+use InvalidArgumentException;
 
 use Timeless as T;
 use Timeless\Moment;
@@ -202,20 +204,24 @@ class Job
 
     public static function rollbackLockedNotIn(MongoCollection $collection, array $excluded)
     {
-        return $collection->update(
-            [
-                'locked' => true,
-                '_id' => ['$nin' => $excluded],
-            ],
-            [
-                '$set' => [
-                    'locked' => false,
+        try {
+            return $collection->update(
+                [
+                    'locked' => true,
+                    '_id' => ['$nin' => $excluded],
+                ],
+                [
+                    '$set' => [
+                        'locked' => false,
+                    ]
+                ],
+                [
+                    'multiple' => true,
                 ]
-            ],
-            [
-                'multiple' => true,
-            ]
-        )['n'];
+            )['n'];
+        } catch (MongoWriteConcernException $e) {
+            throw new InvalidArgumentException("Not valid excluded jobs filter: " . var_export($excluded, true), -1, $e);
+        }
     }
 
     public static function lockAll(MongoCollection $collection, $jobs)
