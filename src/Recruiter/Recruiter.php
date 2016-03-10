@@ -120,18 +120,23 @@ class Recruiter
     public function assignLockedJobsToWorkers($bookedJobs)
     {
         $assignments = [];
+        $totalActualAssignments = 0;
         $roster = $this->db->selectCollection('roster');
         foreach ($bookedJobs as $row) {
             list ($jobs, $workers, ) = $row;
-            $newAssignments = Worker::assignJobsToWorkers($roster, $jobs, $workers);
+            list ($newAssignments, $actualAssignmentsNumber) = Worker::tryToAssignJobsToWorkers($roster, $jobs, $workers);
             if (array_intersect_key($assignments, $newAssignments)) {
                 throw new RuntimeException("Conflicting assignments: current were " . var_export($assignments, true) . " and we want to also assign " . var_export($newAssignments, true));
             }
             $assignments = array_merge(
                 $assignments, $newAssignments
             );
+            $totalActualAssignments += $actualAssignmentsNumber;
         }
-        return array_map(function($value) { return (string) $value; }, $assignments);
+        return [
+            array_map(function($value) { return (string) $value; }, $assignments),
+            $totalActualAssignments
+        ];
     }
 
     public function scheduledJob($id)

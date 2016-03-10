@@ -12,7 +12,8 @@ class FaultToleranceTest extends BaseAcceptanceTest
         $assignments = $this->recruiter->bookJobsForWorkers();
 
         $this->recruiter->rollbackLockedJobs();
-        $assignments = $this->recruiter->assignJobsToWorkers();
+        list ($assignments, $totalNumber) = $this->recruiter->assignJobsToWorkers();
         $this->assertEquals(1, count($assignments));
+        $this->assertEquals(1, $totalNumber);
     }
 }

@@ -193,7 +193,7 @@ class Worker
         return $result;
     }
 
-    public static function assignJobsToWorkers(MongoCollection $collection, $jobs, $workers)
+    public static function tryToAssignJobsToWorkers(MongoCollection $collection, $jobs, $workers)
     {
         $assignment = array_combine(
             Onebip\array_map($workers, function($id) {return (string)$id;}),
@@ -208,7 +208,7 @@ class Worker
             ]],
             ['multiple' => true]
         );
-        return $assignment;
+        return [$assignment, $result['n']];
     }
 
     public static function assignedJobs(MongoCollection $collection)

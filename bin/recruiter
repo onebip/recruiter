@@ -42,27 +42,28 @@ printf(
     '[RECRUITER][%d][%s] ready to recruit!' . PHP_EOL,
     posix_getpid(), date('c')
 );
-$rolledBack = $recruiter->init();
-printf(
-    '[RECRUITER][%d][%s] rolled back %d jobs' . PHP_EOL,
-    posix_getpid(), date('c'), $rolledBack
-);
 while (!askedToStop()) {
-    $memoryUsage = ByteUnits\bytes(memory_get_usage());
+    $rolledBack = $recruiter->init();
+    printf(
+        '[RECRUITER][%d][%s] rolled back %d jobs' . PHP_EOL,
+        posix_getpid(), date('c'), $rolledBack
+    );
     $pickStartAt = microtime(true);
-    $assignment = $recruiter->assignJobsToWorkers();
+    list ($assignment, $actualNumber) = $recruiter->assignJobsToWorkers();
     $pickEndAt = microtime(true);
     foreach ($assignment as $worker => $job) {
         printf(
-            '[RECRUITER][%d][%s][%s] assigned job %s to worker %s' . PHP_EOL,
-            posix_getpid(), date('c'), $memoryUsage->format(),
+            '[RECRUITER][%d][%s] tried to assign job %s to worker %s' . PHP_EOL,
+            posix_getpid(), date('c'),
             $job, $worker
         );
     }
+    $memoryUsage = ByteUnits\bytes(memory_get_usage());
     printf(
-        '[RECRUITER][%d][%s][%s] picked jobs for %d workers in %fms' . PHP_EOL,
+        '[RECRUITER][%d][%s][%s] picked jobs for %d workers in %fms, actual assignments were %d' . PHP_EOL,
         posix_getpid(), date('c'), $memoryUsage->format(),
-        count($assignment), ($pickEndAt - $pickStartAt) * 1000
+        count($assignment), ($pickEndAt - $pickStartAt) * 1000,
+        $actualNumber
     );
     $memoryLimit->ensure($memoryUsage);
     $recruiter->stillHere($waitStrategy->timeToWaitAtMost());
