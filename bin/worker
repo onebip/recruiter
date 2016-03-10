@@ -36,6 +36,10 @@ printf('[WORKER][%d][%s] worker %s ready to work!' . PHP_EOL, posix_getpid(), da
 while (true) {
     if (askedToStop()) {
         if ($worker->retireIfNotAssigned()) {
+            printf(
+                '[WORKER][%d][%s] %s' . PHP_EOL, posix_getpid(), date('c'),
+                'worker retired'
+            );
             break;
         }
     }
@@ -51,10 +55,6 @@ while (true) {
         $waitStrategy->reset() :
         $waitStrategy->wait()->backOff();
 }
-printf(
-    '[WORKER][%d][%s] %s' . PHP_EOL, posix_getpid(), date('c'),
-    'cleaned up after the worker death'
-);
 printf('[WORKER][%d][%s] ok, see you space cowboy...' . PHP_EOL, posix_getpid(), date('c'));
 
 function askedToStop()
