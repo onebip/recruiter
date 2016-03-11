@@ -30,10 +30,10 @@ foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
 
 $recruiter->ensureIsTheOnlyOne(
     $waitStrategy->timeToWaitAtMost(),
-    $otherwise = function() {
+    $otherwise = function($message) {
         printf(
-            '[RECRUITER][%d][%s] unable to start more than one recruiter at a time, sorry space cowboy...' . PHP_EOL,
-            posix_getpid(), date('c')
+            '[RECRUITER][%d][%s] unable to start more than one recruiter at a time, sorry space cowboy... (%s)' . PHP_EOL,
+            posix_getpid(), date('c'), $message
         );
         exit(0);
     }

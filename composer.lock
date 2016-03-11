@@ -132,12 +132,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/onebip/onebip-concurrency.git",
-                "reference": "92fcdbc059591b249b5b9fe7234c16461d1b98e4"
+                "reference": "d7af1a37a5ae2c17e77a9545006c6abeb8cf95e3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/onebip/onebip-concurrency/zipball/92fcdbc059591b249b5b9fe7234c16461d1b98e4",
-                "reference": "92fcdbc059591b249b5b9fe7234c16461d1b98e4",
+                "url": "https://api.github.com/repos/onebip/onebip-concurrency/zipball/d7af1a37a5ae2c17e77a9545006c6abeb8cf95e3",
+                "reference": "d7af1a37a5ae2c17e77a9545006c6abeb8cf95e3",
                 "shasum": ""
             },
             "require": {
@@ -157,7 +157,7 @@
             "license": [
                 "MIT"
             ],
-            "time": "2015-12-10 10:02:10"
+            "time": "2016-03-11 11:42:11"
         },
         {
             "name": "psr/log",
@@ -299,12 +299,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/giorgiosironi/eris.git",
-                "reference": "d33c03273e65f0772aa662e3a6a009fa8d325ee1"
+                "reference": "7cb8c2e182a874767c50657e6b00dba73c5962d4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giorgiosironi/eris/zipball/d33c03273e65f0772aa662e3a6a009fa8d325ee1",
-                "reference": "d33c03273e65f0772aa662e3a6a009fa8d325ee1",
+                "url": "https://api.github.com/repos/giorgiosironi/eris/zipball/7cb8c2e182a874767c50657e6b00dba73c5962d4",
+                "reference": "7cb8c2e182a874767c50657e6b00dba73c5962d4",
                 "shasum": ""
             },
             "require": {
@@ -345,7 +345,7 @@
                 }
             ],
             "description": "PHP library for property-based testing. Integrates with PHPUnit.",
-            "time": "2016-03-09 15:55:59"
+            "time": "2016-03-10 07:59:51"
         },
         {
             "name": "phpdocumentor/reflection-docblock",

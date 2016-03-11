@@ -47,7 +47,7 @@ class Recruiter
             $this->lock->wait(self::POLL_TIME, $timeToWaitAtMost->seconds() * self::WAIT_FACTOR);
             $this->lock->acquire($this->leaseTimeOfLock($timeToWaitAtMost));
         } catch(LockNotAvailableException $e) {
-            $otherwise();
+            $otherwise($e->getMessage());
         }
     }
 
