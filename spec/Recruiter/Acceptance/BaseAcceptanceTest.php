@@ -92,9 +92,12 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
             });
     }
 
-    protected function enqueueJob()
+    /**
+     * @param integer $duration  milliseconds
+     */
+    protected function enqueueJob($duration = 10)
     {
-        $workable = ShellCommand::fromCommandLine('echo 42');
+        $workable = ShellCommand::fromCommandLine("sleep " . ($duration / 1000));
         $workable
             ->asJobOf($this->recruiter)
             ->inBackground()

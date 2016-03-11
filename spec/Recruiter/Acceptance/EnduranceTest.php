@@ -41,7 +41,12 @@ class EnduranceTest extends BaseAcceptanceTest
                         return Generator\tuple(
                             Generator\constant($workers),
                             Generator\seq(Generator\oneOf(
-                                Generator\constant('enqueueJob'),
+                                Generator\map(
+                                    function($duration) {
+                                        return ['enqueueJob', $duration];
+                                    },
+                                    Generator\nat()
+                                ),
                                 Generator\map(
                                     function($workerIndex) {
                                         return ['restartWorkerGracefully', $workerIndex];
