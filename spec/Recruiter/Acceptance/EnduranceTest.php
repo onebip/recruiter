@@ -55,6 +55,7 @@ class EnduranceTest extends BaseAcceptanceTest
                                     Generator\choose(0, $workers - 1)
                                 ),
                                 Generator\constant('restartRecruiterGracefully'),
+                                Generator\constant('restartRecruiterByKilling'),
                                 Generator\map(
                                     function($milliseconds) {
                                         return ['sleep', $milliseconds];
@@ -157,6 +158,12 @@ class EnduranceTest extends BaseAcceptanceTest
     protected function restartRecruiterGracefully()
     {
         $this->stopProcessWithSignal($this->processRecruiter, SIGTERM);
+        $this->processRecruiter = $this->startRecruiter();
+    }
+
+    protected function restartRecruiterByKilling()
+    {
+        $this->stopProcessWithSignal($this->processRecruiter, SIGKILL);
         $this->processRecruiter = $this->startRecruiter();
     }
 
