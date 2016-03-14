@@ -33,7 +33,7 @@ class EnduranceTest extends BaseAcceptanceTest
     public function testNotWithstandingCrashesJobsAreEventuallyPerformed()
     {
         $this
-            ->limitTo(4)
+            ->limitTo(100)
             ->forAll(
                 Generator\bind(
                     Generator\choose(1, 4),
@@ -72,6 +72,7 @@ class EnduranceTest extends BaseAcceptanceTest
                     }
                 )
             )
+            ->hook(Listener\log('/tmp/recruiter-test-iterations.log'))
             ->hook(Listener\collectFrequencies())
             ->then(function($tuple) {
                 list ($workers, $actions) = $tuple;
