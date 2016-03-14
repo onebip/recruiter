@@ -33,7 +33,7 @@ class EnduranceTest extends BaseAcceptanceTest
     public function testNotWithstandingCrashesJobsAreEventuallyPerformed()
     {
         $this
-            ->limitTo(100)
+            ->limitTo(4)
             ->forAll(
                 Generator\bind(
                     Generator\choose(1, 4),
@@ -72,10 +72,7 @@ class EnduranceTest extends BaseAcceptanceTest
                     }
                 )
             )
-            ->hook(Listener\collectFrequencies(function($actions) {
-                // TODO: upgrade Eris and remove this custom function
-                return json_encode($actions);
-            }))
+            ->hook(Listener\collectFrequencies())
             ->then(function($tuple) {
                 list ($workers, $actions) = $tuple;
                 $this->clean();

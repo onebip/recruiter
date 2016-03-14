@@ -299,12 +299,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/giorgiosironi/eris.git",
-                "reference": "7cb8c2e182a874767c50657e6b00dba73c5962d4"
+                "reference": "255e8b5722bea3a2ceb2fc38f0db81f1c26a18b5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giorgiosironi/eris/zipball/7cb8c2e182a874767c50657e6b00dba73c5962d4",
-                "reference": "7cb8c2e182a874767c50657e6b00dba73c5962d4",
+                "url": "https://api.github.com/repos/giorgiosironi/eris/zipball/255e8b5722bea3a2ceb2fc38f0db81f1c26a18b5",
+                "reference": "255e8b5722bea3a2ceb2fc38f0db81f1c26a18b5",
                 "shasum": ""
             },
             "require": {
@@ -345,7 +345,7 @@
                 }
             ],
             "description": "PHP library for property-based testing. Integrates with PHPUnit.",
-            "time": "2016-03-10 07:59:51"
+            "time": "2016-03-11 15:24:38"
         },
         {
             "name": "phpdocumentor/reflection-docblock",
@@ -700,16 +700,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "4.8.23",
+            "version": "4.8.24",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "6e351261f9cd33daf205a131a1ba61c6d33bd483"
+                "reference": "a1066c562c52900a142a0e2bbf0582994671385e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/6e351261f9cd33daf205a131a1ba61c6d33bd483",
-                "reference": "6e351261f9cd33daf205a131a1ba61c6d33bd483",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/a1066c562c52900a142a0e2bbf0582994671385e",
+                "reference": "a1066c562c52900a142a0e2bbf0582994671385e",
                 "shasum": ""
             },
             "require": {
@@ -768,7 +768,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2016-02-11 14:56:33"
+            "time": "2016-03-14 06:16:08"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
