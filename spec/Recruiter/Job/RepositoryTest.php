@@ -17,8 +17,12 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
 
     public function testQueued()
     {
-        $this->aJob()->inBackground()->execute();
-        $this->assertEquals(1, $this->repository->queued());
+        $this->aJob()->taggedAs('generic')->inBackground()->execute();
+        $this->aJob()->taggedAs('generic')->inBackground()->execute();
+        $this->aJob()->taggedAs('fast-lane')->inBackground()->execute();
+        $this->assertEquals(3, $this->repository->queued());
+        $this->assertEquals(2, $this->repository->queued('generic'));
+        $this->assertEquals(1, $this->repository->queued('fast-lane'));
     }
 
     private function aJob()

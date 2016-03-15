@@ -71,11 +71,15 @@ class Repository
         return $this->archived->count();
     }
 
-    public function queued()
+    public function queued($tag = null)
     {
-        return $this->scheduled->count([
+        $query = [
             'scheduled_at' => ['$lte' => T\MongoDate::now()],
-        ]);
+        ];
+        if ($tag !== null) {
+            $query['tags'] = $tag;
+        }
+        return $this->scheduled->count($query);
     }
 
     private function map($cursor)
