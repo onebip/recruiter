@@ -26,7 +26,7 @@ class EnduranceTest extends BaseAcceptanceTest
     public function testNotWithstandingCrashesJobsAreEventuallyPerformed()
     {
         $this
-            ->limitTo(100)
+            ->limitTo(20)
             ->forAll(
                 Generator\bind(
                     Generator\choose(1, 4),
@@ -35,10 +35,14 @@ class EnduranceTest extends BaseAcceptanceTest
                             Generator\constant($workers),
                             Generator\seq(Generator\oneOf(
                                 Generator\map(
-                                    function($duration) {
-                                        return ['enqueueJob', $duration];
+                                    function($durationAndTag) {
+                                        list($duration, $tag) = $durationAndTag;
+                                        return ['enqueueJob', $duration, $tag];
                                     },
-                                    Generator\nat()
+                                    Generator\tuple(
+                                        Generator\nat(),
+                                        Generator\elements(['generic', 'fast-lane'])
+                                    )
                                 ),
                                 Generator\map(
                                     function($workerIndex) {
@@ -97,14 +101,17 @@ class EnduranceTest extends BaseAcceptanceTest
                     });
 
                 $statistics = $this->recruiter->statistics();
-                $this->assertEquals(0, $statistics['queued']);
-                $this->assertGreaterThanOrEqual(0.0, $statistics['throughput']['value']);
-                $this->assertGreaterThanOrEqual(0.0, $statistics['throughput']['value_per_second']);
-                $this->assertGreaterThanOrEqual(0.0, $statistics['latency']['average']);
-                $this->assertLessThan(60.0, $statistics['latency']['average']);
-                $this->assertGreaterThanOrEqual(0.0, $statistics['execution_time']['average']);
-                $this->assertLessThan(1.0, $statistics['execution_time']['average']);
-                var_Dump($statistics);
+                $this->assertInvariantsOnStatistics($statistics);
+                // TODO: remove duplication
+                $statisticsByTag = [];
+                foreach (['generic', 'fast-lane'] as $tag) {
+                    $statisticsByTag[$tag] = $this->recruiter->statistics($tag);
+                    $this->assertInvariantsOnStatistics($statisticsByTag[$tag]);
+                    $cumulativeThroughput += $statisticsByTag[$tag]['throughput']['value'];
+                }
+                var_Dump($statistics, $statisticsByTag);
+                // TODO: add tolerance
+                $this->assertEquals($statistics['throughput']['value'], $cumulativeThroughput);
             });
     }
 
@@ -123,5 +130,16 @@ class EnduranceTest extends BaseAcceptanceTest
     protected function sleep($milliseconds)
     {
         usleep($milliseconds * 1000);
+    }
+
+    protected function assertInvariantsOnStatistics($statistics)
+    {
+        $this->assertEquals(0, $statistics['queued']);
+        $this->assertGreaterThanOrEqual(0.0, $statistics['throughput']['value']);
+        $this->assertGreaterThanOrEqual(0.0, $statistics['throughput']['value_per_second']);
+        $this->assertGreaterThanOrEqual(0.0, $statistics['latency']['average']);
+        $this->assertLessThan(60.0, $statistics['latency']['average']);
+        $this->assertGreaterThanOrEqual(0.0, $statistics['execution_time']['average']);
+        $this->assertLessThan(1.0, $statistics['execution_time']['average']);
     }
 }

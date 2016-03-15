@@ -46,13 +46,13 @@ class Recruiter
         return $this->jobs->queued();
     }
 
-    public function statistics()
+    public function statistics($tag = null)
     {
         return array_merge(
             [
-                'queued' => $this->jobs->queued(),
+                'queued' => $this->jobs->queued($tag),
             ],
-            $this->jobs->recentHistory()
+            $this->jobs->recentHistory($tag)
         );
     }
 

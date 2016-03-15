@@ -110,11 +110,12 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
     /**
      * @param integer $duration  milliseconds
      */
-    protected function enqueueJob($duration = 10)
+    protected function enqueueJob($duration = 10, $tag = 'generic')
     {
         $workable = ShellCommand::fromCommandLine("sleep " . ($duration / 1000));
         $workable
             ->asJobOf($this->recruiter)
+            ->taggedAs($tag)
             ->inBackground()
             ->execute();
         $this->jobs++;
