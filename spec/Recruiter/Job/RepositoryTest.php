@@ -14,6 +14,12 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->recruiterDb = (new MongoClient('localhost:27017'))->selectDB('recruiter');
         $this->recruiterDb->drop();
         $this->repository = new Repository($this->recruiterDb);
+        T\clock()->stop();
+    }
+
+    public function tearDown()
+    {
+        T\clock()->start();
     }
 
     public function testCountsQueuedJobsAsOfNow()
@@ -31,17 +37,17 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
         $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
         $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
-        $this->assertEquals(
+        $this->assertSame(
             [
                 'throughput' => [
-                    'value' => 3,
+                    'value' => 3.0,
                     'value_per_second' => 3/60.0,
                 ],
                 'latency' => [
-                    'average' => 5,
+                    'average' => 5.0,
                 ],
                 'execution_time' => [
-                    'average' => 0,
+                    'average' => 0.0,
                 ],
             ],
             $this->repository->recentHistory()

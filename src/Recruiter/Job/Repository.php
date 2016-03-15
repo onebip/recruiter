@@ -83,15 +83,18 @@ class Repository
         return $this->scheduled->count($query);
     }
 
-    public function recentHistory()
+    public function recentHistory($tag = null)
     {
         $lastMinute = [
             'last_execution.ended_at' => [
                 '$gt' => T\MongoDate::from(T\now()->before(T\minute(1))),
                 '$lte' => T\MongoDate::from(T\now())
-            ]
+            ],
         ];
-        $document = $this->archived->aggregate([
+        if ($tag !== null) {
+            $lastMinute['tags'] = $tag;
+        }
+        $document = $this->archived->aggregate($pipeline = [
             ['$match' => $lastMinute],
             ['$project' => [
                 'latency' => ['$subtract' => [
@@ -111,13 +114,19 @@ class Repository
             ]],
         ]);
         if (!$document['ok']) {
-            throw new RuntimeException();
+            throw new RuntimeException("Pipeline failed: " . var_export($pipeline, true));
         }
-        if (count($document['result']) !== 1) {
-            throw new RuntimeException();
+        if (count($document['result']) === 0) {
+            $throughputPerMinute = 0.0;
+            $averageLatency = 0.0;
+            $averageExecutionTime = 0;
+        } else if (count($document['result']) === 1) {
+            $throughputPerMinute = (float) $document['result'][0]['throughput'];
+            $averageLatency = $document['result'][0]['latency'] / 1000;
+            $averageExecutionTime = $document['result'][0]['execution_time'] / 1000;
+        } else {
+            throw new RuntimeException("Result was not ok: " . var_export($document, true));
         }
-        $throughputPerMinute = $document['result'][0]['throughput'];
-        $averageLatency = $document['result'][0]['latency'] / 1000;
         return [
             'throughput' => [
                 'value' => $throughputPerMinute,

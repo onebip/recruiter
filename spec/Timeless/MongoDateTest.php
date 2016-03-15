@@ -1,12 +1,12 @@
 <?php
 namespace Timeless;
 
-use Eris\TestTrait;
+use Eris;
 use Eris\Generator;
 
 class MongoDateTest extends \PHPUnit_Framework_TestCase
 {
-    use TestTrait;
+    use Eris\TestTrait;
 
     public function testConvertsBackAndForthMongoDatesWithoutLosingMillisecondPrecision()
     {

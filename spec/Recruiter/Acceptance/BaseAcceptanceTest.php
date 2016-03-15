@@ -17,11 +17,26 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
         $this->roster = $this->recruiterDb->selectCollection('roster');
         $this->recruiter = new Recruiter($this->recruiterDb);
         $this->jobs = 0;
+        $this->processRecruiter = null;
+        $this->processWorkers = [];
     }
 
-    public function cleanDb()
+    public function tearDown()
+    {
+        $this->terminateProcesses(SIGKILL);
+    }
+
+    protected function cleanDb()
     {
         $this->recruiterDb->drop();
+    }
+
+    protected function clean()
+    {
+        $this->terminateProcesses(SIGKILL);
+        $this->cleanLogs();
+        $this->cleanDb();
+        $this->jobs = 0;
     }
 
     public function cleanLogs()
@@ -103,6 +118,51 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
             ->inBackground()
             ->execute();
         $this->jobs++;
+    }
+
+    protected function start($workers)
+    {
+        $this->processRecruiter = $this->startRecruiter();
+        $this->processWorkers = [];
+        for ($i = 0; $i < $workers; $i++) {
+            $this->processWorkers[$i] = $this->startWorker();
+        }
+    }
+
+    private function terminateProcesses($signal)
+    {
+        if ($this->processRecruiter) {
+            $this->stopProcessWithSignal($this->processRecruiter, $signal);
+            $this->processRecruiter = null;
+        }
+        foreach ($this->processWorkers as $processWorker) {
+            $this->stopProcessWithSignal($processWorker, $signal);
+        }
+        $this->processWorkers = [];
+    }
+
+    protected function restartWorkerGracefully($workerIndex)
+    {
+        $this->stopProcessWithSignal($this->processWorkers[$workerIndex], SIGTERM);
+        $this->processWorkers[$workerIndex] = $this->startWorker();
+    }
+
+    protected function restartWorkerByKilling($workerIndex)
+    {
+        $this->stopProcessWithSignal($this->processWorkers[$workerIndex], SIGKILL);
+        $this->processWorkers[$workerIndex] = $this->startWorker();
+    }
+
+    protected function restartRecruiterGracefully()
+    {
+        $this->stopProcessWithSignal($this->processRecruiter, SIGTERM);
+        $this->processRecruiter = $this->startRecruiter();
+    }
+
+    protected function restartRecruiterByKilling()
+    {
+        $this->stopProcessWithSignal($this->processRecruiter, SIGKILL);
+        $this->processRecruiter = $this->startRecruiter();
     }
 
 }

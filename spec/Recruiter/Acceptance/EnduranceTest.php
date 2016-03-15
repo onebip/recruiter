@@ -21,15 +21,8 @@ class EnduranceTest extends BaseAcceptanceTest
         $this->jobRepository = new Repository($this->recruiterDb);
         $this->actionLog = '/tmp/actions.log';
         $this->files[] = $this->actionLog;
-        $this->processRecruiter = null;
-        $this->processWorkers = [];
     }
 
-    public function tearDown()
-    {
-        $this->terminateProcesses(SIGKILL);
-    }
-    
     public function testNotWithstandingCrashesJobsAreEventuallyPerformed()
     {
         $this
@@ -102,15 +95,17 @@ class EnduranceTest extends BaseAcceptanceTest
                     ->until(function() {
                         return $this->jobRepository->countArchived() === $this->jobs;
                     });
-            });
-    }
 
-    private function clean()
-    {
-        $this->terminateProcesses(SIGKILL);
-        $this->cleanLogs();
-        $this->cleanDb();
-        $this->jobs = 0;
+                $statistics = $this->recruiter->statistics();
+                $this->assertEquals(0, $statistics['queued']);
+                $this->assertGreaterThanOrEqual(0.0, $statistics['throughput']['value']);
+                $this->assertGreaterThanOrEqual(0.0, $statistics['throughput']['value_per_second']);
+                $this->assertGreaterThanOrEqual(0.0, $statistics['latency']['average']);
+                $this->assertLessThan(60.0, $statistics['latency']['average']);
+                $this->assertGreaterThanOrEqual(0.0, $statistics['execution_time']['average']);
+                $this->assertLessThan(1.0, $statistics['execution_time']['average']);
+                var_Dump($statistics);
+            });
     }
 
     private function logAction($action)
@@ -123,51 +118,6 @@ class EnduranceTest extends BaseAcceptanceTest
             ),
             FILE_APPEND
         );
-    }
-
-    private function terminateProcesses($signal)
-    {
-        if ($this->processRecruiter) {
-            $this->stopProcessWithSignal($this->processRecruiter, $signal);
-            $this->processRecruiter = null;
-        }
-        foreach ($this->processWorkers as $processWorker) {
-            $this->stopProcessWithSignal($processWorker, $signal);
-        }
-        $this->processWorkers = [];
-    }
-
-    private function start($workers)
-    {
-        $this->processRecruiter = $this->startRecruiter();
-        $this->processWorkers = [];
-        for ($i = 0; $i < $workers; $i++) {
-            $this->processWorkers[$i] = $this->startWorker();
-        }
-    }
-
-    protected function restartWorkerGracefully($workerIndex)
-    {
-        $this->stopProcessWithSignal($this->processWorkers[$workerIndex], SIGTERM);
-        $this->processWorkers[$workerIndex] = $this->startWorker();
-    }
-
-    protected function restartWorkerByKilling($workerIndex)
-    {
-        $this->stopProcessWithSignal($this->processWorkers[$workerIndex], SIGKILL);
-        $this->processWorkers[$workerIndex] = $this->startWorker();
-    }
-
-    protected function restartRecruiterGracefully()
-    {
-        $this->stopProcessWithSignal($this->processRecruiter, SIGTERM);
-        $this->processRecruiter = $this->startRecruiter();
-    }
-
-    protected function restartRecruiterByKilling()
-    {
-        $this->stopProcessWithSignal($this->processRecruiter, SIGKILL);
-        $this->processRecruiter = $this->startRecruiter();
     }
 
     protected function sleep($milliseconds)

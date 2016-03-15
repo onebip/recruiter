@@ -41,6 +41,21 @@ class Recruiter
         );
     }
 
+    public function queued()
+    {
+        return $this->jobs->queued();
+    }
+
+    public function statistics()
+    {
+        return array_merge(
+            [
+                'queued' => $this->jobs->queued(),
+            ],
+            $this->jobs->recentHistory()
+        );
+    }
+
     public function ensureIsTheOnlyOne(Interval $timeToWaitAtMost, $otherwise)
     {
         try {
