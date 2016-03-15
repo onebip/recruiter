@@ -6,6 +6,7 @@ use MongoDB;
 use MongoCollection;
 use Recruiter\Recruiter;
 use Recruiter\Job;
+use Timeless as T;
 
 class Repository
 {
@@ -68,6 +69,13 @@ class Repository
     public function countArchived()
     {
         return $this->archived->count();
+    }
+
+    public function queued()
+    {
+        return $this->scheduled->count([
+            'scheduled_at' => ['$lte' => T\MongoDate::now()],
+        ]);
     }
 
     private function map($cursor)
