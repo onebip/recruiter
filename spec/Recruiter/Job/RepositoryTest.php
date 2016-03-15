@@ -15,14 +15,30 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->repository = new Repository($this->recruiterDb);
     }
 
-    public function testQueued()
+    public function testCountsQueuedJobsAsOfNow()
     {
-        $this->aJob()->taggedAs('generic')->inBackground()->execute();
-        $this->aJob()->taggedAs('generic')->inBackground()->execute();
-        $this->aJob()->taggedAs('fast-lane')->inBackground()->execute();
+        $this->aJobToSchedule()->taggedAs('generic')->inBackground()->execute();
+        $this->aJobToSchedule()->taggedAs('generic')->inBackground()->execute();
+        $this->aJobToSchedule()->taggedAs('fast-lane')->inBackground()->execute();
         $this->assertEquals(3, $this->repository->queued());
         $this->assertEquals(2, $this->repository->queued('generic'));
         $this->assertEquals(1, $this->repository->queued('fast-lane'));
+    }
+
+    public function testRecentHistory()
+    {
+        $this->repository->archive($this->aJob()->afterExecution(42));
+        $this->repository->archive($this->aJob()->afterExecution(42));
+        $this->repository->archive($this->aJob()->afterExecution(42));
+        $this->assertEquals(
+            [
+                'throughput' => [
+                    'value' => 3,
+                    'value_per_second' => 3/60.0,
+                ],
+            ],
+            $this->repository->recentHistory()
+        );
     }
 
     private function aJob()
@@ -31,6 +47,11 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Recruiter\Workable')
             ->getMock();
 
-        return new JobToSchedule(Job::around($workable, $this->repository));
+        return Job::around($workable, $this->repository);
+    }
+
+    private function aJobToSchedule()
+    {
+        return new JobToSchedule($this->aJob());
     }
 }

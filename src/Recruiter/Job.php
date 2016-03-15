@@ -133,13 +133,15 @@ class Job
         }
     }
 
-    private function afterExecution($result)
+    public function afterExecution($result)
     {
         $this->status['done'] = true;
+        $this->status['executed_at'] = T\MongoDate::now();
         $this->lastJobExecution->completedWith($result);
         if ($this->hasBeenScheduled()) {
             $this->archive('done');
         }
+        return $this;
     }
 
     private function afterFailure($exception)

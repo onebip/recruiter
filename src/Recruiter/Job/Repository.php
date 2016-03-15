@@ -7,6 +7,7 @@ use MongoCollection;
 use Recruiter\Recruiter;
 use Recruiter\Job;
 use Timeless as T;
+use RuntimeException;
 
 class Repository
 {
@@ -80,6 +81,33 @@ class Repository
             $query['tags'] = $tag;
         }
         return $this->scheduled->count($query);
+    }
+
+    public function recentHistory()
+    {
+        $lastMinute = [
+            'executed_at' => [
+                '$gt' => T\MongoDate::from(T\now()->before(T\minute(1))),
+                '$lte' => T\MongoDate::from(T\now())
+            ]
+        ];
+        $document = $this->archived->aggregate([
+            ['$match' => $lastMinute],
+            ['$group' => ['_id' => 1, 'throughput' => ['$sum' => 1]]],
+        ]);
+        if (!$document['ok']) {
+            throw new RuntimeException();
+        }
+        if (count($document['result']) !== 1) {
+            throw new RuntimeException();
+        }
+        $throughputPerMinute = $document['result'][0]['throughput'];
+        return [
+            'throughput' => [
+                'value' => $throughputPerMinute,
+                'value_per_second' => $throughputPerMinute/60.0,
+            ],
+        ];        
     }
 
     private function map($cursor)
