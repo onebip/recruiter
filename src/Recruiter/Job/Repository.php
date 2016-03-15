@@ -86,14 +86,22 @@ class Repository
     public function recentHistory()
     {
         $lastMinute = [
-            'executed_at' => [
+            'last_execution.ended_at' => [
                 '$gt' => T\MongoDate::from(T\now()->before(T\minute(1))),
                 '$lte' => T\MongoDate::from(T\now())
             ]
         ];
         $document = $this->archived->aggregate([
             ['$match' => $lastMinute],
-            ['$group' => ['_id' => 1, 'throughput' => ['$sum' => 1]]],
+            ['$project' => ['latency' => ['$subtract' => [
+                '$last_execution.started_at',
+                '$last_execution.scheduled_at',
+            ]]]],
+            ['$group' => [
+                '_id' => 1, 
+                'throughput' => ['$sum' => 1],
+                'latency' => ['$avg' => '$latency'],
+            ]],
         ]);
         if (!$document['ok']) {
             throw new RuntimeException();
@@ -102,10 +110,14 @@ class Repository
             throw new RuntimeException();
         }
         $throughputPerMinute = $document['result'][0]['throughput'];
+        $averageLatency = $document['result'][0]['latency'] / 1000;
         return [
             'throughput' => [
                 'value' => $throughputPerMinute,
                 'value_per_second' => $throughputPerMinute/60.0,
+            ],
+            'latency' => [
+                'average' => $averageLatency,
             ],
         ];        
     }

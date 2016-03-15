@@ -5,6 +5,7 @@ use Recruiter\Job;
 use Recruiter\JobToSchedule;
 use MongoClient;
 use DateTime;
+use Timeless as T;
 
 class RepositoryTest extends \PHPUnit_Framework_TestCase
 {
@@ -27,14 +28,17 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
 
     public function testRecentHistory()
     {
-        $this->repository->archive($this->aJob()->afterExecution(42));
-        $this->repository->archive($this->aJob()->afterExecution(42));
-        $this->repository->archive($this->aJob()->afterExecution(42));
+        $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
+        $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
+        $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
         $this->assertEquals(
             [
                 'throughput' => [
                     'value' => 3,
                     'value_per_second' => 3/60.0,
+                ],
+                'latency' => [
+                    'average' => 5,
                 ],
             ],
             $this->repository->recentHistory()
@@ -47,7 +51,8 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Recruiter\Workable')
             ->getMock();
 
-        return Job::around($workable, $this->repository);
+        return Job::around($workable, $this->repository)
+            ->scheduleAt(T\now()->before(T\seconds(5)));
     }
 
     private function aJobToSchedule()

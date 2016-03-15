@@ -164,6 +164,9 @@ class Recruiter
         $this->db->selectCollection('archived')->ensureIndex([
             'created_at' => 1,
         ]);
+        $this->db->selectCollection('archived')->ensureIndex([
+            'last_execution.ended_at' => 1,
+        ]);
 
         $this->db->command(['collMod' => 'roster', 'usePowerOf2Sizes' => true]);
         $this->db->selectCollection('roster')->ensureIndex([
