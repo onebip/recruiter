@@ -26,7 +26,7 @@ class EnduranceTest extends BaseAcceptanceTest
     public function testNotWithstandingCrashesJobsAreEventuallyPerformed()
     {
         $this
-            ->limitTo(20)
+            ->limitTo(100)
             ->forAll(
                 Generator\bind(
                     Generator\choose(1, 4),
