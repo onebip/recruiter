@@ -89,7 +89,7 @@ class EnduranceTest extends BaseAcceptanceTest
                 Timeout::inSeconds(
                     $estimatedTime,
                     function() {
-                        return "all $this->jobs jobs to be performed. Now is " . date('c') . " See: " . var_export($this->files, true);
+                        return "all $this->jobs jobs to be performed. Now is " . date('c') . " Logs: " . $this->files();
                     }
                 )
                     ->until(function() {

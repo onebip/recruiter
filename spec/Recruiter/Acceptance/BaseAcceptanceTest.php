@@ -165,4 +165,17 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
         $this->processRecruiter = $this->startRecruiter();
     }
 
+    protected function files()
+    {
+        $logs = '';
+        if (getenv('TEST_DUMP')) {
+            foreach ($this->files as $file) {
+                $logs .= $file. ":". PHP_EOL;
+                $logs .= file_get_contents($file);
+            }
+        } else {
+            $logs .= var_export($this->files, true);
+        }
+        return $logs;
+    }
 }
