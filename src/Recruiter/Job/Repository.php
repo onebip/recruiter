@@ -72,10 +72,13 @@ class Repository
         return $this->archived->count();
     }
 
-    public function queued($tag = null)
+    public function queued($tag = null, T\Moment $at = null)
     {
+        if ($at === null) {
+            $at = T\now();
+        }
         $query = [
-            'scheduled_at' => ['$lte' => T\MongoDate::now()],
+            'scheduled_at' => ['$lte' => T\MongoDate::from($at)],
         ];
         if ($tag !== null) {
             $query['tags'] = $tag;
@@ -83,12 +86,15 @@ class Repository
         return $this->scheduled->count($query);
     }
 
-    public function recentHistory($tag = null)
+    public function recentHistory($tag = null, T\Moment $at = null)
     {
+        if ($at === null) {
+            $at = T\now();
+        }
         $lastMinute = [
             'last_execution.ended_at' => [
-                '$gt' => T\MongoDate::from(T\now()->before(T\minute(1))),
-                '$lte' => T\MongoDate::from(T\now())
+                '$gt' => T\MongoDate::from($at->before(T\minute(1))),
+                '$lte' => T\MongoDate::from($at)
             ],
         ];
         if ($tag !== null) {

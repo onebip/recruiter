@@ -4,6 +4,7 @@ namespace Recruiter;
 
 use MongoDB;
 use Timeless\Interval;
+use Timeless\Moment;
 
 use Onebip\Clock;
 use Onebip\Concurrency\MongoLock;
@@ -46,13 +47,13 @@ class Recruiter
         return $this->jobs->queued();
     }
 
-    public function statistics($tag = null)
+    public function statistics($tag = null, Moment $at = null)
     {
         return array_merge(
             [
-                'queued' => $this->jobs->queued($tag),
+                'queued' => $this->jobs->queued($tag, $at),
             ],
-            $this->jobs->recentHistory($tag)
+            $this->jobs->recentHistory($tag, $at)
         );
     }
 

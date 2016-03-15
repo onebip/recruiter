@@ -7,6 +7,7 @@ use Eris;
 use Eris\Generator;
 use Eris\Generator\ConstantGenerator;
 use Eris\Listener;
+use Timeless as T;
 
 /**
  * @group long
@@ -100,12 +101,14 @@ class EnduranceTest extends BaseAcceptanceTest
                         return $this->jobRepository->countArchived() === $this->jobs;
                     });
 
-                $statistics = $this->recruiter->statistics();
+                $at = T\now();
+                $statistics = $this->recruiter->statistics($tag = null, $at);
                 $this->assertInvariantsOnStatistics($statistics);
                 // TODO: remove duplication
                 $statisticsByTag = [];
+                $cumulativeThroughput = 0;
                 foreach (['generic', 'fast-lane'] as $tag) {
-                    $statisticsByTag[$tag] = $this->recruiter->statistics($tag);
+                    $statisticsByTag[$tag] = $this->recruiter->statistics($tag, $at);
                     $this->assertInvariantsOnStatistics($statisticsByTag[$tag]);
                     $cumulativeThroughput += $statisticsByTag[$tag]['throughput']['value'];
                 }
