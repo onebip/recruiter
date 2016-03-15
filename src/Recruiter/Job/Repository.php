@@ -93,14 +93,21 @@ class Repository
         ];
         $document = $this->archived->aggregate([
             ['$match' => $lastMinute],
-            ['$project' => ['latency' => ['$subtract' => [
-                '$last_execution.started_at',
-                '$last_execution.scheduled_at',
-            ]]]],
+            ['$project' => [
+                'latency' => ['$subtract' => [
+                    '$last_execution.started_at',
+                    '$last_execution.scheduled_at',
+                ]],
+                'execution_time' => ['$subtract' => [
+                    '$last_execution.ended_at',
+                    '$last_execution.started_at',
+                ]],
+            ]],
             ['$group' => [
                 '_id' => 1, 
                 'throughput' => ['$sum' => 1],
                 'latency' => ['$avg' => '$latency'],
+                'execution_time' => ['$avg' => '$execution_time'],
             ]],
         ]);
         if (!$document['ok']) {
@@ -118,6 +125,9 @@ class Repository
             ],
             'latency' => [
                 'average' => $averageLatency,
+            ],
+            'execution_time' => [
+                'average' => $averageExecutionTime,
             ],
         ];        
     }

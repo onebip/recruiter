@@ -40,6 +40,9 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
                 'latency' => [
                     'average' => 5,
                 ],
+                'execution_time' => [
+                    'average' => 0,
+                ],
             ],
             $this->repository->recentHistory()
         );
