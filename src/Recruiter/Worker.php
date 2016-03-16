@@ -104,7 +104,7 @@ class Worker
     private function workOn($job)
     {
         $this->beforeExecutionOf($job);
-        $job->execute();
+        $job->execute($this->recruiter->getEventDispatcher());
         $this->afterExecutionOf($job);
     }
 
