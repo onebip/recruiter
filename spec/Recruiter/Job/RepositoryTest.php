@@ -59,7 +59,7 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
         $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
         $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
-        $this->repository->cleanArchived(T\now());
+        $this->assertEquals(3, $this->repository->cleanArchived(T\now()));
         $this->assertEquals(0, $this->repository->countArchived());
     }
 

@@ -5,6 +5,7 @@ namespace Recruiter;
 use MongoDB;
 use Timeless\Interval;
 use Timeless\Moment;
+use Timeless as T;
 
 use Onebip\Clock;
 use Onebip\Concurrency\MongoLock;
@@ -55,6 +56,12 @@ class Recruiter
             ],
             $this->jobs->recentHistory($tag, $at)
         );
+    }
+
+    public function cleanArchived(Interval $gracePeriod)
+    {
+        $upperLimit = T\now()->before($gracePeriod);
+        return $this->jobs->cleanArchived($upperLimit);
     }
 
     public function ensureIsTheOnlyOne(Interval $timeToWaitAtMost, $otherwise)

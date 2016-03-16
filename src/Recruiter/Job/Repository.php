@@ -78,7 +78,7 @@ class Repository
             'last_execution.ended_at' => [
                 '$lte' => T\MongoDate::from($upperLimit),
             ]
-        ]);
+        ])['n'];
     }
 
     public function queued($tag = null, T\Moment $at = null)

@@ -14,12 +14,14 @@ $cli->add('recruiter', new Option\TargetHost('target'));
 $cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '12800ms'));
 $cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '256MB'));
 $cli->add('considered-dead-after', new Option\ConsideredDeadAfter('considered-dead-after', '30m'));
+$cli->add('clean-after', new Option\CleanAfter('clean-after', '10days'));
 $cli->parse();
 
 $recruiter = $cli->get('recruiter');
 $waitStrategy = $cli->get('wait-strategy');
 $memoryLimit = $cli->get('memory-limit');
 $consideredDeadAfter = $cli->get('considered-dead-after');
+$cleanAfter = $cli->get('clean-after');
 
 $askedToStop = false;
 foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
@@ -76,6 +78,10 @@ while (!askedToStop()) {
     printf(
         '[RECRUITER][%d][%s] unlocked %d jobs due to dead workers' . PHP_EOL,
         posix_getpid(), date('c'), $unlockedJobs
+    );
+    printf(
+        '[RECRUITER][%d][%s] cleaned up %d old jobs from the archive' . PHP_EOL,
+        posix_getpid(), date('c'), $recruiter->cleanArchived($cleanAfter)
     );
     (count($assignment) > 0) ?
         $waitStrategy->reset() :
