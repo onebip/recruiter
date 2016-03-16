@@ -16,8 +16,8 @@ $cli->add('bootstrap', new Option\Bootstrap('bootstrap'));
 $cli->add('work-on', new Option\WorkOn('work-on'));
 $cli->parse();
 
-$cli->get('bootstrap')->load();
 $recruiter = $cli->get('recruiter');
+$cli->get('bootstrap')->load($recruiter);
 $memoryLimit = $cli->get('memory-limit');
 $waitStrategy = $cli->get('wait-strategy');
 $filterJobToWorkOn = $cli->get('work-on');
