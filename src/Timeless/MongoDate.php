@@ -1,5 +1,4 @@
 <?php
-
 namespace Timeless;
 
 class MongoDate
@@ -10,6 +9,15 @@ class MongoDate
         $milliseconds = $moment->ms() - $seconds * 1000;
         $microseconds = $milliseconds * 1000;
         return new \MongoDate($seconds, $microseconds);
+    }
+
+    /**
+     * @return Moment
+     */
+    public static function toMoment(\MongoDate $mongoDate)
+    {
+        $milliseconds = $mongoDate->sec * 1000 + round($mongoDate->usec / 1000);
+        return new Moment($milliseconds);
     }
 
     public static function now()

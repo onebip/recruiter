@@ -4,6 +4,7 @@ namespace Recruiter;
 
 use MongoDB;
 use Timeless\Interval;
+use Timeless\Moment;
 
 use Onebip\Clock;
 use Onebip\Concurrency\MongoLock;
@@ -38,6 +39,21 @@ class Recruiter
     {
         return new JobToSchedule(
             Job::around($workable, $this->jobs)
+        );
+    }
+
+    public function queued()
+    {
+        return $this->jobs->queued();
+    }
+
+    public function statistics($tag = null, Moment $at = null)
+    {
+        return array_merge(
+            [
+                'queued' => $this->jobs->queued($tag, $at),
+            ],
+            $this->jobs->recentHistory($tag, $at)
         );
     }
 
@@ -163,6 +179,9 @@ class Recruiter
         $this->db->command(['collMod' => 'archived', 'usePowerOf2Sizes' => true]);
         $this->db->selectCollection('archived')->ensureIndex([
             'created_at' => 1,
+        ]);
+        $this->db->selectCollection('archived')->ensureIndex([
+            'last_execution.ended_at' => 1,
         ]);
 
         $this->db->command(['collMod' => 'roster', 'usePowerOf2Sizes' => true]);

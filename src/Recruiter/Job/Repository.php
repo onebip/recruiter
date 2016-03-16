@@ -6,6 +6,8 @@ use MongoDB;
 use MongoCollection;
 use Recruiter\Recruiter;
 use Recruiter\Job;
+use Timeless as T;
+use RuntimeException;
 
 class Repository
 {
@@ -68,6 +70,81 @@ class Repository
     public function countArchived()
     {
         return $this->archived->count();
+    }
+
+    public function queued($tag = null, T\Moment $at = null)
+    {
+        if ($at === null) {
+            $at = T\now();
+        }
+        $query = [
+            'scheduled_at' => ['$lte' => T\MongoDate::from($at)],
+        ];
+        if ($tag !== null) {
+            $query['tags'] = $tag;
+        }
+        return $this->scheduled->count($query);
+    }
+
+    public function recentHistory($tag = null, T\Moment $at = null)
+    {
+        if ($at === null) {
+            $at = T\now();
+        }
+        $lastMinute = [
+            'last_execution.ended_at' => [
+                '$gt' => T\MongoDate::from($at->before(T\minute(1))),
+                '$lte' => T\MongoDate::from($at)
+            ],
+        ];
+        if ($tag !== null) {
+            $lastMinute['tags'] = $tag;
+        }
+        $document = $this->archived->aggregate($pipeline = [
+            ['$match' => $lastMinute],
+            ['$project' => [
+                'latency' => ['$subtract' => [
+                    '$last_execution.started_at',
+                    '$last_execution.scheduled_at',
+                ]],
+                'execution_time' => ['$subtract' => [
+                    '$last_execution.ended_at',
+                    '$last_execution.started_at',
+                ]],
+            ]],
+            ['$group' => [
+                '_id' => 1, 
+                'throughput' => ['$sum' => 1],
+                'latency' => ['$avg' => '$latency'],
+                'execution_time' => ['$avg' => '$execution_time'],
+            ]],
+        ]);
+        if (!$document['ok']) {
+            throw new RuntimeException("Pipeline failed: " . var_export($pipeline, true));
+        }
+        if (count($document['result']) === 0) {
+            $throughputPerMinute = 0.0;
+            $averageLatency = 0.0;
+            $averageExecutionTime = 0;
+        } else if (count($document['result']) === 1) {
+            $throughputPerMinute = (float) $document['result'][0]['throughput'];
+            $averageLatency = $document['result'][0]['latency'] / 1000;
+            $averageExecutionTime = $document['result'][0]['execution_time'] / 1000;
+        } else {
+            throw new RuntimeException("Result was not ok: " . var_export($document, true));
+        }
+        return [
+            'throughput' => [
+                'value' => $throughputPerMinute,
+                'value_per_second' => $throughputPerMinute/60.0,
+            ],
+            'latency' => [
+                'average' => $averageLatency,
+            ],
+            'execution_time' => [
+                'average' => $averageExecutionTime,
+            ],
+        ];        
     }
 
     private function map($cursor)

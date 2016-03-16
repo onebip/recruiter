@@ -7,6 +7,7 @@ use Eris;
 use Eris\Generator;
 use Eris\Generator\ConstantGenerator;
 use Eris\Listener;
+use Timeless as T;
 
 /**
  * @group long
@@ -21,15 +22,8 @@ class EnduranceTest extends BaseAcceptanceTest
         $this->jobRepository = new Repository($this->recruiterDb);
         $this->actionLog = '/tmp/actions.log';
         $this->files[] = $this->actionLog;
-        $this->processRecruiter = null;
-        $this->processWorkers = [];
     }
 
-    public function tearDown()
-    {
-        $this->terminateProcesses(SIGKILL);
-    }
-    
     public function testNotWithstandingCrashesJobsAreEventuallyPerformed()
     {
         $this
@@ -42,10 +36,14 @@ class EnduranceTest extends BaseAcceptanceTest
                             Generator\constant($workers),
                             Generator\seq(Generator\oneOf(
                                 Generator\map(
-                                    function($duration) {
-                                        return ['enqueueJob', $duration];
+                                    function($durationAndTag) {
+                                        list($duration, $tag) = $durationAndTag;
+                                        return ['enqueueJob', $duration, $tag];
                                     },
-                                    Generator\nat()
+                                    Generator\tuple(
+                                        Generator\nat(),
+                                        Generator\elements(['generic', 'fast-lane'])
+                                    )
                                 ),
                                 Generator\map(
                                     function($workerIndex) {
@@ -96,21 +94,28 @@ class EnduranceTest extends BaseAcceptanceTest
                 Timeout::inSeconds(
                     $estimatedTime,
                     function() {
-                        return "all $this->jobs jobs to be performed. Now is " . date('c') . " See: " . var_export($this->files, true);
+                        return "all $this->jobs jobs to be performed. Now is " . date('c') . " Logs: " . $this->files();
                     }
                 )
                     ->until(function() {
                         return $this->jobRepository->countArchived() === $this->jobs;
                     });
-            });
-    }
 
-    private function clean()
-    {
-        $this->terminateProcesses(SIGKILL);
-        $this->cleanLogs();
-        $this->cleanDb();
-        $this->jobs = 0;
+                $at = T\now();
+                $statistics = $this->recruiter->statistics($tag = null, $at);
+                $this->assertInvariantsOnStatistics($statistics);
+                // TODO: remove duplication
+                $statisticsByTag = [];
+                $cumulativeThroughput = 0;
+                foreach (['generic', 'fast-lane'] as $tag) {
+                    $statisticsByTag[$tag] = $this->recruiter->statistics($tag, $at);
+                    $this->assertInvariantsOnStatistics($statisticsByTag[$tag]);
+                    $cumulativeThroughput += $statisticsByTag[$tag]['throughput']['value'];
+                }
+                var_Dump($statistics, $statisticsByTag);
+                // TODO: add tolerance
+                $this->assertEquals($statistics['throughput']['value'], $cumulativeThroughput);
+            });
     }
 
     private function logAction($action)
@@ -125,53 +130,19 @@ class EnduranceTest extends BaseAcceptanceTest
         );
     }
 
-    private function terminateProcesses($signal)
-    {
-        if ($this->processRecruiter) {
-            $this->stopProcessWithSignal($this->processRecruiter, $signal);
-            $this->processRecruiter = null;
-        }
-        foreach ($this->processWorkers as $processWorker) {
-            $this->stopProcessWithSignal($processWorker, $signal);
-        }
-        $this->processWorkers = [];
-    }
-
-    private function start($workers)
-    {
-        $this->processRecruiter = $this->startRecruiter();
-        $this->processWorkers = [];
-        for ($i = 0; $i < $workers; $i++) {
-            $this->processWorkers[$i] = $this->startWorker();
-        }
-    }
-
-    protected function restartWorkerGracefully($workerIndex)
-    {
-        $this->stopProcessWithSignal($this->processWorkers[$workerIndex], SIGTERM);
-        $this->processWorkers[$workerIndex] = $this->startWorker();
-    }
-
-    protected function restartWorkerByKilling($workerIndex)
-    {
-        $this->stopProcessWithSignal($this->processWorkers[$workerIndex], SIGKILL);
-        $this->processWorkers[$workerIndex] = $this->startWorker();
-    }
-
-    protected function restartRecruiterGracefully()
-    {
-        $this->stopProcessWithSignal($this->processRecruiter, SIGTERM);
-        $this->processRecruiter = $this->startRecruiter();
-    }
-
-    protected function restartRecruiterByKilling()
-    {
-        $this->stopProcessWithSignal($this->processRecruiter, SIGKILL);
-        $this->processRecruiter = $this->startRecruiter();
-    }
-
     protected function sleep($milliseconds)
     {
         usleep($milliseconds * 1000);
+    }
+
+    protected function assertInvariantsOnStatistics($statistics)
+    {
+        $this->assertEquals(0, $statistics['queued']);
+        $this->assertGreaterThanOrEqual(0.0, $statistics['throughput']['value']);
+        $this->assertGreaterThanOrEqual(0.0, $statistics['throughput']['value_per_second']);
+        $this->assertGreaterThanOrEqual(0.0, $statistics['latency']['average']);
+        $this->assertLessThan(60.0, $statistics['latency']['average']);
+        $this->assertGreaterThanOrEqual(0.0, $statistics['execution_time']['average']);
+        $this->assertLessThan(1.0, $statistics['execution_time']['average']);
     }
 }

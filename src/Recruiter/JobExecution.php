@@ -7,13 +7,15 @@ use Exception;
 
 class JobExecution
 {
+    private $scheduledAt;
     private $startedAt;
     private $endedAt;
     private $completedWith;
     private $failedWith;
 
-    public function started()
+    public function started($scheduledAt = null)
     {
+        $this->scheduledAt = $scheduledAt;
         $this->startedAt = T\now();
     }
 
@@ -38,21 +40,28 @@ class JobExecution
     {
         $exported = [];
         if ($this->startedAt) {
-            $exported['started_at'] = T\MongoDate::from($this->startedAt);
-            if ($this->endedAt) {
-                $exported['ended_at'] = T\MongoDate::from($this->endedAt);
-                if ($this->failedWith) {
-                    $exported['class'] = get_class($this->failedWith);
-                    $exported['message'] = $this->failedWith->getMessage();
-                    $exported['trace'] = $this->traceOf($this->completedWith);
-                }
-                if ($this->completedWith) {
-                    $exported['trace'] = $this->traceOf($this->completedWith);
-                }
-            }
-            return ['last_execution' => $exported];
+            $exported['scheduled_at'] = T\MongoDate::from($this->scheduledAt);
         }
-        return $exported;
+        if ($this->startedAt) {
+            $exported['started_at'] = T\MongoDate::from($this->startedAt);
+        }
+        if ($this->endedAt) {
+            $exported['ended_at'] = T\MongoDate::from($this->endedAt);
+        }
+        if ($this->failedWith) {
+            $exported['class'] = get_class($this->failedWith);
+            $exported['message'] = $this->failedWith->getMessage();
+            $exported['trace'] = $this->traceOf($this->completedWith);
+        }
+        if ($this->completedWith) {
+            $exported['trace'] = $this->traceOf($this->completedWith);
+        }
+
+        if ($exported) {
+            return ['last_execution' => $exported];
+        } else {
+            return [];
+        }
     }
 
     private function traceOf($result)

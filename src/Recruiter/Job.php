@@ -66,17 +66,20 @@ class Job
     public function retryWithPolicy(RetryPolicy $retryPolicy)
     {
         $this->retryPolicy = $retryPolicy;
+        return $this;
     }
 
     public function taggedAs(array $tags)
     {
         $this->status['tags'] = $tags;
+        return $this;
     }
 
     public function scheduleAt(Moment $at)
     {
         $this->status['locked'] = false;
         $this->status['scheduled_at'] = T\MongoDate::from($at);
+        return $this;
     }
 
     public function methodToCallOnWorkable($method)
@@ -124,22 +127,24 @@ class Job
         );
     }
 
-    private function beforeExecution()
+    public function beforeExecution()
     {
         $this->status['attempts'] += 1;
-        $this->lastJobExecution->started();
+        $this->lastJobExecution->started($this->scheduledAt());
         if ($this->hasBeenScheduled()) {
             $this->save();
         }
+        return $this;
     }
 
-    private function afterExecution($result)
+    public function afterExecution($result)
     {
         $this->status['done'] = true;
         $this->lastJobExecution->completedWith($result);
         if ($this->hasBeenScheduled()) {
             $this->archive('done');
         }
+        return $this;
     }
 
     private function afterFailure($exception)
@@ -153,6 +158,13 @@ class Job
     private function hasBeenScheduled()
     {
         return array_key_exists('scheduled_at', $this->status);
+    }
+
+    private function scheduledAt()
+    {
+        if ($this->hasBeenScheduled()) {
+            return T\MongoDate::toMoment($this->status['scheduled_at']);
+        }
     }
 
     private static function initialize()
