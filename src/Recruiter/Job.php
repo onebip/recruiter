@@ -14,8 +14,8 @@ use Timeless\Moment;
 
 use Recruiter\RetryPolicy;
 use Recruiter\Job\Repository;
+use Recruiter\Job\Event;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\EventDispatcher\Event;
 
 class Job
 {
@@ -156,7 +156,7 @@ class Job
         $this->retryPolicy->schedule($jobAfterFailure);
         $wasLastFailure = $jobAfterFailure->archiveIfNotScheduled();
         if ($wasLastFailure) {
-            $eventDispatcher->dispatch('job.failure.last', new Event());
+            $eventDispatcher->dispatch('job.failure.last', new Event($this->export()));
         }
     }
 

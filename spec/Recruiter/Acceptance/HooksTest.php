@@ -23,5 +23,7 @@ class HooksTest extends BaseAcceptanceTest
         $worker->work();
 
         $this->assertEquals(1, count($this->events));
+        $this->assertInstanceOf('Recruiter\Job\Event', $this->events[0]);
+        $this->assertEquals('not-scheduled-by-retry-policy', $this->events[0]->export()['why']);
     }
 }
