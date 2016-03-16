@@ -72,6 +72,15 @@ class Repository
         return $this->archived->count();
     }
 
+    public function cleanArchived(T\Moment $upperLimit)
+    {
+        return $this->archived->remove([
+            'last_execution.ended_at' => [
+                '$lte' => T\MongoDate::from($upperLimit),
+            ]
+        ]);
+    }
+
     public function queued($tag = null, T\Moment $at = null)
     {
         if ($at === null) {
