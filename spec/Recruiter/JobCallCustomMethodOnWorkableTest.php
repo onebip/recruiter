@@ -23,7 +23,7 @@ class JobCallCustomMethodOnWorkableTest extends \PHPUnit_Framework_TestCase
     {
         $this->workable->expects($this->once())->method('send');
         $this->job->methodToCallOnWorkable('send');
-        $this->job->execute();
+        $this->job->execute($this->getMock('Symfony\Component\EventDispatcher\EventDispatcherInterface'));
     }
 
     /**

@@ -104,7 +104,9 @@ class JobToScheduleTest extends \PHPUnit_Framework_TestCase
             ->method('execute');
 
         (new JobToSchedule($this->job))
-            ->execute();
+            ->execute(
+                $this->getMock('Symfony\Component\EventDispatcher\EventDispatcherInterface')
+            );
     }
 
     public function testConfigureMethodToCallOnWorkableInJob()

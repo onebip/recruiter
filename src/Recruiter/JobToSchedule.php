@@ -6,6 +6,7 @@ use Timeless as T;
 use Timeless\Interval;
 use Timeless\Moment;
 use Recruiter\RetryPolicy;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class JobToSchedule
 {
@@ -72,8 +73,14 @@ class JobToSchedule
         if ($this->mustBeScheduled) {
             $this->job->save();
         } else {
-            $this->job->execute();
+            // 
+            $this->job->execute($this->emptyEventDispatcher());
         }
+    }
+
+    private function emptyEventDispatcher()
+    {
+        return new EventDispatcher();
     }
 
     public function __call($name, $arguments)
