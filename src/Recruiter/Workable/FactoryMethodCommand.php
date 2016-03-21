@@ -50,7 +50,8 @@ class FactoryMethodCommand implements Workable
     public function execute($retryOptions = null)
     {
         $result = null;
-        foreach ($this->steps as $step) {
+        $lastStepIndex = count($this->steps) - 1;
+        foreach ($this->steps as $index => $step) {
             if (isset($step['class'])) {
                 $callable = $step['class'] . '::' . $step['method'];
             } else {
@@ -66,6 +67,9 @@ class FactoryMethodCommand implements Workable
                 throw new \BadMethodCallException($message);
             }
             $arguments = $this->arguments($step);
+            if ($index === $lastStepIndex) {
+                $arguments[] = $retryOptions;
+            }
             $result = call_user_func_array(
                 $callable,
                 $arguments

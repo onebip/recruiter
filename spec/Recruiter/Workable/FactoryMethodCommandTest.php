@@ -21,6 +21,14 @@ class FactoryMethodCommandTest extends \PHPUnit_Framework_TestCase
             FactoryMethodCommand::import($workable->export())
         );
     }
+
+    public function testPassesRetryStatisticsAsAnAdditionalArgumentToTheLastMethodToCall()
+    {
+        $workable = FactoryMethodCommand::from('Recruiter\Workable\DummyFactory::create')
+            ->myObject()
+            ->myNeedyMethod();
+        $workable->execute(['retry_number' => 0]);
+    }
 }
 
 class DummyFactory
@@ -39,6 +47,11 @@ class DummyFactory
 class DummyObject
 {
     public function myMethod($what, $value)
+    {
+        return $value;
+    }
+
+    public function myNeedyMethod(array $retryStatistics)
     {
         return $value;
     }
