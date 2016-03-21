@@ -23,7 +23,7 @@ class LazyBones implements Workable
         return new self($timeInMs * 1000, $deltaInMs * 1000);
     }
 
-    public function __construct($usToSleep, $usOfDelta)
+    public function __construct($usToSleep = 1, $usOfDelta = 0)
     {
         $this->usToSleep = $usToSleep;
         $this->usOfDelta = $usOfDelta;

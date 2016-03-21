@@ -105,11 +105,11 @@ class Job
         }
     }
 
-    private function retryStatistics()
+    public function retryStatistics()
     {
         return [
             'job_id' => (string) $this->id(),
-            'retry_number' => $this->status['attempts'] - 1,
+            'retry_number' => $this->status['attempts'],
             'last_execution' => $this->status['last_execution'],
         ];
     }
