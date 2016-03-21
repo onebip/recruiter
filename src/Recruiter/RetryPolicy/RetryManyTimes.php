@@ -16,8 +16,11 @@ class RetryManyTimes implements RetryPolicy
 
     use RetryPolicyBehaviour;
 
-    public function __construct($retryHowManyTimes, Interval $timeToWaitBeforeRetry)
+    public function __construct($retryHowManyTimes, $timeToWaitBeforeRetry)
     {
+        if (!($timeToWaitBeforeRetry instanceof Interval)) {
+            $timeToWaitBeforeRetry = T\seconds($timeToWaitBeforeRetry);
+        }
         $this->retryHowManyTimes = $retryHowManyTimes;
         $this->timeToWaitBeforeRetry = $timeToWaitBeforeRetry;
     }
