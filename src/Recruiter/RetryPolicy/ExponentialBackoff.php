@@ -9,23 +9,24 @@ use Recruiter\JobAfterFailure;
 use Timeless as T;
 use Timeless\Interval;
 
-class RetryManyTimes implements RetryPolicy
+class ExponentialBackoff implements RetryPolicy
 {
     private $retryHowManyTimes;
-    private $timeToWaitBeforeRetry;
+    private $timeToInitiallyWaitBeforeRetry;
 
     use RetryPolicyBehaviour;
 
-    public function __construct($retryHowManyTimes, Interval $timeToWaitBeforeRetry)
+    public function __construct($retryHowManyTimes, Interval $timeToInitiallyWaitBeforeRetry)
     {
         $this->retryHowManyTimes = $retryHowManyTimes;
-        $this->timeToWaitBeforeRetry = $timeToWaitBeforeRetry;
+        $this->timeToInitiallyWaitBeforeRetry = $timeToInitiallyWaitBeforeRetry;
     }
 
     public function schedule(JobAfterFailure $job)
     {
         if ($job->numberOfAttempts() <= $this->retryHowManyTimes) {
-            $job->scheduleIn($this->timeToWaitBeforeRetry);
+            $retryInterval = T\seconds(pow(2, $job->numberOfAttempts() - 1) * $this->timeToInitiallyWaitBeforeRetry->seconds());
+            $job->scheduleIn($retryInterval);
         } else {
             $job->archive('tried-too-many-times');
         }
@@ -35,7 +36,7 @@ class RetryManyTimes implements RetryPolicy
     {
         return [
             'retry_how_many_times' => $this->retryHowManyTimes,
-            'seconds_to_wait_before_retry' => $this->timeToWaitBeforeRetry->seconds()
+            'seconds_to_initially_wait_before_retry' => $this->timeToInitiallyWaitBeforeRetry->seconds()
         ];
     }
 
