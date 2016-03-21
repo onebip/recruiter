@@ -16,7 +16,8 @@
     "gabrielelana/byte-units": "~0.1",
     "ulrichsg/getopt-php": "~2.1",
     "onebip/onebip-array": "dev-master",
-    "onebip/onebip-concurrency": "dev-master"
+    "onebip/onebip-concurrency": "dev-master",
+    "symfony/event-dispatcher": "2.*"
   },
   "suggest": {
     "symfony/console": "In order to use Recruiter\\Command\\RecruiterJobCommand."

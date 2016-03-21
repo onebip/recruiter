@@ -14,6 +14,8 @@ use Timeless\Moment;
 
 use Recruiter\RetryPolicy;
 use Recruiter\Job\Repository;
+use Recruiter\Job\Event;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class Job
 {
@@ -90,7 +92,7 @@ class Job
         $this->status['workable']['method'] = $method;
     }
 
-    public function execute()
+    public function execute(EventDispatcherInterface $eventDispatcher)
     {
         $methodToCall = $this->status['workable']['method'];
         try {
@@ -99,7 +101,7 @@ class Job
             $this->afterExecution($result);
             return $result;
         } catch(\Exception $exception) {
-            $this->afterFailure($exception);
+            $this->afterFailure($exception, $eventDispatcher);
         }
     }
 
@@ -147,12 +149,15 @@ class Job
         return $this;
     }
 
-    private function afterFailure($exception)
+    private function afterFailure($exception, $eventDispatcher)
     {
         $this->lastJobExecution->failedWith($exception);
         $jobAfterFailure = new JobAfterFailure($this, $this->lastJobExecution);
         $this->retryPolicy->schedule($jobAfterFailure);
-        $jobAfterFailure->archiveIfNotScheduled();
+        $wasLastFailure = $jobAfterFailure->archiveIfNotScheduled();
+        if ($wasLastFailure) {
+            $eventDispatcher->dispatch('job.failure.last', new Event($this->export()));
+        }
     }
 
     private function hasBeenScheduled()
@@ -177,7 +182,7 @@ class Job
                 'created_at' => T\MongoDate::now(),
                 'locked' => false,
                 'attempts' => 0,
-                'tags' => []
+                'tags' => [],
             ],
             WorkableInJob::initialize(),
             RetryPolicyInJob::initialize()

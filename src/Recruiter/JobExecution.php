@@ -39,7 +39,7 @@ class JobExecution
     public function export()
     {
         $exported = [];
-        if ($this->startedAt) {
+        if ($this->scheduledAt) {
             $exported['scheduled_at'] = T\MongoDate::from($this->scheduledAt);
         }
         if ($this->startedAt) {

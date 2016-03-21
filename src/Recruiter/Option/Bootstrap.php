@@ -29,7 +29,7 @@ class Bootstrap implements Recruiter\Option
         return $this;
     }
 
-    public function load()
+    public function load(Recruiter\Recruiter $recruiter)
     {
         return require $this->bootstrapFilePath;
     }

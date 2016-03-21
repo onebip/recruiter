@@ -23,7 +23,7 @@ class JobTakeRetryPolicyFromRetriableWorkableTest extends \PHPUnit_Framework_Tes
         $workable = new WorkableThatIsAlsoRetriable($retryPolicy);
 
         $job = Job::around($workable, $this->repository);
-        $job->execute();
+        $job->execute($this->getMock('Symfony\Component\EventDispatcher\EventDispatcherInterface'));
     }
 }
 

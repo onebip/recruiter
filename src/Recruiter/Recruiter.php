@@ -11,6 +11,7 @@ use Onebip\Clock;
 use Onebip\Concurrency\MongoLock;
 use Onebip\Concurrency\LockNotAvailableException;
 use RuntimeException;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class Recruiter
 {
@@ -18,6 +19,7 @@ class Recruiter
     private $jobs;
     private $workers;
     private $lock;
+    private $eventDispatcher;
 
     const WAIT_FACTOR = 3;
     const LOCK_FACTOR = 1.5;
@@ -29,6 +31,7 @@ class Recruiter
         $this->jobs = new Job\Repository($db);
         $this->workers = new Worker\Repository($db, $this);
         $this->lock = MongoLock::forProgram('RECRUITER', $db->selectCollection('metadata'));
+        $this->eventDispatcher = new EventDispatcher();
     }
 
     public function hire()
@@ -62,6 +65,11 @@ class Recruiter
     {
         $upperLimit = T\now()->before($gracePeriod);
         return $this->jobs->cleanArchived($upperLimit);
+    }
+
+    public function getEventDispatcher()
+    {
+        return $this->eventDispatcher;
     }
 
     public function ensureIsTheOnlyOne(Interval $timeToWaitAtMost, $otherwise)
