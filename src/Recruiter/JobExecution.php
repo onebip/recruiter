@@ -51,7 +51,7 @@ class JobExecution
         if ($this->failedWith) {
             $exported['class'] = get_class($this->failedWith);
             $exported['message'] = $this->failedWith->getMessage();
-            $exported['trace'] = $this->traceOf($this->completedWith);
+            $exported['trace'] = $this->traceOf($this->failedWith);
         }
         if ($this->completedWith) {
             $exported['trace'] = $this->traceOf($this->completedWith);

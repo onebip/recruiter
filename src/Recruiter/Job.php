@@ -97,12 +97,21 @@ class Job
         $methodToCall = $this->status['workable']['method'];
         try {
             $this->beforeExecution();
-            $result = $this->workable->$methodToCall();
+            $result = $this->workable->$methodToCall($this->retryStatistics());
             $this->afterExecution($result);
             return $result;
         } catch(\Exception $exception) {
             $this->afterFailure($exception, $eventDispatcher);
         }
+    }
+
+    private function retryStatistics()
+    {
+        return [
+            'job_id' => (string) $this->id(),
+            'retry_number' => $this->status['attempts'] - 1,
+            'last_execution' => $this->status['last_execution'],
+        ];
     }
 
     public function save()
@@ -147,6 +156,14 @@ class Job
             $this->archive('done');
         }
         return $this;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function done()
+    {
+        return $this->status['done'];
     }
 
     private function afterFailure($exception, $eventDispatcher)
