@@ -76,6 +76,7 @@ class JobToSchedule
             // 
             $this->job->execute($this->emptyEventDispatcher());
         }
+        return (string) $this->job->id();
     }
 
     private function emptyEventDispatcher()

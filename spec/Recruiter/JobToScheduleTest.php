@@ -119,4 +119,20 @@ class JobToScheduleTest extends \PHPUnit_Framework_TestCase
         (new JobToSchedule($this->job))
             ->send();
     }
+
+    public function testReturnsJobId()
+    {
+        $this->job
+            ->expects($this->any())
+            ->method('id')
+            ->will($this->returnValue('42'));
+
+        $this->assertEquals(
+            '42',
+            (new JobToSchedule($this->job))
+                ->execute(
+                    $this->getMock('Symfony\Component\EventDispatcher\EventDispatcherInterface')
+                )
+        );
+    }
 }
