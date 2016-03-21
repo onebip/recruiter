@@ -38,6 +38,14 @@ class ExponentialBackoffTest extends \PHPUnit_Framework_TestCase
         $retryPolicy->schedule($job);
     }
 
+    public function testCanBeCreatedByTargetingAMaximumInterval()
+    {
+        $this->assertEquals(
+            ExponentialBackoff::forAnInterval(1025, T\seconds(1)),
+            new ExponentialBackoff(10, T\seconds(1))
+        );
+    }
+
     private function jobExecutedFor($times)
     {
         $job = $this->getMockBuilder('Recruiter\JobAfterFailure')->disableOriginalConstructor()->getMock();
