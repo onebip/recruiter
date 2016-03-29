@@ -10,7 +10,7 @@ use Recruiter\Worker;
 
 $cli = new Cli();
 $cli->add('recruiter', new Option\TargetHost('target'));
-$cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '12800ms'));
+$cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '6400ms'));
 $cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '64MB'));
 $cli->add('bootstrap', new Option\Bootstrap('bootstrap'));
 $cli->add('work-on', new Option\WorkOn('work-on'));
