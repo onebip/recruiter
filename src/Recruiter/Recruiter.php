@@ -21,8 +21,8 @@ class Recruiter
     private $lock;
     private $eventDispatcher;
 
-    const WAIT_FACTOR = 3;
-    const LOCK_FACTOR = 1.5;
+    const WAIT_FACTOR = 6;
+    const LOCK_FACTOR = 3;
     const POLL_TIME = 5;
 
     public function __construct(MongoDB $db)
