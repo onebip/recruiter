@@ -72,6 +72,7 @@ class EnduranceTest extends BaseAcceptanceTest
             )
             ->hook(Listener\log('/tmp/recruiter-test-iterations.log'))
             ->hook(Listener\collectFrequencies())
+            ->disableShrinking()
             ->then(function($tuple) {
                 list ($workers, $actions) = $tuple;
                 $this->clean();
