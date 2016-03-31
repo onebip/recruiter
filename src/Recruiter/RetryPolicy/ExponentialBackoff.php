@@ -18,15 +18,18 @@ class ExponentialBackoff implements RetryPolicy
 
     /**
      * @params integer $interval  in seconds
-     * @params integer $timeToWaitBetweenRetries  in seconds
+     * @params integer $timeToWaitBeforeRetry  in seconds
      */
-    public static function forAnInterval($interval, $timeToInitiallyWaitBetweenRetries)
+    public static function forAnInterval($interval, $timeToInitiallyWaitBeforeRetry)
     {
+        if (!($timeToInitiallyWaitBeforeRetry instanceof Interval)) {
+            $timeToInitiallyWaitBeforeRetry = T\seconds($timeToInitiallyWaitBeforeRetry);
+        }
         $numberOfRetries = round(
-            log($interval / $timeToInitiallyWaitBetweenRetries)
+            log($interval / $timeToInitiallyWaitBeforeRetry->seconds())
             / log(2)
         );
-        return new static($numberOfRetries, T\seconds($timeToInitiallyWaitBetweenRetries));
+        return new static($numberOfRetries, $timeToInitiallyWaitBeforeRetry);
     }
 
     public function __construct($retryHowManyTimes, $timeToInitiallyWaitBeforeRetry)

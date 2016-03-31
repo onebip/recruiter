@@ -53,7 +53,7 @@ class DummyObject
 
     public function myNeedyMethod(array $retryStatistics)
     {
-        return $value;
+        return 42;
     }
 }
 

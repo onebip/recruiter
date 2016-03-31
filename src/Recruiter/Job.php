@@ -110,7 +110,9 @@ class Job
         return [
             'job_id' => (string) $this->id(),
             'retry_number' => $this->status['attempts'],
-            'last_execution' => $this->status['last_execution'],
+            'last_execution' => array_key_exists('last_execution', $this->status)
+                ? $this->status['last_execution']
+                : null,
         ];
     }
 
