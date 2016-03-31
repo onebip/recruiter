@@ -7,8 +7,7 @@ install:
   - phpenv config-add phpconfig.ini
   - composer install
 script:
-  - vendor/bin/phpunit --exclude-group long
-  - travis_wait 60 vendor/bin/phpunit --group long
+  - vendor/bin/phpunit --exclude-group long && travis_wait 60 vendor/bin/phpunit --group long
 services:
   - mongodb
 sudo: false
