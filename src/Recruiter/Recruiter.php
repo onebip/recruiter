@@ -184,28 +184,49 @@ class Recruiter
     public function createCollectionsAndIndexes()
     {
         $this->db->command(['collMod' => 'scheduled', 'usePowerOf2Sizes' => true]);
-        $this->db->selectCollection('scheduled')->ensureIndex([
-            'scheduled_at' => 1,
-            'active' => 1,
-            'locked' => 1,
-            'tags' => 1,
-        ]);
+        $this->db->selectCollection('scheduled')->ensureIndex(
+            [
+                'scheduled_at' => 1,
+                'active' => 1,
+                'locked' => 1,
+                'tags' => 1,
+            ],
+            ['background' => true]
+        );
+        $this->db->selectCollection('scheduled')->ensureIndex(
+            [
+                'locked' => 1,
+            ],
+            ['background' => true]
+        );
 
         $this->db->command(['collMod' => 'archived', 'usePowerOf2Sizes' => true]);
-        $this->db->selectCollection('archived')->ensureIndex([
-            'created_at' => 1,
-        ]);
-        $this->db->selectCollection('archived')->ensureIndex([
-            'last_execution.ended_at' => 1,
-        ]);
+        $this->db->selectCollection('archived')->ensureIndex(
+            [
+                'created_at' => 1,
+            ],
+            ['background' => true]
+        );
+        $this->db->selectCollection('archived')->ensureIndex(
+            [
+                'last_execution.ended_at' => 1,
+            ],
+            ['background' => true]
+        );
 
         $this->db->command(['collMod' => 'roster', 'usePowerOf2Sizes' => true]);
-        $this->db->selectCollection('roster')->ensureIndex([
-            'available' => 1,
-        ]);
-        $this->db->selectCollection('roster')->ensureIndex([
-            'last_seen_at' => 1,
-        ]);
+        $this->db->selectCollection('roster')->ensureIndex(
+            [
+                'available' => 1,
+            ],
+            ['background' => true]
+        );
+        $this->db->selectCollection('roster')->ensureIndex(
+            [
+                'last_seen_at' => 1,
+            ],
+            ['background' => true]
+        );
     }
 
     private function combineJobsWithWorkers($jobs, $workers)
