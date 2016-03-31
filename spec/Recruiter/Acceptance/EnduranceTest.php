@@ -142,7 +142,7 @@ class EnduranceTest extends BaseAcceptanceTest
         $this->assertGreaterThanOrEqual(0.0, $statistics['throughput']['value']);
         $this->assertGreaterThanOrEqual(0.0, $statistics['throughput']['value_per_second']);
         $this->assertGreaterThanOrEqual(0.0, $statistics['latency']['average']);
-        $this->assertLessThan(60.0, $statistics['latency']['average']);
+        $this->assertLessThan(120.0, $statistics['latency']['average']);
         $this->assertGreaterThanOrEqual(0.0, $statistics['execution_time']['average']);
         $this->assertLessThan(1.0, $statistics['execution_time']['average']);
     }
