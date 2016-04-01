@@ -95,6 +95,11 @@ class Repository
         return $this->scheduled->count($query);
     }
 
+    public function scheduledCount()
+    {
+        return $this->scheduled->count();
+    }
+
     public function recentHistory($tag = null, T\Moment $at = null)
     {
         if ($at === null) {
@@ -122,7 +127,7 @@ class Repository
                 ]],
             ]],
             ['$group' => [
-                '_id' => 1, 
+                '_id' => 1,
                 'throughput' => ['$sum' => 1],
                 'latency' => ['$avg' => '$latency'],
                 'execution_time' => ['$avg' => '$execution_time'],
@@ -153,7 +158,7 @@ class Repository
             'execution_time' => [
                 'average' => $averageExecutionTime,
             ],
-        ];        
+        ];
     }
 
     private function map($cursor)

@@ -51,6 +51,11 @@ class Recruiter
         return $this->jobs->queued();
     }
 
+    public function scheduled()
+    {
+        return $this->jobs->scheduledCount();
+    }
+
     public function statistics($tag = null, Moment $at = null)
     {
         return array_merge(
