@@ -16,6 +16,16 @@ class ExponentialBackoff implements RetryPolicy
 
     use RetryPolicyBehaviour;
 
+    public static function forTimes($retryHowManyTimes, $timeToInitiallyWaitBeforeRetry = 60)
+    {
+        return new static($retryHowManyTimes, $timeToInitiallyWaitBeforeRetry);
+    }
+
+    public function atFirstWaiting($timeToInitiallyWaitBeforeRetry)
+    {
+        return new static($this->retryHowManyTimes, $timeToInitiallyWaitBeforeRetry);
+    }
+
     /**
      * @params integer $interval  in seconds
      * @params integer $timeToWaitBeforeRetry  in seconds
@@ -63,7 +73,7 @@ class ExponentialBackoff implements RetryPolicy
     {
         return new self(
             $parameters['retry_how_many_times'],
-            T\seconds($parameters['seconds_to_wait_before_retry'])
+            T\seconds($parameters['seconds_to_initially_wait_before_retry'])
         );
     }
 }
