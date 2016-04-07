@@ -75,6 +75,7 @@ class Job
     {
         if (!empty($tags)) {
             $this->status['tags'] = $tags;
+            $this->status['group'] = $tags[0];
         }
 
         return $this;
@@ -203,6 +204,7 @@ class Job
                 'locked' => false,
                 'attempts' => 0,
                 'tags' => ['generic'],
+                'group' => 'generic',
             ],
             WorkableInJob::initialize(),
             RetryPolicyInJob::initialize()
