@@ -127,7 +127,6 @@ class Job
     public function archive($why)
     {
         $this->status['why'] = $why;
-        $this->status['active'] = false;
         $this->status['locked'] = false;
         unset($this->status['scheduled_at']);
         $this->repository->archive($this);
@@ -199,7 +198,6 @@ class Job
         return array_merge(
             [
                 '_id' => new MongoId(),
-                'active' => true,
                 'done' => false,
                 'created_at' => T\MongoDate::now(),
                 'locked' => false,
@@ -219,11 +217,9 @@ class Job
                     ->find(
                         (Worker::canWorkOnAnyJobs($worksOn) ?
                             [   'scheduled_at' => ['$lt' => T\MongoDate::now()],
-                                'active' => true,
                                 'locked' => false,
                             ] :
                             [   'scheduled_at' => ['$lt' => T\MongoDate::now()],
-                                'active' => true,
                                 'locked' => false,
                                 'tags' => $worksOn,
                             ]

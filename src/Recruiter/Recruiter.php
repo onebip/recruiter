@@ -191,10 +191,9 @@ class Recruiter
         $this->db->command(['collMod' => 'scheduled', 'usePowerOf2Sizes' => true]);
         $this->db->selectCollection('scheduled')->ensureIndex(
             [
-                'scheduled_at' => 1,
-                'active' => 1,
-                'locked' => 1,
                 'tags' => 1,
+                'locked' => 1,
+                'scheduled_at' => 1,
             ],
             ['background' => true]
         );

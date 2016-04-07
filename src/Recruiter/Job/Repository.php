@@ -59,7 +59,7 @@ class Repository
     {
         return $this->scheduled->update(
             ['_id' => ['$in' => $jobIds]],
-            ['$set' => ['active' => true, 'locked' => false]],
+            ['$set' => ['locked' => false]],
             ['multiple' => true]
         )['n'];
     }
