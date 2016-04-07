@@ -200,6 +200,13 @@ class Recruiter
         $this->db->selectCollection('scheduled')->ensureIndex(
             [
                 'locked' => 1,
+                'scheduled_at' => 1,
+            ],
+            ['background' => true]
+        );
+        $this->db->selectCollection('scheduled')->ensureIndex(
+            [
+                'locked' => 1,
             ],
             ['background' => true]
         );
