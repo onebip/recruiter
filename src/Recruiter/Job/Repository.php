@@ -72,13 +72,24 @@ class Repository
         return $this->archived->count();
     }
 
-    public function cleanArchived(T\Moment $upperLimit)
+    public function cleanArchived(T\Moment $upperLimit, $maxDocuments = 100)
     {
-        return $this->archived->remove([
-            'last_execution.ended_at' => [
-                '$lte' => T\MongoDate::from($upperLimit),
-            ]
-        ])['n'];
+        $documents = $this->archived->find(
+            [
+                'last_execution.ended_at' => [
+                    '$lte' => T\MongoDate::from($upperLimit),
+                ]
+            ],
+            ['_id' => 1]
+        )->limit($maxDocuments);
+
+        $deleted = 0;
+        foreach ($documents as $document) {
+            $this->archived->remove(['_id' => $document['_id']]);
+            $deleted++;
+        }
+
+        return $deleted;
     }
 
     public function queued($tag = null, T\Moment $at = null)

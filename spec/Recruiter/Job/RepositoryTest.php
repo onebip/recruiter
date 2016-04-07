@@ -73,6 +73,15 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(0, $this->repository->countArchived());
     }
 
+    public function testCleaningOfOldArchivedCanBeLimited()
+    {
+        $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
+        $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
+        $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
+        $this->assertEquals(2, $this->repository->cleanArchived(T\now(), 2));
+        $this->assertEquals(1, $this->repository->countArchived());
+    }
+
     private function aJob()
     {
         $workable = $this
