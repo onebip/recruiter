@@ -16,6 +16,11 @@ class StoppedClock
         return $this->now;
     }
 
+    public function driftForwardBySeconds($seconds)
+    {
+        $this->now = $this->now->after(seconds($seconds));
+    }
+
     public function start()
     {
         return clock(new Clock());
