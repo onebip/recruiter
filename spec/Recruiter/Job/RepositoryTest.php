@@ -32,6 +32,16 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, $this->repository->queued('fast-lane'));
     }
 
+    public function testCountsQueuedJobsWithCornerCaseTagging()
+    {
+        $this->aJobToSchedule()->inBackground()->execute();
+        $this->aJobToSchedule()->taggedAs([])->inBackground()->execute();
+        $this->aJobToSchedule()->taggedAs('')->inBackground()->execute();
+        $this->aJobToSchedule()->taggedAs(null)->inBackground()->execute();
+
+        $this->assertEquals(4, $this->repository->queued('generic'));
+    }
+
     public function testRecentHistory()
     {
         $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));

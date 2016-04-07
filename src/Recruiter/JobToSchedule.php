@@ -64,7 +64,10 @@ class JobToSchedule
 
     public function taggedAs($tags)
     {
-        $this->job->taggedAs(is_array($tags) ? $tags : [$tags]);
+        if (!empty($tags)) {
+            $this->job->taggedAs(is_array($tags) ? $tags : [$tags]);
+        }
+
         return $this;
     }
 
@@ -73,7 +76,7 @@ class JobToSchedule
         if ($this->mustBeScheduled) {
             $this->job->save();
         } else {
-            // 
+            //
             $this->job->execute($this->emptyEventDispatcher());
         }
         return (string) $this->job->id();

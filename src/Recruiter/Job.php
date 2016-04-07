@@ -73,7 +73,10 @@ class Job
 
     public function taggedAs(array $tags)
     {
-        $this->status['tags'] = $tags;
+        if (!empty($tags)) {
+            $this->status['tags'] = $tags;
+        }
+
         return $this;
     }
 
@@ -201,7 +204,7 @@ class Job
                 'created_at' => T\MongoDate::now(),
                 'locked' => false,
                 'attempts' => 0,
-                'tags' => [],
+                'tags' => ['generic'],
             ],
             WorkableInJob::initialize(),
             RetryPolicyInJob::initialize()
