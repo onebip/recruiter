@@ -97,3 +97,24 @@ function years($numberOf)
     return new Interval($numberOf * Interval::MILLISECONDS_IN_YEARS);
 }
 
+function fromDateInterval(\DateInterval $interval)
+{
+    $seconds = (string) $interval->s;
+    if ($interval->i) {
+        $seconds = bcadd($seconds, bcmul($interval->i, 60));
+    }
+    if ($interval->h) {
+        $seconds = bcadd($seconds, bcmul($interval->h, 3600));
+    }
+    if ($interval->d) {
+        $seconds = bcadd($seconds, bcmul($interval->d, 86400));
+    }
+    if ($interval->m) {
+        $seconds = bcadd($seconds, bcmul($interval->m, 2629740));
+    }
+    if ($interval->y) {
+        $seconds = bcadd($seconds, bcmul($interval->y, 31556874));
+    }
+
+    return seconds($seconds);
+}
