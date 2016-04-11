@@ -1,0 +1,99 @@
+#!/usr/bin/env php
+<?php
+
+autoload();
+
+use Recruiter\Cli;
+use Recruiter\Cleaner;
+use Recruiter\Option;
+
+$cli = new Cli();
+
+$cli->add('cleaner', new Option\TargetHost('target'));
+// It seems that the default "timeTowaitAtLeast" is defaulted to 200ms
+// We prefer to sleep at least 1 second, 200ms is too small for this kind of job
+$cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '1minutes'));
+$cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '256MB'));
+$cli->add('clean-after', new Option\CleanAfter('clean-after', '10days'));
+$cli->parse();
+
+$cleaner = $cli->get('cleaner');
+$waitStrategy = $cli->get('wait-strategy');
+$memoryLimit = $cli->get('memory-limit');
+$cleanAfter = $cli->get('clean-after');
+
+$askedToStop = false;
+foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
+    pcntl_signal($signal, function($signal) use(&$askedToStop) {
+        $askedToStop = true;
+    });
+}
+
+$cleaner->ensureIsTheOnlyOne(
+    $waitStrategy->timeToWaitAtMost(),
+    $otherwise = function($message) {
+        printf(
+            '[CLEANER][%d][%s] unable to start more than one cleaner at a time, sorry space cowboy... (%s)' . PHP_EOL,
+            posix_getpid(), date('c'), $message
+        );
+        exit(0);
+    }
+);
+
+
+printf(
+    '[CLEANER][%d][%s] ready to clean!' . PHP_EOL,
+    posix_getpid(), date('c')
+);
+while (!askedToStop()) {
+    $numberOfJobsCleaned = $cleaner->cleanArchived($cleanAfter);
+    printf(
+        '[CLEANER][%d][%s] cleaned up %d old jobs from the archive' . PHP_EOL,
+        posix_getpid(), date('c'), $numberOfJobsCleaned
+    );
+    if ($numberOfJobsCleaned > 0) {
+        $waitStrategy->reset();
+    } else {
+        $waitStrategy->wait()->backOff();
+    }
+    /*
+    $memoryUsage = ByteUnits\bytes(memory_get_usage());
+    printf(
+        '[RECRUITER][%d][%s][%s] picked jobs for %d workers in %fms, actual assignments were %d' . PHP_EOL,
+        posix_getpid(), date('c'), $memoryUsage->format(),
+        count($assignment), ($pickEndAt - $pickStartAt) * 1000,
+        $actualNumber
+    );
+    $memoryLimit->ensure($memoryUsage);
+    */
+}
+$cleaner->bye();
+printf(
+    '[CLEANER][%d][%s] ok, see you space cowboy...' . PHP_EOL,
+    posix_getpid(), date('c')
+);
+
+function askedToStop()
+{
+    global $askedToStop;
+    pcntl_signal_dispatch();
+    return $askedToStop;
+}
+
+function autoload() {
+    foreach (['/../vendor', '/../../..'] as $rp) {
+        $file = __DIR__ . $rp . '/autoload.php';
+        if (file_exists($file)) {
+            require_once $file;
+            break;
+        }
+    }
+    if (!class_exists('Composer\Autoload\ClassLoader', false)) {
+        fprintf(STDERR,
+            'You need to set up the project dependencies using the following commands:' . PHP_EOL .
+            'curl -s http://getcomposer.org/installer | php' . PHP_EOL .
+            'php composer.phar install' . PHP_EOL
+        );
+        exit(1);
+    }
+}
