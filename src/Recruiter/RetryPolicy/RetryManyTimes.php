@@ -49,4 +49,9 @@ class RetryManyTimes implements RetryPolicy
             T\seconds($parameters['seconds_to_wait_before_retry'])
         );
     }
+
+    public function maximumNumberOfRetries()
+    {
+        return $this->retryHowManyTimes;
+    }
 }

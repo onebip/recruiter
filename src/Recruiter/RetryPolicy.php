@@ -35,4 +35,10 @@ interface RetryPolicy
      * @return Recruiter\RetryPolicy
      */
     public static function import($parameters);
+
+
+    /**
+     * @return int maximum number of retries
+     */
+    public function maximumNumberOfRetries();
 }

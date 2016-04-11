@@ -76,4 +76,9 @@ class ExponentialBackoff implements RetryPolicy
             T\seconds($parameters['seconds_to_initially_wait_before_retry'])
         );
     }
+
+    public function maximumNumberOfRetries()
+    {
+        return $this->retryHowManyTimes;
+    }
 }

@@ -14,7 +14,7 @@ class RetriableExceptionFilter implements RetryPolicy
     private $retriableExceptions;
 
     private $retryPolicy;
-    
+
     /**
      * @param string $exceptionClass  fully qualified class or interface name
      * @return self
@@ -60,6 +60,10 @@ class RetriableExceptionFilter implements RetryPolicy
         );
     }
 
+    public function maximumNumberOfRetries()
+    {
+        return $this->filteredRetryPolicy->maximumNumberOfRetries();
+    }
 
     private function ensureAreAllExceptions($exceptions)
     {

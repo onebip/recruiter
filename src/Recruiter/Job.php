@@ -114,6 +114,7 @@ class Job
         return [
             'job_id' => (string) $this->id(),
             'retry_number' => $this->status['attempts'],
+            'maximum' => $this->retryPolicy->maximumNumberOfRetries(),
             'last_execution' => array_key_exists('last_execution', $this->status)
                 ? $this->status['last_execution']
                 : null,
