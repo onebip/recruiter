@@ -66,12 +66,6 @@ class Recruiter
         );
     }
 
-    public function cleanArchived(Interval $gracePeriod)
-    {
-        $upperLimit = T\now()->before($gracePeriod);
-        return $this->jobs->cleanArchived($upperLimit);
-    }
-
     public function getEventDispatcher()
     {
         return $this->eventDispatcher;
