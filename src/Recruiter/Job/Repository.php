@@ -72,7 +72,7 @@ class Repository
         return $this->archived->count();
     }
 
-    public function cleanArchived(T\Moment $upperLimit, $maxDocuments = 100)
+    public function cleanArchived(T\Moment $upperLimit)
     {
         $documents = $this->archived->find(
             [
@@ -81,7 +81,7 @@ class Repository
                 ]
             ],
             ['_id' => 1]
-        )->limit($maxDocuments);
+        );
 
         $deleted = 0;
         foreach ($documents as $document) {
