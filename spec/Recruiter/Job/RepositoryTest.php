@@ -42,6 +42,15 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(4, $this->repository->queued('generic'));
     }
 
+    public function testXXX()
+    {
+        $this->aJobToSchedule()->inBackground()->execute();
+        $time1 = $this->clock->now();
+        $this->clock->driftForwardBySeconds(25 * 60 * 60);
+        $this->aJobToSchedule()->inBackground()->execute();
+        $this->assertEquals(1, $this->repository->queued('generic', T\now(), T\now()->before(T\hour(24))));
+    }
+
     public function testRecentHistory()
     {
         $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
