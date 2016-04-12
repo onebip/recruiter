@@ -20,7 +20,7 @@ class Cleaner
         $this->lock = $lock;
     }
 
-    public function ensureIsTheOnlyOne(Interval $timeToWaitAtMost, $otherwise)
+    public function ensureIsTheOnlyOne(Interval $timeToWaitAtMost, callable $otherwise)
     {
         try {
             $this->lock->wait(

@@ -71,7 +71,7 @@ class Recruiter
         return $this->eventDispatcher;
     }
 
-    public function ensureIsTheOnlyOne(Interval $timeToWaitAtMost, $otherwise)
+    public function ensureIsTheOnlyOne(Interval $timeToWaitAtMost, callable $otherwise)
     {
         try {
             $this->lock->wait(self::POLL_TIME, $timeToWaitAtMost->seconds() * self::WAIT_FACTOR);
