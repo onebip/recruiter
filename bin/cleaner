@@ -8,46 +8,26 @@ use Recruiter\WaitStrategy;
 use Recruiter\Job\Repository;
 use Onebip\Concurrency\MongoLock;
 use Timeless\Interval;
-
 use Ulrichsg\Getopt\Getopt;
 use Ulrichsg\Getopt\Option;
 
 $defaultTarget = 'localhost:27017/recruiter';
-$parseTarget = function($target) {
-    if (preg_match(
-        '/^'
-        . '(mongodb:\/\/)?'
-        . '(?P<hosts>[^\/]+)'
-        . '(?:\/(?P<db>\w+))?'
-        . '(\?(?P<qs>.*))?'
-        . '/',
-        $target,
-        $matches
-    )) {
-        if (empty($matches['db'])) {
-            $matches['db'] = 'recruiter';
-        }
-        if (empty($matches['qs'])) {
-            $matches['qs'] = '';
-        }
-        parse_str($matches['qs'], $queryString);
-        return [$matches['hosts'], $matches['db'], $queryString];
-    }
-};
 $options = [
-    (new Option(null, 'wait-at-least', Getopt::REQUIRED_ARGUMENT))->setDefaultValue("10m"),
-    (new Option(null, 'wait-at-most', Getopt::REQUIRED_ARGUMENT))->setDefaultValue("30m"),
-    (new Option(null, 'target', Getopt::REQUIRED_ARGUMENT))->setDefaultValue($defaultTarget),
-    (new Option(null, 'memory-limit', Getopt::REQUIRED_ARGUMENT))->setDefaultValue("256MB"),
-    (new Option(null, 'clean-after', Getopt::REQUIRED_ARGUMENT))->setDefaultValue("5days"),
+    (new Option($shortFlag = null, 'wait-at-least', Getopt::REQUIRED_ARGUMENT))
+        ->setDefaultValue("10m"),
+    (new Option($shortFlag = null, 'wait-at-most', Getopt::REQUIRED_ARGUMENT))
+        ->setDefaultValue("30m"),
+    (new Option($shortFlag = null, 'target', Getopt::REQUIRED_ARGUMENT))
+        ->setDefaultValue($defaultTarget),
+    (new Option($shortFlag = null, 'memory-limit', Getopt::REQUIRED_ARGUMENT))
+        ->setDefaultValue("256MB"),
+    (new Option($shortFlag = null, 'clean-after', Getopt::REQUIRED_ARGUMENT))
+        ->setDefaultValue("5days"),
 ];
 $cliOptions = new Getopt($options);
 $cliOptions->parse();
-// TODO: it does not throw an exception please check Getopt behaviour!
 
-
-// Factory:
-list($hosts, $dbName, $options) = $parseTarget($cliOptions['target']);
+list($hosts, $dbName, $options) = parseMongoDSN($cliOptions['target']);
 $db = (new MongoClient($hosts, $options))->selectDb($dbName);
 
 $waitStrategy = new WaitStrategy(
@@ -137,3 +117,25 @@ function ensureMemoryLimitsAreRespected($currentUsage, $limit) {
         posix_kill(posix_getpid(), SIGTERM);
     }
 }
+
+function parseMongoDSN($target) {
+    if (preg_match(
+        '/^'
+        . '(mongodb:\/\/)?'
+        . '(?P<hosts>[^\/]+)'
+        . '(?:\/(?P<db>\w+))?'
+        . '(\?(?P<qs>.*))?'
+        . '/',
+        $target,
+        $matches
+    )) {
+        if (empty($matches['db'])) {
+            $matches['db'] = 'recruiter';
+        }
+        if (empty($matches['qs'])) {
+            $matches['qs'] = '';
+        }
+        parse_str($matches['qs'], $queryString);
+        return [$matches['hosts'], $matches['db'], $queryString];
+    }
+};
