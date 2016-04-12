@@ -14,20 +14,20 @@ class Cleaner
     const POLL_TIME = 5;
     const LOCK_FACTOR = 3;
 
-    public function __construct(Repository $jobRepository, MongoLock $mongoLock)
+    public function __construct(Repository $repository, MongoLock $lock)
     {
-        $this->jobRepository = $jobRepository;
-        $this->mongoLock = $mongoLock;
+        $this->repository = $repository;
+        $this->lock = $lock;
     }
 
     public function ensureIsTheOnlyOne(Interval $timeToWaitAtMost, $otherwise)
     {
         try {
-            $this->mongoLock->wait(
+            $this->lock->wait(
                 self::POLL_TIME,
                 $timeToWaitAtMost->seconds() * self::WAIT_FACTOR
             );
-            $this->mongoLock->acquire($this->leaseTimeOfLock($timeToWaitAtMost));
+            $this->lock->acquire($this->leaseTimeOfLock($timeToWaitAtMost));
         } catch(LockNotAvailableException $e) {
             $otherwise($e->getMessage());
         }
@@ -36,7 +36,12 @@ class Cleaner
     public function cleanArchived(Interval $gracePeriod)
     {
         $upperLimit = T\now()->before($gracePeriod);
-        return $this->jobRepository->cleanArchived($upperLimit);
+        return $this->repository->cleanArchived($upperLimit);
+    }
+
+    public function bye()
+    {
+        $this->lock->release();
     }
 
     /**

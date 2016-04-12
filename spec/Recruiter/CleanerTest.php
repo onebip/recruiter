@@ -73,4 +73,13 @@ class CleanerTest extends \PHPUnit_Framework_TestCase
             $this->cleaner->cleanArchived($this->interval)
         );
     }
+
+    public function testShouldReleaseTheLock()
+    {
+        $this->mongoLock
+            ->expects($this->once())
+            ->method('release');
+
+        $this->cleaner->bye();
+    }
 }
