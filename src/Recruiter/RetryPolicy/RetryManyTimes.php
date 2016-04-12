@@ -1,5 +1,4 @@
 <?php
-
 namespace Recruiter\RetryPolicy;
 
 use Recruiter\RetryPolicy;
@@ -23,6 +22,11 @@ class RetryManyTimes implements RetryPolicy
         }
         $this->retryHowManyTimes = $retryHowManyTimes;
         $this->timeToWaitBeforeRetry = $timeToWaitBeforeRetry;
+    }
+
+    public static function forTimes($retryHowManyTimes, $timeToWaitBeforeRetry = 60)
+    {
+        return new static($retryHowManyTimes, $timeToWaitBeforeRetry);
     }
 
     public function schedule(JobAfterFailure $job)
