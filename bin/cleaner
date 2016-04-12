@@ -3,24 +3,62 @@
 
 autoload();
 
-use Recruiter\Cli;
 use Recruiter\Cleaner;
-use Recruiter\Option;
+use Recruiter\WaitStrategy;
+use Recruiter\Job\Repository;
+use Onebip\Concurrency\MongoLock;
+use Timeless\Interval;
 
-$cli = new Cli();
+use Ulrichsg\Getopt\Getopt;
+use Ulrichsg\Getopt\Option;
 
-$cli->add('cleaner', new Option\TargetHost('target'));
-// It seems that the default "timeTowaitAtLeast" is defaulted to 200ms
-// We prefer to sleep at least 1 second, 200ms is too small for this kind of job
-$cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '1minutes'));
-$cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '256MB'));
-$cli->add('clean-after', new Option\CleanAfter('clean-after', '10days'));
-$cli->parse();
+$defaultTarget = 'localhost:27017/recruiter';
+$parseTarget = function($target) {
+    if (preg_match(
+        '/^'
+        . '(mongodb:\/\/)?'
+        . '(?P<hosts>[^\/]+)'
+        . '(?:\/(?P<db>\w+))?'
+        . '(\?(?P<qs>.*))?'
+        . '/',
+        $target,
+        $matches
+    )) {
+        if (empty($matches['db'])) {
+            $matches['db'] = 'recruiter';
+        }
+        if (empty($matches['qs'])) {
+            $matches['qs'] = '';
+        }
+        parse_str($matches['qs'], $queryString);
+        return [$matches['hosts'], $matches['db'], $queryString];
+    }
+};
+$options = [
+    (new Option(null, 'wait-at-least', Getopt::REQUIRED_ARGUMENT))->setDefaultValue("10m"),
+    (new Option(null, 'wait-at-most', Getopt::REQUIRED_ARGUMENT))->setDefaultValue("30m"),
+    (new Option(null, 'target', Getopt::REQUIRED_ARGUMENT))->setDefaultValue($defaultTarget),
+    (new Option(null, 'memory-limit', Getopt::REQUIRED_ARGUMENT))->setDefaultValue("256MB"),
+    (new Option(null, 'clean-after', Getopt::REQUIRED_ARGUMENT))->setDefaultValue("5days"),
+];
+$cliOptions = new Getopt($options);
+$cliOptions->parse();
+// TODO: it does not throw an exception please check Getopt behaviour!
 
-$cleaner = $cli->get('cleaner');
-$waitStrategy = $cli->get('wait-strategy');
-$memoryLimit = $cli->get('memory-limit');
-$cleanAfter = $cli->get('clean-after');
+
+// Factory:
+list($hosts, $dbName, $options) = $parseTarget($cliOptions['target']);
+$db = (new MongoClient($hosts, $options))->selectDb($dbName);
+
+$waitStrategy = new WaitStrategy(
+    Interval::parse($cliOptions['wait-at-least']),
+    Interval::parse($cliOptions['wait-at-most'])
+);
+$memoryLimit = ByteUnits\parse($cliOptions['memory-limit']);
+$gracePeriod = Interval::parse($cliOptions['clean-after']);
+$jobRepository = new Repository($db);
+$lock = MongoLock::forProgram('CLEANER', $db->selectCollection('metadata'));
+$cleaner = new Cleaner($jobRepository, $lock);
 
 $askedToStop = false;
 foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
@@ -40,33 +78,25 @@ $cleaner->ensureIsTheOnlyOne(
     }
 );
 
-
 printf(
     '[CLEANER][%d][%s] ready to clean!' . PHP_EOL,
     posix_getpid(), date('c')
 );
 while (!askedToStop()) {
-    $numberOfJobsCleaned = $cleaner->cleanArchived($cleanAfter);
+    $numberOfJobsCleaned = $cleaner->cleanArchived($gracePeriod);
+    $memoryUsage = ByteUnits\bytes(memory_get_usage());
     printf(
-        '[CLEANER][%d][%s] cleaned up %d old jobs from the archive' . PHP_EOL,
-        posix_getpid(), date('c'), $numberOfJobsCleaned
+        '[CLEANER][%d][%s][%s] cleaned up %d old jobs from the archive' . PHP_EOL,
+        posix_getpid(), date('c'), $memoryUsage->format(), $numberOfJobsCleaned
     );
     if ($numberOfJobsCleaned > 0) {
         $waitStrategy->reset();
     } else {
         $waitStrategy->wait()->backOff();
     }
-    /*
-    $memoryUsage = ByteUnits\bytes(memory_get_usage());
-    printf(
-        '[RECRUITER][%d][%s][%s] picked jobs for %d workers in %fms, actual assignments were %d' . PHP_EOL,
-        posix_getpid(), date('c'), $memoryUsage->format(),
-        count($assignment), ($pickEndAt - $pickStartAt) * 1000,
-        $actualNumber
-    );
-    $memoryLimit->ensure($memoryUsage);
-    */
+    ensureMemoryLimitsAreRespected($memoryUsage, $memoryLimit);
 }
+
 $cleaner->bye();
 printf(
     '[CLEANER][%d][%s] ok, see you space cowboy...' . PHP_EOL,
@@ -95,5 +125,15 @@ function autoload() {
             'php composer.phar install' . PHP_EOL
         );
         exit(1);
+    }
+}
+
+function ensureMemoryLimitsAreRespected($currentUsage, $limit) {
+    if ($currentUsage->isGreaterThan($limit)) {
+        fprintf(STDERR,
+                'Memory limit reached, %s is more than the force limit of %s' . PHP_EOL,
+                $currentUsage->format(), $limit->format()
+        );
+        posix_kill(posix_getpid(), SIGTERM);
     }
 }
