@@ -45,6 +45,7 @@ class MemoryLimit implements Recruiter\Option
                 'Memory limit reached, %s is more than the force limit of %s' . PHP_EOL,
                 $used->format(), $this->limit->format()
             );
+            // TODO: avoid exit(1) and try to perform a graceful shutdown
             exit(1);
         }
     }
