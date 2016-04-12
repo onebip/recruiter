@@ -3,7 +3,7 @@
 namespace Recruiter;
 
 use Recruiter\Job\Repository;
-use Onebip\Concurrency\MongoLock;
+use Onebip\Concurrency\Lock;
 use Timeless\Interval;
 use Timeless as T;
 use Onebip\Concurrency\LockNotAvailableException;
@@ -14,7 +14,7 @@ class Cleaner
     const POLL_TIME = 5;
     const LOCK_FACTOR = 3;
 
-    public function __construct(Repository $repository, MongoLock $lock)
+    public function __construct(Repository $repository, Lock $lock)
     {
         $this->repository = $repository;
         $this->lock = $lock;

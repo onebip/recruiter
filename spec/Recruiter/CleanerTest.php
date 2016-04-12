@@ -15,7 +15,7 @@ class CleanerTest extends \PHPUnit_Framework_TestCase
             ->getMock();
 
         $this->mongoLock = $this
-            ->getMockBuilder('Onebip\Concurrency\MongoLock')
+            ->getMockBuilder('Onebip\Concurrency\Lock')
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -29,7 +29,7 @@ class CleanerTest extends \PHPUnit_Framework_TestCase
 
     public function testShouldCreateCleaner()
     {
-        $this->assertNotNull($this->cleaner);
+        $this->assertInstanceOf('Recruiter\Cleaner', $this->cleaner);
     }
 
     public function testShouldInvokeCallableIfLockIsAlreadyAquired()
