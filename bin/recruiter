@@ -15,24 +15,12 @@ $cli->add('recruiter', new Option\TargetHost('target'));
 $cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '1600ms'));
 $cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '256MB'));
 $cli->add('considered-dead-after', new Option\ConsideredDeadAfter('considered-dead-after', '30m'));
-$cli->add('clean-after', new Option\CleanAfter('clean-after', '10days'));
 $cli->parse();
 
 $recruiter = $cli->get('recruiter');
 $waitStrategy = $cli->get('wait-strategy');
 $memoryLimit = $cli->get('memory-limit');
 $consideredDeadAfter = $cli->get('considered-dead-after');
-$cleanAfter = $cli->get('clean-after');
-$cleaningCheck = PeriodicalCheck
-    ::every(
-        min($cleanAfter->seconds(), $defaultCleaningCheckFrequency = 30 * 60)
-    )
-    ->onFire(function() use ($recruiter, $cleanAfter) {
-        printf(
-            '[RECRUITER][%d][%s] cleaned up %d old jobs from the archive' . PHP_EOL,
-            posix_getpid(), date('c'), $recruiter->cleanArchived($cleanAfter)
-        );
-    });
 
 $askedToStop = false;
 foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
@@ -51,7 +39,6 @@ $recruiter->ensureIsTheOnlyOne(
         exit(0);
     }
 );
-
 
 printf(
     '[RECRUITER][%d][%s] ready to recruit!' . PHP_EOL,
@@ -90,7 +77,6 @@ while (!askedToStop()) {
         '[RECRUITER][%d][%s] unlocked %d jobs due to dead workers' . PHP_EOL,
         posix_getpid(), date('c'), $unlockedJobs
     );
-    $cleaningCheck();
     (count($assignment) > 0) ?
         $waitStrategy->reset() :
         $waitStrategy->wait()->backOff();
