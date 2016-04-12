@@ -113,6 +113,23 @@ class Repository
         return $this->scheduled->count($query);
     }
 
+    public function postponed($tag = null, T\Moment $at = null)
+    {
+        if ($at === null) {
+            $at = T\now();
+        }
+
+        $query = [
+            'scheduled_at' => ['$gt' => T\MongoDate::from($at)],
+        ];
+
+        if ($tag !== null) {
+            $query['tags'] = $tag;
+        }
+
+        return $this->scheduled->count($query);
+    }
+
     public function scheduledCount()
     {
         return $this->scheduled->count();
