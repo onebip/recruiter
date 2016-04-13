@@ -14,9 +14,9 @@ use Ulrichsg\Getopt\Option;
 $defaultTarget = 'localhost:27017/recruiter';
 $options = [
     (new Option($shortFlag = null, 'wait-at-least', Getopt::REQUIRED_ARGUMENT))
-        ->setDefaultValue("10m"),
+        ->setDefaultValue("1m"),
     (new Option($shortFlag = null, 'wait-at-most', Getopt::REQUIRED_ARGUMENT))
-        ->setDefaultValue("30m"),
+        ->setDefaultValue("3m"),
     (new Option($shortFlag = null, 'target', Getopt::REQUIRED_ARGUMENT))
         ->setDefaultValue($defaultTarget),
     (new Option($shortFlag = null, 'memory-limit', Getopt::REQUIRED_ARGUMENT))
