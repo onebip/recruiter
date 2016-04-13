@@ -14,7 +14,7 @@ use Timeless as T;
  */
 class EnduranceTest extends BaseAcceptanceTest
 {
-    use Eris\TestTrait; 
+    use Eris\TestTrait;
 
     public function setUp()
     {
@@ -113,7 +113,7 @@ class EnduranceTest extends BaseAcceptanceTest
                     $this->assertInvariantsOnStatistics($statisticsByTag[$tag]);
                     $cumulativeThroughput += $statisticsByTag[$tag]['throughput']['value'];
                 }
-                var_Dump($statistics, $statisticsByTag);
+                var_dump($statistics, $statisticsByTag);
                 // TODO: add tolerance
                 $this->assertEquals($statistics['throughput']['value'], $cumulativeThroughput);
             });

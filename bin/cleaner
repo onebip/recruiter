@@ -1,0 +1,141 @@
+#!/usr/bin/env php
+<?php
+
+autoload();
+
+use Recruiter\Cleaner;
+use Recruiter\WaitStrategy;
+use Recruiter\Job\Repository;
+use Onebip\Concurrency\MongoLock;
+use Timeless\Interval;
+use Ulrichsg\Getopt\Getopt;
+use Ulrichsg\Getopt\Option;
+
+$defaultTarget = 'localhost:27017/recruiter';
+$options = [
+    (new Option($shortFlag = null, 'wait-at-least', Getopt::REQUIRED_ARGUMENT))
+        ->setDefaultValue("10m"),
+    (new Option($shortFlag = null, 'wait-at-most', Getopt::REQUIRED_ARGUMENT))
+        ->setDefaultValue("30m"),
+    (new Option($shortFlag = null, 'target', Getopt::REQUIRED_ARGUMENT))
+        ->setDefaultValue($defaultTarget),
+    (new Option($shortFlag = null, 'memory-limit', Getopt::REQUIRED_ARGUMENT))
+        ->setDefaultValue("256MB"),
+    (new Option($shortFlag = null, 'clean-after', Getopt::REQUIRED_ARGUMENT))
+        ->setDefaultValue("5days"),
+];
+$cliOptions = new Getopt($options);
+$cliOptions->parse();
+
+list($hosts, $dbName, $options) = parseMongoDSN($cliOptions['target']);
+$db = (new MongoClient($hosts, $options))->selectDb($dbName);
+
+$waitStrategy = new WaitStrategy(
+    Interval::parse($cliOptions['wait-at-least']),
+    Interval::parse($cliOptions['wait-at-most'])
+);
+$memoryLimit = ByteUnits\parse($cliOptions['memory-limit']);
+$gracePeriod = Interval::parse($cliOptions['clean-after']);
+$jobRepository = new Repository($db);
+$lock = MongoLock::forProgram('CLEANER', $db->selectCollection('metadata'));
+$cleaner = new Cleaner($jobRepository, $lock);
+
+$askedToStop = false;
+foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
+    pcntl_signal($signal, function($signal) use(&$askedToStop) {
+        $askedToStop = true;
+    });
+}
+
+$cleaner->ensureIsTheOnlyOne(
+    $waitStrategy->timeToWaitAtMost(),
+    $otherwise = function($message) {
+        printf(
+            '[CLEANER][%d][%s] unable to start more than one cleaner at a time, sorry space cowboy... (%s)' . PHP_EOL,
+            posix_getpid(), date('c'), $message
+        );
+        exit(0);
+    }
+);
+
+printf(
+    '[CLEANER][%d][%s] ready to clean!' . PHP_EOL,
+    posix_getpid(), date('c')
+);
+while (!askedToStop()) {
+    $numberOfJobsCleaned = $cleaner->cleanArchived($gracePeriod);
+    $memoryUsage = ByteUnits\bytes(memory_get_usage());
+    printf(
+        '[CLEANER][%d][%s][%s] cleaned up %d old jobs from the archive' . PHP_EOL,
+        posix_getpid(), date('c'), $memoryUsage->format(), $numberOfJobsCleaned
+    );
+    if ($numberOfJobsCleaned > 0) {
+        $waitStrategy->reset();
+    } else {
+        $waitStrategy->wait()->backOff();
+    }
+    ensureMemoryLimitsAreRespected($memoryUsage, $memoryLimit);
+}
+
+$cleaner->bye();
+printf(
+    '[CLEANER][%d][%s] ok, see you space cowboy...' . PHP_EOL,
+    posix_getpid(), date('c')
+);
+
+function askedToStop()
+{
+    global $askedToStop;
+    pcntl_signal_dispatch();
+    return $askedToStop;
+}
+
+function autoload() {
+    foreach (['/../vendor', '/../../..'] as $rp) {
+        $file = __DIR__ . $rp . '/autoload.php';
+        if (file_exists($file)) {
+            require_once $file;
+            break;
+        }
+    }
+    if (!class_exists('Composer\Autoload\ClassLoader', false)) {
+        fprintf(STDERR,
+            'You need to set up the project dependencies using the following commands:' . PHP_EOL .
+            'curl -s http://getcomposer.org/installer | php' . PHP_EOL .
+            'php composer.phar install' . PHP_EOL
+        );
+        exit(1);
+    }
+}
+
+function ensureMemoryLimitsAreRespected($currentUsage, $limit) {
+    if ($currentUsage->isGreaterThan($limit)) {
+        fprintf(STDERR,
+                'Memory limit reached, %s is more than the force limit of %s' . PHP_EOL,
+                $currentUsage->format(), $limit->format()
+        );
+        posix_kill(posix_getpid(), SIGTERM);
+    }
+}
+
+function parseMongoDSN($target) {
+    if (preg_match(
+        '/^'
+        . '(mongodb:\/\/)?'
+        . '(?P<hosts>[^\/]+)'
+        . '(?:\/(?P<db>\w+))?'
+        . '(\?(?P<qs>.*))?'
+        . '/',
+        $target,
+        $matches
+    )) {
+        if (empty($matches['db'])) {
+            $matches['db'] = 'recruiter';
+        }
+        if (empty($matches['qs'])) {
+            $matches['qs'] = '';
+        }
+        parse_str($matches['qs'], $queryString);
+        return [$matches['hosts'], $matches['db'], $queryString];
+    }
+};

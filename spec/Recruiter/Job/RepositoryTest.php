@@ -73,15 +73,6 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(0, $this->repository->countArchived());
     }
 
-    public function testCleaningOfOldArchivedCanBeLimited()
-    {
-        $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
-        $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
-        $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
-        $this->assertEquals(2, $this->repository->cleanArchived(T\now(), 2));
-        $this->assertEquals(1, $this->repository->countArchived());
-    }
-
     public function testCleaningOfOldArchivedCanBeLimitedByTime()
     {
         $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
@@ -89,7 +80,7 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $time1 = $this->clock->now();
         $this->clock->driftForwardBySeconds(2 * 60 * 60);
         $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
-        $this->assertEquals(2, $this->repository->cleanArchived($time1, 100));
+        $this->assertEquals(2, $this->repository->cleanArchived($time1));
         $this->assertEquals(1, $this->repository->countArchived());
     }
 
