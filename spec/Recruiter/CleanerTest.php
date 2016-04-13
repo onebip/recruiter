@@ -3,12 +3,14 @@
 namespace Recruiter;
 
 use Timeless\Interval;
+use Timeless as T;
 
 class CleanerTest extends \PHPUnit_Framework_TestCase
 {
-    // TODO: these tests are not making any time assumptions, please check
-    protected function setUp()
+    public function setUp()
     {
+        $this->clock = T\clock()->stop();
+
         $this->jobRepository = $this
             ->getMockBuilder('Recruiter\Job\Repository')
             ->disableOriginalConstructor()
@@ -25,6 +27,11 @@ class CleanerTest extends \PHPUnit_Framework_TestCase
         );
 
         $this->interval = new Interval('10');
+    }
+
+    public function tearDown()
+    {
+        T\clock()->start();
     }
 
     public function testShouldCreateCleaner()
@@ -63,9 +70,13 @@ class CleanerTest extends \PHPUnit_Framework_TestCase
 
     public function testDelegatesTheCleanupOfArchivedJobsToTheJobsRepository()
     {
+        $now = $this->clock->now();
+        $expectedUpperLimit = $now->before($this->interval);
+
         $this->jobRepository
             ->expects($this->once())
             ->method('cleanArchived')
+            ->with($expectedUpperLimit)
             ->will($this->returnValue($jobsCleaned = 10));
 
         $this->assertEquals(
