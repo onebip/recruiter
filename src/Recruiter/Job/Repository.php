@@ -1,5 +1,4 @@
 <?php
-
 namespace Recruiter\Job;
 
 use MongoDB;
@@ -92,17 +91,42 @@ class Repository
         return $deleted;
     }
 
-    public function queued($tag = null, T\Moment $at = null)
+    public function queued($tag = null, T\Moment $at = null, T\Moment $from = null)
     {
         if ($at === null) {
             $at = T\now();
         }
+
         $query = [
             'scheduled_at' => ['$lte' => T\MongoDate::from($at)],
         ];
+
+        if ($from !== null) {
+            $query['scheduled_at']['$gt'] = T\MongoDate::from($from);
+        }
+
+
         if ($tag !== null) {
             $query['tags'] = $tag;
         }
+
+        return $this->scheduled->count($query);
+    }
+
+    public function postponed($tag = null, T\Moment $at = null)
+    {
+        if ($at === null) {
+            $at = T\now();
+        }
+
+        $query = [
+            'scheduled_at' => ['$gt' => T\MongoDate::from($at)],
+        ];
+
+        if ($tag !== null) {
+            $query['tags'] = $tag;
+        }
+
         return $this->scheduled->count($query);
     }
 
