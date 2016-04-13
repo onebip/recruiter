@@ -18,6 +18,7 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
         $this->recruiter = new Recruiter($this->recruiterDb);
         $this->jobs = 0;
         $this->processRecruiter = null;
+        $this->processCleaner = null;
         $this->processWorkers = [];
     }
 
@@ -78,6 +79,23 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
         return [$process, $pipes, 'recruiter'];
     }
 
+    protected function startCleaner()
+    {
+        $descriptors = [
+            0 => ['pipe', 'r'],
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w'],
+        ];
+        $cwd = __DIR__ . '/../../../';
+        $process = proc_open('exec php bin/cleaner --wait-at-least=5s --wait-at-most=1m  >> /tmp/cleaner.log 2>&1', $descriptors, $pipes, $cwd);
+        Timeout::inSeconds(1, "cleaner to be up")
+            ->until(function() use ($process) {
+                $status = proc_get_status($process);
+                return $status['running'];
+            });
+        return [$process, $pipes, 'cleaner'];
+    }
+
     protected function startWorker()
     {
         $descriptors = [
@@ -128,6 +146,7 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
     protected function start($workers)
     {
         $this->processRecruiter = $this->startRecruiter();
+        $this->processCleaner = $this->startCleaner();
         $this->processWorkers = [];
         for ($i = 0; $i < $workers; $i++) {
             $this->processWorkers[$i] = $this->startWorker();
@@ -139,6 +158,10 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
         if ($this->processRecruiter) {
             $this->stopProcessWithSignal($this->processRecruiter, $signal);
             $this->processRecruiter = null;
+        }
+        if ($this->processCleaner) {
+            $this->stopProcessWithSignal($this->processCleaner, $signal);
+            $this->processCleaner = null;
         }
         foreach ($this->processWorkers as $processWorker) {
             $this->stopProcessWithSignal($processWorker, $signal);
