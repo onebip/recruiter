@@ -41,7 +41,12 @@ class Cleaner
 
     public function bye()
     {
-        $this->lock->release();
+        $this->lock->release(false);
+    }
+
+    public function stillHere(Interval $timeToWaitAtMost)
+    {
+        $this->lock->refresh($this->leaseTimeOfLock($timeToWaitAtMost));
     }
 
     /**

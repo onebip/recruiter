@@ -75,6 +75,7 @@ while (!askedToStop()) {
         $waitStrategy->wait()->backOff();
     }
     ensureMemoryLimitsAreRespected($memoryUsage, $memoryLimit);
+    $cleaner->stillHere($waitStrategy->timeToWaitAtMost());
 }
 
 $cleaner->bye();

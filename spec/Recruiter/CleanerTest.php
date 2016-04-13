@@ -10,6 +10,7 @@ class CleanerTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->clock = T\clock()->stop();
+        $this->now = $this->clock->now();
 
         $this->jobRepository = $this
             ->getMockBuilder('Recruiter\Job\Repository')
@@ -26,7 +27,7 @@ class CleanerTest extends \PHPUnit_Framework_TestCase
             $this->mongoLock
         );
 
-        $this->interval = new Interval('10');
+        $this->interval = Interval::parse('10s');
     }
 
     public function tearDown()
@@ -70,8 +71,7 @@ class CleanerTest extends \PHPUnit_Framework_TestCase
 
     public function testDelegatesTheCleanupOfArchivedJobsToTheJobsRepository()
     {
-        $now = $this->clock->now();
-        $expectedUpperLimit = $now->before($this->interval);
+        $expectedUpperLimit = $this->now->before($this->interval);
 
         $this->jobRepository
             ->expects($this->once())
@@ -85,11 +85,23 @@ class CleanerTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testShouldRefreshTheLock()
+    {
+        $expectedLockExpiration = round($this->interval->seconds() * Cleaner::LOCK_FACTOR);
+        $this->mongoLock
+            ->expects($this->once())
+            ->method('refresh')
+            ->with($expectedLockExpiration);
+
+        $this->cleaner->stillHere($this->interval);
+    }
+
     public function testShouldReleaseTheLock()
     {
         $this->mongoLock
             ->expects($this->once())
-            ->method('release');
+            ->method('release')
+            ->with(false);
 
         $this->cleaner->bye();
     }
