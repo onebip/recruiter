@@ -8,6 +8,7 @@ class MongoFactory
 {
     public function getMongoDb($hosts, $options, $dbName)
     {
-        return $db = (new MongoClient($hosts, $options))->selectDb($dbName);
+        $optionsWithMajorityConcern = array_merge($options, ['w' => 'majority']);
+        return $db = (new MongoClient($hosts, $optionsWithMajorityConcern))->selectDb($dbName);
     }
 }
