@@ -23,3 +23,5 @@ script:
   - vendor/bin/phpunit --exclude-group long && travis_wait 120 vendor/bin/phpunit --group long
 
 sudo: false
+
+dist: trusty
