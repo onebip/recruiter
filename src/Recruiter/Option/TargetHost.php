@@ -2,10 +2,9 @@
 namespace Recruiter\Option;
 
 use Recruiter;
+use Recruiter\MongoFactory;
 use Ulrichsg\Getopt;
 use UnexpectedValueException;
-
-use MongoClient;
 use MongoConnectionException;
 
 class TargetHost implements Recruiter\Option
@@ -26,6 +25,7 @@ class TargetHost implements Recruiter\Option
             $this->defaultHost . ':' .
             $this->defaultPort . '/' .
             $this->defaultDb;
+        $this->mongoFactory = new MongoFactory();
     }
 
     public function specification()
@@ -49,11 +49,8 @@ class TargetHost implements Recruiter\Option
     private function validate($target)
     {
         try {
-            list($hosts, $db, $options) = $this->parse($target ?: $this->defaultTarget);
-            return (new MongoClient(
-                $hosts,
-                $options
-            ))->selectDB($db);
+            list($hosts, $dbName, $options) = $this->parse($target ?: $this->defaultTarget);
+            return $this->mongoFactory->getMongoDb($hosts, $options, $dbName);
         } catch(MongoConnectionException $e) {
             throw new UnexpectedValueException(
                 sprintf(

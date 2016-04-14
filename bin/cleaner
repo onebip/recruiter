@@ -10,6 +10,7 @@ use Onebip\Concurrency\MongoLock;
 use Timeless\Interval;
 use Ulrichsg\Getopt\Getopt;
 use Ulrichsg\Getopt\Option;
+use Recruiter\MongoFactory;
 
 $defaultTarget = 'localhost:27017/recruiter';
 $options = [
@@ -28,7 +29,8 @@ $cliOptions = new Getopt($options);
 $cliOptions->parse();
 
 list($hosts, $dbName, $options) = parseMongoDSN($cliOptions['target']);
-$db = (new MongoClient($hosts, $options))->selectDb($dbName);
+$mongoFactory = new MongoFactory();
+$db = $mongoFactory->getMongoDb($hosts, $options, $dbName);
 
 $waitStrategy = new WaitStrategy(
     Interval::parse($cliOptions['wait-at-least']),

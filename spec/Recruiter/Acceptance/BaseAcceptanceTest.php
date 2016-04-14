@@ -2,15 +2,20 @@
 namespace Recruiter\Acceptance;
 
 use Recruiter\Recruiter;
+use Recruiter\MongoFactory;
 use Recruiter\Workable\ShellCommand;
-use MongoClient;
 use Onebip\Concurrency\Timeout;
 
 abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $this->recruiterDb = (new MongoClient('localhost:27017'))->selectDB('recruiter');
+        $mongoFactory = new MongoFactory();
+        $this->recruiterDb = $mongoFactory->getMongoDb(
+            $hosts = 'localhost:27017',
+            $options = [],
+            $dbName = 'recruiter'
+        );
         $this->cleanDb();
         $this->files = ['/tmp/recruiter.log', '/tmp/worker.log'];
         $this->cleanLogs();
