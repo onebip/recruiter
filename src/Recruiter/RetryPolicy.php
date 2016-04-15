@@ -9,10 +9,10 @@ interface RetryPolicy
      * job use the appropriate methods on job or do nothing to if you don't
      * want to execute the job again
      *
-     * ```php
-     * // reschedule the job now
-     * $job->scheduleAt()
-     * ```
+     * This method can
+     * - schedule the job
+     * - archive the job
+     * - do nothing (and the job will be archived anyway)
      *
      * @param Recruiter\Job $job
      *
