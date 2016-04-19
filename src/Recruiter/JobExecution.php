@@ -68,7 +68,7 @@ class JobExecution
     {
         $trace = 'ok';
         if ($result instanceof \Exception) {
-            $trace = $result->getMessage();
+            $trace = $result->getTraceAsString();
         } else if (is_object($result) && method_exists($result, 'trace')) {
             $trace = $result->trace();
         } else if (is_object($result)) {
