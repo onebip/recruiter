@@ -46,6 +46,6 @@ class JobTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('message', $lastExecution);
         $this->assertArrayHasKey('trace', $lastExecution);
         $this->assertEquals("Sorry, I'm good for nothing", $lastExecution['message']);
-        $this->assertEquals("Sorry, I'm good for nothing", $lastExecution['trace']);
+        $this->assertRegexp("/.*AlwaysFail->execute.*/", $lastExecution['trace']);
     }
 }
