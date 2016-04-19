@@ -59,7 +59,7 @@ class Recruiter
     public function statistics($tag = null, Moment $at = null)
     {
         $totalsScheduledJobs = $this->jobs->scheduledCount();
-        $queued = $this->jobs->queued($tag, $at, $at->before(T\hour(24)));
+        $queued = $this->jobs->queued($tag, $at, $at ? $at->before(T\hour(24)) : null);
         $postponed = $this->jobs->postponed($tag, $at);
 
         return array_merge(
