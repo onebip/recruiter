@@ -17,10 +17,7 @@ class CleanerTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->mongoLock = $this
-            ->getMockBuilder('Onebip\Concurrency\Lock')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->mongoLock = $this->getMock('Onebip\Concurrency\Lock');
 
         $this->cleaner = new Cleaner(
             $this->jobRepository,
