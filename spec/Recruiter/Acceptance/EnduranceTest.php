@@ -138,7 +138,8 @@ class EnduranceTest extends BaseAcceptanceTest
 
     protected function assertInvariantsOnStatistics($statistics)
     {
-        $this->assertEquals(0, $statistics['queued']);
+        $this->assertEquals(0, $statistics['jobs']['queued']);
+        $this->assertEquals(0, $statistics['jobs']['zombies']);
         $this->assertGreaterThanOrEqual(0.0, $statistics['throughput']['value']);
         $this->assertGreaterThanOrEqual(0.0, $statistics['throughput']['value_per_second']);
         $this->assertGreaterThanOrEqual(0.0, $statistics['latency']['average']);
