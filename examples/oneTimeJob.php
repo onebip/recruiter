@@ -4,10 +4,16 @@
 require __DIR__ . '/../vendor/autoload.php';
 
 use Recruiter\Recruiter;
+use Recruiter\Factory;
 use Recruiter\Workable\LazyBones;
 use Recruiter\Worker;
 
-$db = (new MongoClient())->selectDB('recruiter');
+$mongoFactory = new Factory();
+$db = $mongoFactory->getMongoDb(
+    $hosts = 'localhost:27017',
+    $options = [],
+    $dbName = 'recruiter'
+);
 $db->drop();
 
 $recruiter = new Recruiter($db);
