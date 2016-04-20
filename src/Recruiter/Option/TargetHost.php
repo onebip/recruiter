@@ -2,7 +2,7 @@
 namespace Recruiter\Option;
 
 use Recruiter;
-use Recruiter\MongoFactory;
+use Recruiter\Factory;
 use Ulrichsg\Getopt;
 use UnexpectedValueException;
 use MongoConnectionException;
@@ -25,7 +25,7 @@ class TargetHost implements Recruiter\Option
             $this->defaultHost . ':' .
             $this->defaultPort . '/' .
             $this->defaultDb;
-        $this->mongoFactory = new MongoFactory();
+        $this->mongoFactory = new Factory();
     }
 
     public function specification()
@@ -64,11 +64,11 @@ class TargetHost implements Recruiter\Option
     public static function parse($target)
     {
         if (preg_match(
-                '/^' 
-                . '(mongodb:\/\/)?' 
+                '/^'
+                . '(mongodb:\/\/)?'
                 . '(?P<hosts>[^\/]+)'
-                . '(?:\/(?P<db>\w+))?' 
-                . '(\?(?P<qs>.*))?' 
+                . '(?:\/(?P<db>\w+))?'
+                . '(\?(?P<qs>.*))?'
                 . '/',
                 $target,
                 $matches
@@ -90,4 +90,3 @@ class TargetHost implements Recruiter\Option
         );
     }
 }
-

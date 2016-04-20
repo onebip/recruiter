@@ -5,7 +5,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Recruiter\Recruiter;
 use Recruiter\Workable\LazyBones;
-use Recruiter\MongoFactory;
+use Recruiter\Factory;
 
 $howManyJobsInBatch = 100;
 $howManyJobsToKeepAsScheduled = 2000;
@@ -13,7 +13,7 @@ $howManyJobsToKeepAsScheduled = 2000;
 $pid = posix_getpid();
 $options = array_merge(['host' => 'localhost:27017'], getopt('', ['host:']));
 
-$mongoFactory = new MongoFactory();
+$mongoFactory = new Factory();
 $db = $mongoFactory->getMongoDb(
     $options['host'],
     $mongoDbOptions = [],

@@ -4,11 +4,11 @@ namespace Recruiter;
 
 use MongoDB;
 
-class MongoFactoryTest extends \PHPUnit_Framework_TestCase
+class FactoryTest extends \PHPUnit_Framework_TestCase
 {
     protected function setUp()
     {
-        $this->mongoFactory = new MongoFactory();
+        $this->factory = new Factory();
         $this->dbHost = 'localhost:27017';
         $this->dbName = 'recruiter';
     }
@@ -29,7 +29,7 @@ class MongoFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function testShouldOverwriteTheWriteConcernPassedInTheOptions()
     {
-        $mongoDb = $this->mongoFactory->getMongoDb(
+        $mongoDb = $this->factory->getMongoDb(
                 $host = 'localhost:27017',
                 $options = [
                     'connectTimeoutMS' => '1000',
@@ -43,7 +43,7 @@ class MongoFactoryTest extends \PHPUnit_Framework_TestCase
 
     private function creationOfDefaultMongoDb()
     {
-        return $this->mongoFactory->getMongoDb(
+        return $this->factory->getMongoDb(
              $host = $this->dbHost,
              $options = ['connectTimeoutMS' => '1000'],
              $dbName = $this->dbName

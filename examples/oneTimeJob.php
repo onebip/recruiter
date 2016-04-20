@@ -4,11 +4,11 @@
 require __DIR__ . '/../vendor/autoload.php';
 
 use Recruiter\Recruiter;
-use Recruiter\MongoFactory;
+use Recruiter\Factory;
 use Recruiter\Workable\LazyBones;
 use Recruiter\Worker;
 
-$mongoFactory = new MongoFactory();
+$mongoFactory = new Factory();
 $db = $mongoFactory->getMongoDb(
     $hosts = 'localhost:27017',
     $options = [],
