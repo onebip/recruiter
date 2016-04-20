@@ -29,7 +29,7 @@ $cliOptions = new Getopt($options);
 $cliOptions->parse();
 
 list($hosts, $dbName, $options) = parseMongoDSN($cliOptions['target']);
-$mongoFactory = new Factory();
+$factory = new Factory();
 $db = $factory->getMongoDb($hosts, $options, $dbName);
 
 $waitStrategy = new WaitStrategy(

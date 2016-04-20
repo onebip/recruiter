@@ -25,7 +25,7 @@ class TargetHost implements Recruiter\Option
             $this->defaultHost . ':' .
             $this->defaultPort . '/' .
             $this->defaultDb;
-        $this->mongoFactory = new Factory();
+        $this->factory = new Factory();
     }
 
     public function specification()
@@ -50,7 +50,7 @@ class TargetHost implements Recruiter\Option
     {
         try {
             list($hosts, $dbName, $options) = $this->parse($target ?: $this->defaultTarget);
-            return $this->mongoFactory->getMongoDb($hosts, $options, $dbName);
+            return $this->factory->getMongoDb($hosts, $options, $dbName);
         } catch(MongoConnectionException $e) {
             throw new UnexpectedValueException(
                 sprintf(

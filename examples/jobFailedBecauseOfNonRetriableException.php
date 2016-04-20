@@ -11,8 +11,8 @@ use Recruiter\Workable\AlwaysFail;
 use Recruiter\RetryPolicy;
 use Recruiter\Worker;
 
-$mongoFactory = new Factory();
-$db = $mongoFactory->getMongoDb(
+$factory = new Factory();
+$db = $factory->getMongoDb(
     $hosts = 'localhost:27017',
     $options = [],
     $dbName = 'recruiter'

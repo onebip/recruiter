@@ -8,8 +8,8 @@ use Recruiter\Factory;
 use Recruiter\Workable\LazyBones;
 use Recruiter\Worker;
 
-$mongoFactory = new Factory();
-$db = $mongoFactory->getMongoDb(
+$factory = new Factory();
+$db = $factory->getMongoDb(
     $hosts = 'localhost:27017',
     $options = [],
     $dbName = 'recruiter'

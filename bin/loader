@@ -13,8 +13,8 @@ $howManyJobsToKeepAsScheduled = 2000;
 $pid = posix_getpid();
 $options = array_merge(['host' => 'localhost:27017'], getopt('', ['host:']));
 
-$mongoFactory = new Factory();
-$db = $mongoFactory->getMongoDb(
+$factory = new Factory();
+$db = $factory->getMongoDb(
     $options['host'],
     $mongoDbOptions = [],
     $dbName = 'recruiter'

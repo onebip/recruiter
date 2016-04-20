@@ -10,8 +10,8 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $mongoFactory = new Factory();
-        $this->recruiterDb = $mongoFactory->getMongoDb(
+        $factory = new Factory();
+        $this->recruiterDb = $factory->getMongoDb(
             $hosts = 'localhost:27017',
             $options = [],
             $dbName = 'recruiter'
