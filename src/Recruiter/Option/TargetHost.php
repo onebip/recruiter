@@ -2,10 +2,9 @@
 namespace Recruiter\Option;
 
 use Recruiter;
+use Recruiter\Factory;
 use Ulrichsg\Getopt;
 use UnexpectedValueException;
-
-use MongoClient;
 use MongoConnectionException;
 
 class TargetHost implements Recruiter\Option
@@ -26,6 +25,7 @@ class TargetHost implements Recruiter\Option
             $this->defaultHost . ':' .
             $this->defaultPort . '/' .
             $this->defaultDb;
+        $this->mongoFactory = new Factory();
     }
 
     public function specification()
@@ -49,11 +49,8 @@ class TargetHost implements Recruiter\Option
     private function validate($target)
     {
         try {
-            list($hosts, $db, $options) = $this->parse($target ?: $this->defaultTarget);
-            return (new MongoClient(
-                $hosts,
-                $options
-            ))->selectDB($db);
+            list($hosts, $dbName, $options) = $this->parse($target ?: $this->defaultTarget);
+            return $this->mongoFactory->getMongoDb($hosts, $options, $dbName);
         } catch(MongoConnectionException $e) {
             throw new UnexpectedValueException(
                 sprintf(
@@ -67,11 +64,11 @@ class TargetHost implements Recruiter\Option
     public static function parse($target)
     {
         if (preg_match(
-                '/^' 
-                . '(mongodb:\/\/)?' 
+                '/^'
+                . '(mongodb:\/\/)?'
                 . '(?P<hosts>[^\/]+)'
-                . '(?:\/(?P<db>\w+))?' 
-                . '(\?(?P<qs>.*))?' 
+                . '(?:\/(?P<db>\w+))?'
+                . '(\?(?P<qs>.*))?'
                 . '/',
                 $target,
                 $matches
@@ -93,4 +90,3 @@ class TargetHost implements Recruiter\Option
         );
     }
 }
-

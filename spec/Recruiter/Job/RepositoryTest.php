@@ -2,8 +2,8 @@
 namespace Recruiter\Job;
 
 use Recruiter\Job;
+use Recruiter\Factory;
 use Recruiter\JobToSchedule;
-use MongoClient;
 use DateTime;
 use Timeless as T;
 
@@ -11,7 +11,12 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $this->recruiterDb = (new MongoClient('localhost:27017'))->selectDB('recruiter');
+        $mongoFactory = new Factory();
+        $this->recruiterDb = $mongoFactory->getMongoDb(
+            $hosts = 'localhost:27017',
+            $options = [],
+            $dbName = 'recruiter'
+        );
         $this->recruiterDb->drop();
         $this->repository = new Repository($this->recruiterDb);
         $this->clock = T\clock()->stop();
