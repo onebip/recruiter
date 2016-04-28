@@ -75,7 +75,23 @@ class Job
     {
         if (!empty($tags)) {
             $this->status['tags'] = $tags;
-            $this->status['group'] = $tags[0];
+            $this->status['group'] = $tags[0]; //TODO:! remove me
+        }
+
+        return $this;
+    }
+
+    public function inGroup($group)
+    {
+        if (is_array($group)) {
+            throw new \RuntimeException(
+                "Group can be only single string, for other uses use `taggedAs` method.
+                Received group: `" . var_export($group, true) . "`"
+            );
+        }
+
+        if (!empty($group)) {
+            $this->status['group'] = $group;
         }
 
         return $this;
@@ -224,7 +240,7 @@ class Job
                             ] :
                             [   'scheduled_at' => ['$lt' => T\MongoDate::now()],
                                 'locked' => false,
-                                'tags' => $worksOn,
+                                'group' => $worksOn,
                             ]
                         ),
                         [   '_id' => 1

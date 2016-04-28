@@ -21,7 +21,7 @@ class WorkOn implements Recruiter\Option
     {
         return (new Getopt\Option(null, $this->name, Getopt\Getopt::REQUIRED_ARGUMENT))
             ->setDescription(
-                sprintf('Work only on jobs tagged with this label [%s]', $this->label)
+                sprintf('Work only on jobs grouped with this label [%s]', $this->label)
             );
     }
 
@@ -35,7 +35,7 @@ class WorkOn implements Recruiter\Option
     public function applyTo(Recruiter\Worker $worker)
     {
         if ($this->label !== 'all') {
-            $worker->workOnJobsTaggedAs($this->label);
+            $worker->workOnJobsGroupedAs($this->label);
         }
         return $worker;
     }

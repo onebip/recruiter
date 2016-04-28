@@ -75,9 +75,9 @@ class Worker
         $this->status = self::fromMongoDocumentToInternalStatus($document);
     }
 
-    public function workOnJobsTaggedAs($tag)
+    public function workOnJobsGroupedAs($group)
     {
-        $this->status['work_on'] = $tag;
+        $this->status['work_on'] = $group;
         $this->save();
     }
 

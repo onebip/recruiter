@@ -91,7 +91,7 @@ class Repository
         return $deleted;
     }
 
-    public function queued($tag = null, T\Moment $at = null, T\Moment $from = null)
+    public function queued($group = null, T\Moment $at = null, T\Moment $from = null)
     {
         if ($at === null) {
             $at = T\now();
@@ -106,14 +106,14 @@ class Repository
         }
 
 
-        if ($tag !== null) {
-            $query['tags'] = $tag;
+        if ($group !== null) {
+            $query['group'] = $group;
         }
 
         return $this->scheduled->count($query);
     }
 
-    public function postponed($tag = null, T\Moment $at = null)
+    public function postponed($group = null, T\Moment $at = null)
     {
         if ($at === null) {
             $at = T\now();
@@ -123,8 +123,8 @@ class Repository
             'scheduled_at' => ['$gt' => T\MongoDate::from($at)],
         ];
 
-        if ($tag !== null) {
-            $query['tags'] = $tag;
+        if ($group !== null) {
+            $query['group'] = $group;
         }
 
         return $this->scheduled->count($query);
@@ -135,7 +135,7 @@ class Repository
         return $this->scheduled->count();
     }
 
-    public function recentHistory($tag = null, T\Moment $at = null)
+    public function recentHistory($group = null, T\Moment $at = null)
     {
         if ($at === null) {
             $at = T\now();
@@ -146,8 +146,8 @@ class Repository
                 '$lte' => T\MongoDate::from($at)
             ],
         ];
-        if ($tag !== null) {
-            $lastMinute['tags'] = $tag;
+        if ($group !== null) {
+            $lastMinute['group'] = $group;
         }
         $document = $this->archived->aggregate($pipeline = [
             ['$match' => $lastMinute],

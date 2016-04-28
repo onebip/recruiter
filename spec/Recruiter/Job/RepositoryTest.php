@@ -29,9 +29,9 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
 
     public function testCountsQueuedJobsAsOfNow()
     {
-        $this->aJobToSchedule()->taggedAs('generic')->inBackground()->execute();
-        $this->aJobToSchedule()->taggedAs('generic')->inBackground()->execute();
-        $this->aJobToSchedule()->taggedAs('fast-lane')->inBackground()->execute();
+        $this->aJobToSchedule()->inGroup('generic')->inBackground()->execute();
+        $this->aJobToSchedule()->inGroup('generic')->inBackground()->execute();
+        $this->aJobToSchedule()->inGroup('fast-lane')->inBackground()->execute();
         $this->assertEquals(3, $this->repository->queued());
         $this->assertEquals(2, $this->repository->queued('generic'));
         $this->assertEquals(1, $this->repository->queued('fast-lane'));
@@ -40,9 +40,9 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
     public function testCountsQueuedJobsWithCornerCaseTagging()
     {
         $this->aJobToSchedule()->inBackground()->execute();
-        $this->aJobToSchedule()->taggedAs([])->inBackground()->execute();
-        $this->aJobToSchedule()->taggedAs('')->inBackground()->execute();
-        $this->aJobToSchedule()->taggedAs(null)->inBackground()->execute();
+        $this->aJobToSchedule()->inGroup([])->inBackground()->execute();
+        $this->aJobToSchedule()->inGroup('')->inBackground()->execute();
+        $this->aJobToSchedule()->inGroup(null)->inBackground()->execute();
 
         $this->assertEquals(4, $this->repository->queued('generic'));
     }

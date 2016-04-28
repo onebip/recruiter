@@ -20,11 +20,11 @@ $recruiter = new Recruiter($db);
 
 LazyBones::waitForMs(200, 100)
     ->asJobOf($recruiter)
-    ->taggedAs('mail')
+    ->inGroup('mail')
     ->inBackground()
     ->execute();
 
 $worker = $recruiter->hire();
-$worker->workOnJobsTaggedAs('mail');
+$worker->workOnJobsGroupedAs('mail');
 $assignments = $recruiter->assignJobsToWorkers();
 $worker->work();

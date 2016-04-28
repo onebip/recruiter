@@ -56,11 +56,11 @@ class Recruiter
         return $this->jobs->scheduledCount();
     }
 
-    public function statistics($tag = null, Moment $at = null)
+    public function statistics($group = null, Moment $at = null)
     {
         $totalsScheduledJobs = $this->jobs->scheduledCount();
-        $queued = $this->jobs->queued($tag, $at, $at ? $at->before(T\hour(24)) : null);
-        $postponed = $this->jobs->postponed($tag, $at);
+        $queued = $this->jobs->queued($group, $at, $at ? $at->before(T\hour(24)) : null);
+        $postponed = $this->jobs->postponed($group, $at);
 
         return array_merge(
             [
@@ -70,7 +70,7 @@ class Recruiter
                     'zombies' => $totalsScheduledJobs - ($queued + $postponed),
                 ],
             ],
-            $this->jobs->recentHistory($tag, $at)
+            $this->jobs->recentHistory($group, $at)
         );
     }
 
@@ -193,7 +193,7 @@ class Recruiter
         $this->db->command(['collMod' => 'scheduled', 'usePowerOf2Sizes' => true]);
         $this->db->selectCollection('scheduled')->ensureIndex(
             [
-                'tags' => 1,
+                'group' => 1,
                 'locked' => 1,
                 'scheduled_at' => 1,
             ],
