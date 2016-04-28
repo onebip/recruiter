@@ -48,4 +48,13 @@ class JobTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Sorry, I'm good for nothing", $lastExecution['message']);
         $this->assertRegexp("/.*AlwaysFail->execute.*/", $lastExecution['trace']);
     }
+
+    /**
+     * @expectedException \RuntimeException
+     */
+    public function testArrayAsGroupIsNotAllowed()
+    {
+        $job = Job::around(new AlwaysFail, $this->repository);
+        $job->inGroup(['test']);
+    }
 }

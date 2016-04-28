@@ -137,7 +137,7 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
         $workable = ShellCommand::fromCommandLine("sleep " . ($duration / 1000));
         $workable
             ->asJobOf($this->recruiter)
-            ->taggedAs($tag)
+            ->inGroup($tag)
             ->inBackground()
             ->execute();
         $this->jobs++;

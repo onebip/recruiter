@@ -62,6 +62,15 @@ class JobToSchedule
         return $this;
     }
 
+    public function inGroup($group)
+    {
+        if (!empty($group)) {
+            $this->job->inGroup($group);
+        }
+
+        return $this;
+    }
+
     public function taggedAs($tags)
     {
         if (!empty($tags)) {
