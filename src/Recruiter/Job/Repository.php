@@ -91,20 +91,37 @@ class Repository
         return $deleted;
     }
 
-    public function queued($group = null, T\Moment $at = null, T\Moment $from = null)
+    public function queued(
+        $group = null,
+        T\Moment $at = null,
+        T\Moment $from = null,
+        array $query = []
+    )
     {
         if ($at === null) {
             $at = T\now();
         }
 
-        $query = [
-            'scheduled_at' => ['$lte' => T\MongoDate::from($at)],
-        ];
+        $query['scheduled_at']['$lte'] = T\MongoDate::from($at);
 
         if ($from !== null) {
             $query['scheduled_at']['$gt'] = T\MongoDate::from($from);
         }
 
+        if ($group !== null) {
+            $query['group'] = $group;
+        }
+
+        return $this->scheduled->count($query);
+    }
+
+    public function postponed($group = null, T\Moment $at = null, array $query = [])
+    {
+        if ($at === null) {
+            $at = T\now();
+        }
+
+        $query['scheduled_at']['$gt'] = T\MongoDate::from($at);
 
         if ($group !== null) {
             $query['group'] = $group;
@@ -113,16 +130,8 @@ class Repository
         return $this->scheduled->count($query);
     }
 
-    public function postponed($group = null, T\Moment $at = null)
+    public function scheduledCount($group = null, array $query = [])
     {
-        if ($at === null) {
-            $at = T\now();
-        }
-
-        $query = [
-            'scheduled_at' => ['$gt' => T\MongoDate::from($at)],
-        ];
-
         if ($group !== null) {
             $query['group'] = $group;
         }
@@ -130,22 +139,17 @@ class Repository
         return $this->scheduled->count($query);
     }
 
-    public function scheduledCount()
-    {
-        return $this->scheduled->count();
-    }
-
-    public function recentHistory($group = null, T\Moment $at = null)
+    public function recentHistory($group = null, T\Moment $at = null, array $query = [])
     {
         if ($at === null) {
             $at = T\now();
         }
-        $lastMinute = [
+        $lastMinute = array_merge($query, [
             'last_execution.ended_at' => [
                 '$gt' => T\MongoDate::from($at->before(T\minute(1))),
                 '$lte' => T\MongoDate::from($at)
             ],
-        ];
+        ]);
         if ($group !== null) {
             $lastMinute['group'] = $group;
         }
