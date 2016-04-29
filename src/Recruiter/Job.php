@@ -75,7 +75,6 @@ class Job
     {
         if (!empty($tags)) {
             $this->status['tags'] = $tags;
-            $this->status['group'] = $tags[0]; //TODO:! remove me
         }
 
         return $this;
@@ -220,7 +219,6 @@ class Job
                 'created_at' => T\MongoDate::now(),
                 'locked' => false,
                 'attempts' => 0,
-                'tags' => ['generic'],
                 'group' => 'generic',
             ],
             WorkableInJob::initialize(),
