@@ -222,6 +222,13 @@ class Recruiter
         );
         $this->db->selectCollection('archived')->ensureIndex(
             [
+                'created_at' => 1,
+                'group' => 1,
+            ],
+            ['background' => true]
+        );
+        $this->db->selectCollection('archived')->ensureIndex(
+            [
                 'last_execution.ended_at' => 1,
             ],
             ['background' => true]
