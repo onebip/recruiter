@@ -13,6 +13,9 @@ class JobSendEventsToWorkableTest extends \PHPUnit_Framework_TestCase
             ->getMockBuilder('Recruiter\Job\Repository')
             ->disableOriginalConstructor()
             ->getMock();
+
+        $this->dispatcher = $this->getMock(
+            'Symfony\Component\EventDispatcher\EventDispatcherInterface');
     }
 
     public function testTakeRetryPolicyFromRetriableInstance()
@@ -22,7 +25,7 @@ class JobSendEventsToWorkableTest extends \PHPUnit_Framework_TestCase
         $workable = new WorkableThatIsAlsoAnEventListener($listener);
 
         $job = Job::around($workable, $this->repository);
-        $job->execute($this->getMock('Symfony\Component\EventDispatcher\EventDispatcherInterface'));
+        $job->execute($this->dispatcher);
     }
 }
 
@@ -35,9 +38,9 @@ class WorkableThatIsAlsoAnEventListener implements Workable, EventListener
         $this->listener = $listener;
     }
 
-    public function onEvent(Event $e)
+    public function onEvent($channel, Event $e)
     {
-        return $this->listener->onEvent($e);
+        return $this->listener->onEvent($channel, $e);
     }
 
     public function execute()

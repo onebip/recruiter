@@ -198,7 +198,7 @@ class Job
             $event = new Event($this->export());
             $eventDispatcher->dispatch('job.failure.last', $event);
             if ($this->workable instanceof EventListener) {
-                $this->workable->onEvent($event);
+                $this->workable->onEvent('job.failure.last', $event);
             }
         }
     }
