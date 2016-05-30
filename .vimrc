@@ -7,7 +7,7 @@ let g:syntastic_mode_map = {'mode': 'active'}
 
 let g:ctrlp_custom_ignore = '\.git$\|\.tmp$\|\.work$\|vendor$'
 
-let g:ackprg .= ' --ignore-dir=vendor'
+let g:ackprg = 'ack-grep -s -H --nocolor --nogroup --column --ignore-dir=vendor'
 
 " open current files's directory
 nnoremap <Leader>d :e <C-R>=expand('%:p:h') . '/'<CR><CR>
