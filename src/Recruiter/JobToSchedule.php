@@ -85,7 +85,6 @@ class JobToSchedule
         if ($this->mustBeScheduled) {
             $this->job->save();
         } else {
-            //
             $this->job->execute($this->emptyEventDispatcher());
         }
         return (string) $this->job->id();
