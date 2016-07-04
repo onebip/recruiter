@@ -35,7 +35,7 @@ class Cleaner
 
     public function cleanArchived(Interval $gracePeriod)
     {
-        $upperLimit = $gracePeriod->before($gracePeriod);
+        $upperLimit = T\now()->before($gracePeriod);
         return $this->repository->cleanArchived($upperLimit);
     }
 
