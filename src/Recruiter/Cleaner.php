@@ -35,8 +35,17 @@ class Cleaner
 
     public function cleanArchived(Interval $gracePeriod)
     {
-        $upperLimit = T\now()->before($gracePeriod);
+        $upperLimit = $upperLimit->before($gracePeriod);
         return $this->repository->cleanArchived($upperLimit);
+    }
+
+    public function cleanScheduled(Interval $gracePeriod = null)
+    {
+        $upperLimit = T\now();
+        if (!is_null($gracePeriod)) {
+            $upperLimit = $upperLimit->before($gracePeriod);
+        }
+        return $this->repository->cleanScheduled($upperLimit);
     }
 
     public function bye()

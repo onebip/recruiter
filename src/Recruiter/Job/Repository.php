@@ -91,6 +91,18 @@ class Repository
         return $deleted;
     }
 
+    public function cleanScheduled(T\Moment $upperLimit)
+    {
+        $result = $this->scheduled->remove(
+            [
+                'created_at' => [
+                    '$lte' => T\MongoDate::from($upperLimit),
+                ]
+            ]
+        );
+        return $result['ok'] ? $result['n'] : 0;
+    }
+
     public function queued(
         $group = null,
         T\Moment $at = null,
