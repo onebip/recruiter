@@ -7,6 +7,8 @@ use Recruiter\JobToSchedule;
 use DateTime;
 use Timeless as T;
 
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+
 class RepositoryTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
@@ -20,6 +22,7 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->recruiterDb->drop();
         $this->repository = new Repository($this->recruiterDb);
         $this->clock = T\clock()->stop();
+        $this->eventDispatcher = $this->getMock('Symfony\Component\EventDispatcher\EventDispatcherInterface');
     }
 
     public function tearDown()
@@ -72,9 +75,10 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
 
     public function testRecentHistory()
     {
-        $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
-        $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
-        $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
+        $ed = $this->eventDispatcher;
+        $this->repository->archive($this->aJob()->beforeExecution($ed)->afterExecution(42, $ed));
+        $this->repository->archive($this->aJob()->beforeExecution($ed)->afterExecution(42, $ed));
+        $this->repository->archive($this->aJob()->beforeExecution($ed)->afterExecution(42, $ed));
         $this->assertSame(
             [
                 'throughput' => [
@@ -94,20 +98,22 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
 
     public function testCleanOldArchived()
     {
-        $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
-        $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
-        $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
+        $ed = $this->eventDispatcher;
+        $this->repository->archive($this->aJob()->beforeExecution($ed)->afterExecution(42, $ed));
+        $this->repository->archive($this->aJob()->beforeExecution($ed)->afterExecution(42, $ed));
+        $this->repository->archive($this->aJob()->beforeExecution($ed)->afterExecution(42, $ed));
         $this->assertEquals(3, $this->repository->cleanArchived(T\now()));
         $this->assertEquals(0, $this->repository->countArchived());
     }
 
     public function testCleaningOfOldArchivedCanBeLimitedByTime()
     {
-        $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
-        $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
+        $ed = $this->eventDispatcher;
+        $this->repository->archive($this->aJob()->beforeExecution($ed)->afterExecution(42, $ed));
+        $this->repository->archive($this->aJob()->beforeExecution($ed)->afterExecution(42, $ed));
         $time1 = $this->clock->now();
         $this->clock->driftForwardBySeconds(2 * 60 * 60);
-        $this->repository->archive($this->aJob()->beforeExecution()->afterExecution(42));
+        $this->repository->archive($this->aJob()->beforeExecution($ed)->afterExecution(42, $ed));
         $this->assertEquals(2, $this->repository->cleanArchived($time1));
         $this->assertEquals(1, $this->repository->countArchived());
     }

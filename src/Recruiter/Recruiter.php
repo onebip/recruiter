@@ -10,8 +10,8 @@ use Timeless as T;
 use Onebip\Clock;
 use Onebip\Concurrency\MongoLock;
 use Onebip\Concurrency\LockNotAvailableException;
-use RuntimeException;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use RuntimeException;
 
 class Recruiter
 {

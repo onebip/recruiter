@@ -116,9 +116,9 @@ class Job
     {
         $methodToCall = $this->status['workable']['method'];
         try {
-            $this->beforeExecution();
+            $this->beforeExecution($eventDispatcher);
             $result = $this->workable->$methodToCall($this->retryStatistics());
-            $this->afterExecution($result);
+            $this->afterExecution($result, $eventDispatcher);
             return $result;
         } catch(\Exception $exception) {
             $this->afterFailure($exception, $eventDispatcher);
@@ -160,29 +160,28 @@ class Job
         );
     }
 
-    public function beforeExecution()
+    public function beforeExecution(EventDispatcherInterface $eventDispatcher)
     {
         $this->status['attempts'] += 1;
         $this->lastJobExecution->started($this->scheduledAt());
+        $this->emit('job.started', $eventDispatcher);
         if ($this->hasBeenScheduled()) {
             $this->save();
         }
         return $this;
     }
 
-    public function afterExecution($result)
+    public function afterExecution($result, EventDispatcherInterface $eventDispatcher)
     {
         $this->status['done'] = true;
         $this->lastJobExecution->completedWith($result);
+        $this->emit('job.ended', $eventDispatcher);
         if ($this->hasBeenScheduled()) {
             $this->archive('done');
         }
         return $this;
     }
 
-    /**
-     * @return boolean
-     */
     public function done()
     {
         return $this->status['done'];
@@ -194,12 +193,18 @@ class Job
         $jobAfterFailure = new JobAfterFailure($this, $this->lastJobExecution);
         $this->retryPolicy->schedule($jobAfterFailure);
         $jobAfterFailure->archiveIfNotScheduled();
+        $this->emit('job.ended', $eventDispatcher);
         if (!$this->hasBeenScheduled()) {
-            $event = new Event($this->export());
-            $eventDispatcher->dispatch('job.failure.last', $event);
-            if ($this->workable instanceof EventListener) {
-                $this->workable->onEvent('job.failure.last', $event);
-            }
+            $this->emit('job.failure.last', $eventDispatcher);
+        }
+    }
+
+    private function emit($eventType, $eventDispatcher)
+    {
+        $event = new Event($this->export());
+        $eventDispatcher->dispatch($eventType, $event);
+        if ($this->workable instanceof EventListener) {
+            $this->workable->onEvent($eventType, $event);
         }
     }
 

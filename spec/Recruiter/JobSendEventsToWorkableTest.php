@@ -21,7 +21,14 @@ class JobSendEventsToWorkableTest extends \PHPUnit_Framework_TestCase
     public function testTakeRetryPolicyFromRetriableInstance()
     {
         $listener = $this->getMock('StdClass', ['onEvent']);
-        $listener->expects($this->once())->method('onEvent');
+        $listener
+            ->expects($this->exactly(3))
+            ->method('onEvent')
+            ->withConsecutive(
+                [$this->equalTo('job.started'), $this->anything()],
+                [$this->equalTo('job.ended'), $this->anything()],
+                [$this->equalTo('job.failure.last'), $this->anything()]
+            );
         $workable = new WorkableThatIsAlsoAnEventListener($listener);
 
         $job = Job::around($workable, $this->repository);
