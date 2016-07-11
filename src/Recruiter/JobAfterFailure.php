@@ -20,6 +20,11 @@ class JobAfterFailure
         $this->hasBeenArchived = false;
     }
 
+    public function createdAt()
+    {
+        return T\MongoDate::toMoment($this->job->get('created_at'));
+    }
+
     public function scheduleIn(Interval $in)
     {
         $this->scheduleAt($in->fromNow());
@@ -48,9 +53,6 @@ class JobAfterFailure
         return $this->job->numberOfAttempts();
     }
 
-    /**
-     * @return boolean
-     */
     public function archiveIfNotScheduled()
     {
         if (!$this->hasBeenScheduled && !$this->hasBeenArchived) {
