@@ -89,11 +89,9 @@ class Job
                 Received group: `" . var_export($group, true) . "`"
             );
         }
-
         if (!empty($group)) {
             $this->status['group'] = $group;
         }
-
         return $this;
     }
 

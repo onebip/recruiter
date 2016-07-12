@@ -25,6 +25,12 @@ class JobAfterFailure
         return T\MongoDate::toMoment($this->job->get('created_at'));
     }
 
+    public function inGroup($group)
+    {
+        $this->job->inGroup($group);
+        $this->job->save();
+    }
+
     public function scheduleIn(Interval $in)
     {
         $this->scheduleAt($in->fromNow());
@@ -34,7 +40,6 @@ class JobAfterFailure
     {
         $this->hasBeenScheduled = true;
         $this->job->scheduleAt($at);
-        $this->job->save();
     }
 
     public function archive($why)
