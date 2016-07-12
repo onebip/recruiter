@@ -48,6 +48,11 @@ class JobAfterFailure
         return $this->lastJobExecution->causeOfFailure();
     }
 
+    public function lastExecutionDuration()
+    {
+        return $this->lastJobExecution->duration();
+    }
+
     public function numberOfAttempts()
     {
         return $this->job->numberOfAttempts();

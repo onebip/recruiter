@@ -36,6 +36,17 @@ class JobExecution
         return $this->failedWith;
     }
 
+    public function duration()
+    {
+        if ($this->startedAt && $this->endedAt && ($this->startedAt <= $this->endedAt)) {
+            return T\seconds(
+                $this->endedAt->seconds() -
+                $this->startedAt-> seconds()
+            );
+        }
+        return T\seconds(0);
+    }
+
     public function export()
     {
         $exported = [];

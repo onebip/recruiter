@@ -13,6 +13,9 @@ class JobTakeRetryPolicyFromRetriableWorkableTest extends \PHPUnit_Framework_Tes
             ->getMockBuilder('Recruiter\Job\Repository')
             ->disableOriginalConstructor()
             ->getMock();
+
+        $this->eventDispatcher = $this
+            ->getMock('Symfony\Component\EventDispatcher\EventDispatcherInterface');
     }
 
     public function testTakeRetryPolicyFromRetriableInstance()
@@ -23,7 +26,7 @@ class JobTakeRetryPolicyFromRetriableWorkableTest extends \PHPUnit_Framework_Tes
         $workable = new WorkableThatIsAlsoRetriable($retryPolicy);
 
         $job = Job::around($workable, $this->repository);
-        $job->execute($this->getMock('Symfony\Component\EventDispatcher\EventDispatcherInterface'));
+        $job->execute($this->eventDispatcher);
     }
 }
 
