@@ -4,6 +4,7 @@ namespace Recruiter;
 
 use Timeless\Moment;
 use Timeless\Interval;
+use Timeless\MongoDate;
 
 class JobAfterFailure
 {
@@ -22,7 +23,7 @@ class JobAfterFailure
 
     public function createdAt()
     {
-        return T\MongoDate::toMoment($this->job->get('created_at'));
+        return MongoDate::toMoment($this->job->get('created_at'));
     }
 
     public function inGroup($group)
