@@ -23,7 +23,7 @@ class JobAfterFailure
 
     public function createdAt()
     {
-        return MongoDate::toMoment($this->job->get('created_at'));
+        return $this->job->createdAt();
     }
 
     public function inGroup($group)

@@ -61,6 +61,11 @@ class Job
         return $this->status['_id'];
     }
 
+    public function createdAt()
+    {
+        return T\MongoDate::toMoment($this->status['created_at']);
+    }
+
     public function numberOfAttempts()
     {
         return $this->status['attempts'];
