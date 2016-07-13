@@ -41,6 +41,7 @@ class JobAfterFailure
     {
         $this->hasBeenScheduled = true;
         $this->job->scheduleAt($at);
+        $this->job->save();
     }
 
     public function archive($why)
