@@ -2,6 +2,7 @@
 namespace Timeless;
 
 use DateInterval;
+use DateTimeImmutable;
 
 class Interval
 {
@@ -75,19 +76,6 @@ class Interval
         return (int) floor($this->ms / self::MILLISECONDS_IN_YEARS);
     }
 
-    /**
-     * @return DateInterval
-     */
-    public function toDateInterval()
-    {
-        return new DateInterval("PT{$this->seconds()}S");
-    }
-
-    public function multiplyBy($multiplier)
-    {
-        return new self($this->ms * $multiplier);
-    }
-
     public function ago()
     {
         return $this->since(now());
@@ -111,6 +99,16 @@ class Interval
     public function from(Moment $reference)
     {
         return $reference->after($this);
+    }
+
+    public function multiplyBy($multiplier)
+    {
+        return new self($this->ms * $multiplier);
+    }
+
+    public function add(Interval $interval)
+    {
+        return new self($this->ms + $interval->ms);
     }
 
     public function format($format)
@@ -147,6 +145,11 @@ class Interval
         throw new InvalidIntervalFormat('You need to use strings');
     }
 
+    public function toDateInterval()
+    {
+        return new DateInterval("PT{$this->seconds()}S");
+    }
+
     public static function parse($string)
     {
         if (is_string($string)) {
@@ -173,5 +176,12 @@ class Interval
             throw new InvalidIntervalFormat("Maybe you mean '{$duration} seconds' or something like that?");
         }
         throw new InvalidIntervalFormat('You need to use strings');
+    }
+
+    public static function fromDateInterval(DateInterval $interval)
+    {
+        $startTime = new DateTimeImmutable();
+        $endTime = $startTime->add($interval);
+        return new self(($endTime->getTimestamp() - $startTime->getTimestamp()) * 1000);
     }
 }

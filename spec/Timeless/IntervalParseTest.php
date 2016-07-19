@@ -2,6 +2,8 @@
 
 namespace Timeless;
 
+use DateInterval;
+
 class IntervalParseTest extends \PHPUnit_Framework_TestCase
 {
     public function testParseExtendedFormat()
@@ -81,6 +83,13 @@ class IntervalParseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(months(4), Interval::parse('4mo'));
         $this->assertEquals(years(4), Interval::parse('4 y'));
         $this->assertEquals(years(4), Interval::parse('4y'));
+    }
+
+    public function testFromDateInterval()
+    {
+        $this->assertEquals(days(2), Interval::fromDateInterval(new DateInterval('P2D')));
+        $this->assertEquals(minutes(10), Interval::fromDateInterval(new DateInterval('PT10M')));
+        $this->assertEquals(days(2)->add(minutes(10)), Interval::fromDateInterval(new DateInterval('P2DT10M')));
     }
 
     /**
