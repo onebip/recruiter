@@ -1,11 +1,11 @@
 <?php
-
 namespace Recruiter;
 
 use MongoDB;
 use Timeless\Interval;
 use Timeless\Moment;
 use Timeless as T;
+use Recruiter\Option\MemoryLimit;
 
 use Onebip\Clock;
 use Onebip\Concurrency\MongoLock;
@@ -34,9 +34,9 @@ class Recruiter
         $this->eventDispatcher = new EventDispatcher();
     }
 
-    public function hire()
+    public function hire(MemoryLimit $memoryLimit)
     {
-        return Worker::workFor($this, $this->workers);
+        return Worker::workFor($this, $this->workers, $memoryLimit);
     }
 
     public function jobOf(Workable $workable)

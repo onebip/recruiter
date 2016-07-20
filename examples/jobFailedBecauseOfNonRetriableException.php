@@ -10,6 +10,7 @@ use Recruiter\Factory;
 use Recruiter\Workable\AlwaysFail;
 use Recruiter\RetryPolicy;
 use Recruiter\Worker;
+use Recruiter\Option\MemoryLimit;
 
 $factory = new Factory();
 $db = $factory->getMongoDb(
@@ -27,7 +28,8 @@ $recruiter = new Recruiter($db);
     ->inBackground()
     ->execute();
 
-$worker = $recruiter->hire();
+$memoryLimit = new MemoryLimit('memory-limit', '64MB');
+$worker = $recruiter->hire($memoryLimit);
 while (true) {
     printf("Try to do my work\n");
     $assignments = $recruiter->assignJobsToWorkers();

@@ -3,10 +3,17 @@ namespace Recruiter\Acceptance;
 
 use Recruiter\Workable\AlwaysFail;
 use Recruiter\Workable\AlwaysSucceed;
+use Recruiter\Option\MemoryLimit;
 use Symfony\Component\EventDispatcher\Event;
 
 class HooksTest extends BaseAcceptanceTest
 {
+    public function setUp()
+    {
+        $this->memoryLimit = new MemoryLimit('memory-limit', '64MB');
+        parent::setUp();
+    }
+
     public function testAfterLastFailureEventIsFired()
     {
         $this->events = [];
@@ -23,7 +30,7 @@ class HooksTest extends BaseAcceptanceTest
             ->inBackground()
             ->execute();
 
-        $worker = $this->recruiter->hire();
+        $worker = $this->recruiter->hire($this->memoryLimit);
         $this->recruiter->assignJobsToWorkers();
         $worker->work();
 
@@ -48,7 +55,7 @@ class HooksTest extends BaseAcceptanceTest
             ->inBackground()
             ->execute();
 
-        $worker = $this->recruiter->hire();
+        $worker = $this->recruiter->hire($this->memoryLimit);
         $this->recruiter->assignJobsToWorkers();
         $worker->work();
 
@@ -77,7 +84,7 @@ class HooksTest extends BaseAcceptanceTest
             ->inBackground()
             ->execute();
 
-        $worker = $this->recruiter->hire();
+        $worker = $this->recruiter->hire($this->memoryLimit);
         $this->recruiter->assignJobsToWorkers();
         $worker->work();
         $this->recruiter->assignJobsToWorkers();

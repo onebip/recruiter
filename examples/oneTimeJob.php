@@ -7,6 +7,7 @@ use Recruiter\Recruiter;
 use Recruiter\Factory;
 use Recruiter\Workable\LazyBones;
 use Recruiter\Worker;
+use Recruiter\Option\MemoryLimit;
 
 $factory = new Factory();
 $db = $factory->getMongoDb(
@@ -23,6 +24,7 @@ LazyBones::waitForMs(200, 100)
     ->inBackground()
     ->execute();
 
-$worker = $recruiter->hire();
+$memoryLimit = new MemoryLimit('memory-limit', '64MB');
+$worker = $recruiter->hire($memoryLimit);
 $assignments = $recruiter->assignJobsToWorkers();
 $worker->work();
