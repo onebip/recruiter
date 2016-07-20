@@ -1,13 +1,15 @@
 <?php
 namespace Recruiter\Acceptance;
 
+use Recruiter\Option\MemoryLimit;
 
 class FaultToleranceTest extends BaseAcceptanceTest
 {
     public function testRecruiterCrashAfterLockingJobsBeforeAssignmentAndIsRestarted()
     {
+        $memoryLimit = new MemoryLimit('memory-limit', '64MB');
         $this->enqueueJob();
-        $worker = $this->recruiter->hire();
+        $worker = $this->recruiter->hire($memoryLimit);
 
         $assignments = $this->recruiter->bookJobsForWorkers();
 

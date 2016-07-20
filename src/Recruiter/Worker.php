@@ -7,6 +7,8 @@ use MongoCollection;
 use Timeless as T;
 use Timeless\Interval;
 use Recruiter\Worker\Repository;
+use Recruiter\Option\MemoryLimit;
+use Recruiter\Option\MemoryLimitExceededException;
 use Onebip;
 use Onebip\Clock;
 use DateInterval;
@@ -16,10 +18,15 @@ class Worker
     private $status;
     private $recruiter;
     private $repository;
+    private $memoryLimit;
 
-    public static function workFor(Recruiter $recruiter, Repository $repository)
+    public static function workFor(
+        Recruiter $recruiter,
+        Repository $repository,
+        MemoryLimit $memoryLimit
+    )
     {
-        $worker = new self(self::initialize(), $recruiter, $repository);
+        $worker = new self(self::initialize(), $recruiter, $repository, $memoryLimit);
         $worker->save();
         return $worker;
     }
@@ -32,11 +39,17 @@ class Worker
         );
     }
 
-    public function __construct($status, Recruiter $recruiter, Repository $repository)
+    public function __construct(
+        $status,
+        Recruiter $recruiter,
+        Repository $repository,
+        MemoryLimit $memoryLimit
+    )
     {
         $this->status = $status;
         $this->recruiter = $recruiter;
         $this->repository = $repository;
+        $this->memoryLimit = $memoryLimit;
     }
 
     public function id()
@@ -60,6 +73,8 @@ class Worker
             );
             return (string) $job->id();
         } else {
+            //TODO:! check memory limit??
+            //$memoryLimit->ensure(memory_get_usage());
             $this->stillHere();
             return false;
         }
@@ -119,6 +134,21 @@ class Worker
 
     private function afterExecutionOf($job)
     {
+        try {
+            $this->memoryLimit->ensure(memory_get_usage());
+        } catch(MemoryLimitExceededException $e) {
+            printf(
+                '[WORKER][%d][%s] worker %s retired after exception: `%s - %s`' . PHP_EOL,
+                posix_getpid(),
+                date('c'),
+                $this->id(),
+                get_class($e),
+                $e->getMessage()
+            );
+
+            $this->repository->retireWorkerWithId($this->id()); //TODO:! create a new method
+            exit (1);
+        }
         $this->status['working'] = false;
         $this->status['available'] = true;
         $this->status['available_since'] = T\MongoDate::now();
