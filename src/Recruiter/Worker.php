@@ -146,7 +146,7 @@ class Worker
                 $e->getMessage()
             );
 
-            $this->repository->retireWorkerWithId($this->id()); //TODO:! create a new method
+            $this->retireAfterMemoryLimitIsExceeded();
             exit (1);
         }
         $this->status['working'] = false;
@@ -159,6 +159,12 @@ class Worker
         unset($this->status['assigned_since']);
         $this->save();
     }
+
+    private function retireAfterMemoryLimitIsExceeded()
+    {
+        $this->repository->retireWorkerWithId($this->id());
+    }
+
 
     private function hasBeenAssignedToDoSomething()
     {
