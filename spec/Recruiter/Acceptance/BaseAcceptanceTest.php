@@ -4,6 +4,7 @@ namespace Recruiter\Acceptance;
 use Recruiter\Recruiter;
 use Recruiter\Factory;
 use Recruiter\Workable\ShellCommand;
+use Onebip\Concurrency\MongoLock;
 use Onebip\Concurrency\Timeout;
 
 abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
@@ -20,6 +21,7 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
         $this->files = ['/tmp/recruiter.log', '/tmp/worker.log'];
         $this->cleanLogs();
         $this->roster = $this->recruiterDb->selectCollection('roster');
+        MongoLock::ensureIndex($this->recruiterDb->selectCollection('metadata'));
         $this->recruiter = new Recruiter($this->recruiterDb);
         $this->jobs = 0;
         $this->processRecruiter = null;
