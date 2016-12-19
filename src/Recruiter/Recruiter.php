@@ -212,6 +212,12 @@ class Recruiter
             ],
             ['background' => true]
         );
+        $this->db->selectCollection('scheduled')->ensureIndex(
+            [
+                'tags' => 1,
+            ],
+            ['background' => true, 'sparse' => true]
+        );
 
         $this->db->command(['collMod' => 'archived', 'usePowerOf2Sizes' => true]);
         $this->db->selectCollection('archived')->ensureIndex(
