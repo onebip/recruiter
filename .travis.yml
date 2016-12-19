@@ -27,4 +27,4 @@ before_script:
   - sleep 15
 
 script:
-  - vendor/bin/phpunit --exclude-group long && travis_wait 120 vendor/bin/phpunit --group long
+  - vendor/bin/phpunit --exclude-group long
