@@ -1,3 +1,8 @@
+sudo: false
+
+services:
+  - mongodb
+
 language: php
 
 php:
@@ -6,22 +11,21 @@ php:
 env:
   - TEST_DUMP=1
 
-install: 
+install:
   - phpenv config-add phpconfig.ini
   - composer install
 
 addons:
   apt:
     sources:
-      - mongodb-upstart
       - mongodb-3.0-precise
     packages:
       - mongodb-org-server
       - mongodb-org-shell
 
+before_script:
+  - sleep 15
+  - mongo mydb_test --eval 'db.addUser("travis", "test");'
+
 script:
   - vendor/bin/phpunit --exclude-group long && travis_wait 120 vendor/bin/phpunit --group long
-
-sudo: false
-
-dist: trusty
