@@ -25,7 +25,6 @@ addons:
 
 before_script:
   - sleep 15
-  - mongo mydb_test --eval 'db.addUser("travis", "test");'
 
 script:
   - vendor/bin/phpunit --exclude-group long && travis_wait 120 vendor/bin/phpunit --group long
