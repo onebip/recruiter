@@ -21,11 +21,11 @@ interface Workable
     public function export();
 
     /**
-     * Import retry policy parameters
+     * Import an array of parameters as a Workable instance
      *
      * @param array $parameters Previously exported parameters
      *
-     * @return Recruiter\RetryPolicy
+     * @return Recruiter\Workable
      */
     public static function import($parameters);
 }

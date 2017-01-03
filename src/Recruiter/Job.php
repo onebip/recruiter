@@ -13,6 +13,7 @@ use Timeless as T;
 use Timeless\Moment;
 
 use Recruiter\RetryPolicy;
+use Recruiter\Taggable;
 use Recruiter\Job\Repository;
 use Recruiter\Job\Event;
 use Recruiter\Job\EventListener;
@@ -158,6 +159,7 @@ class Job
         return array_merge(
             $this->status,
             $this->lastJobExecution->export(),
+            $this->tagsToUseFor($this->workable),
             WorkableInJob::export($this->workable, $this->status['workable']['method']),
             RetryPolicyInJob::export($this->retryPolicy)
         );
@@ -220,6 +222,21 @@ class Job
         if ($this->hasBeenScheduled()) {
             return T\MongoDate::toMoment($this->status['scheduled_at']);
         }
+    }
+
+    private function tagsToUseFor(Workable $workable)
+    {
+        $tagsToUse = [];
+        if ($workable instanceof Taggable) {
+            $tagsToUse = $workable->taggedAs();
+        }
+        if (isset($this->status['tags']) && !empty($this->status['tags'])) {
+            $tagsToUse = array_merge($tagsToUse, $this->status['tags']);
+        }
+        if (!empty($tagsToUse)) {
+            return ['tags' => array_values(array_unique($tagsToUse))];
+        }
+        return [];
     }
 
     private static function initialize()
