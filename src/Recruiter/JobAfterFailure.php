@@ -68,9 +68,14 @@ class JobAfterFailure
     public function archiveIfNotScheduled()
     {
         if (!$this->hasBeenScheduled && !$this->hasBeenArchived) {
-            $this->job->archive('not-scheduled-by-retry-policy');
+            $this->archive('not-scheduled-by-retry-policy');
             return true;
         }
         return false;
+    }
+
+    public function hasBeenArchived()
+    {
+        return $this->hasBeenArchived;
     }
 }

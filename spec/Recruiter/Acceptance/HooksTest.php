@@ -4,6 +4,7 @@ namespace Recruiter\Acceptance;
 use Recruiter\Workable\AlwaysFail;
 use Recruiter\Workable\AlwaysSucceed;
 use Recruiter\Option\MemoryLimit;
+use Recruiter\RetryPolicy\RetryManyTimes;
 use Symfony\Component\EventDispatcher\Event;
 
 class HooksTest extends BaseAcceptanceTest
@@ -14,7 +15,7 @@ class HooksTest extends BaseAcceptanceTest
         parent::setUp();
     }
 
-    public function testAfterLastFailureEventIsFired()
+    public function testAfterFailureWithoutRetryEventIsFired()
     {
         $this->events = [];
         $this->recruiter
@@ -37,6 +38,38 @@ class HooksTest extends BaseAcceptanceTest
         $this->assertEquals(1, count($this->events));
         $this->assertInstanceOf('Recruiter\Job\Event', $this->events[0]);
         $this->assertEquals('not-scheduled-by-retry-policy', $this->events[0]->export()['why']);
+    }
+
+    public function testAfterLastFailureEventIsFired()
+    {
+        $this->events = [];
+        $this->recruiter
+            ->getEventDispatcher()
+            ->addListener('job.failure.last',
+                function(Event $event) {
+                    $this->events[] = $event;
+                }
+            );
+
+        $job = (new AlwaysFail())
+            ->asJobOf($this->recruiter)
+            ->retryWithPolicy(RetryManyTimes::forTimes(1, 0))
+            ->inBackground()
+            ->execute();
+
+        $runAJob = function ($howManyTimes, $worker) {
+            for ($i = 0; $i < $howManyTimes; $i++) {
+                $this->recruiter->assignJobsToWorkers();
+                $worker->work();
+            }
+        };
+
+        $worker = $this->recruiter->hire($this->memoryLimit);
+        $runAJob(2, $worker);
+
+        $this->assertEquals(1, count($this->events));
+        $this->assertInstanceOf('Recruiter\Job\Event', $this->events[0]);
+        $this->assertEquals('tried-too-many-times', $this->events[0]->export()['why']);
     }
 
     public function testJobStartedIsFired()

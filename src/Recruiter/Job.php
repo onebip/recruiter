@@ -198,7 +198,8 @@ class Job
         $jobAfterFailure = new JobAfterFailure($this, $this->lastJobExecution);
         $this->retryPolicy->schedule($jobAfterFailure);
         $this->emit('job.ended', $eventDispatcher);
-        if ($jobAfterFailure->archiveIfNotScheduled()) {
+        $jobAfterFailure->archiveIfNotScheduled();
+        if ($jobAfterFailure->hasBeenArchived()) {
             $this->emit('job.failure.last', $eventDispatcher);
         }
     }
