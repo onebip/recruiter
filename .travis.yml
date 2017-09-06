@@ -4,9 +4,8 @@ services:
   - mongodb
 
 language: php
-
 php:
-  - 5.6
+  - 7.1
 
 env:
   - TEST_DUMP=1

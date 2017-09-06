@@ -44,7 +44,8 @@ class Repository
 
     public function save(Job $job)
     {
-        $this->scheduled->save($job->export());
+        $document = $job->export();
+        $this->scheduled->save($document);
     }
 
     public function archive(Job $job)
