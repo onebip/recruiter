@@ -7,11 +7,17 @@ use Exception;
 
 class JobExecution
 {
+    private $isCrashed;
     private $scheduledAt;
     private $startedAt;
     private $endedAt;
     private $completedWith;
     private $failedWith;
+
+    public function isCrashed()
+    {
+        return $this->isCrashed;
+    }
 
     public function started($scheduledAt = null)
     {
@@ -47,6 +53,24 @@ class JobExecution
         return T\seconds(0);
     }
 
+    public static function import($document)
+    {
+        $lastExecution = new self();
+        if (array_key_exists('last_execution', $document)) {
+            $lastExecutionDocument = $document['last_execution'];
+            if (array_key_exists('crashed', $lastExecutionDocument)) {
+                $lastExecution->isCrashed = true;
+            }
+            if (array_key_exists('scheduled_at', $lastExecutionDocument)) {
+                $lastExecution->scheduledAt = T\MongoDate::toMoment($lastExecutionDocument['scheduled_at']);
+            }
+            if (array_key_exists('started_at', $lastExecutionDocument)) {
+                $lastExecution->startedAt = T\MongoDate::toMoment($lastExecutionDocument['started_at']);
+            }
+        }
+        return $lastExecution;
+    }
+
     public function export()
     {
         $exported = [];
@@ -56,7 +80,7 @@ class JobExecution
         if ($this->startedAt) {
             $exported['started_at'] = T\MongoDate::from($this->startedAt);
         }
-        if ($this->endedAt) {
+        if ($this->endedAt && !$this->isCrashed) {
             $exported['ended_at'] = T\MongoDate::from($this->endedAt);
         }
         if ($this->failedWith) {
@@ -67,7 +91,6 @@ class JobExecution
         if ($this->completedWith) {
             $exported['trace'] = $this->traceOf($this->completedWith);
         }
-
         if ($exported) {
             return ['last_execution' => $exported];
         } else {

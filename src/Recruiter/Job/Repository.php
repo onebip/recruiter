@@ -58,7 +58,7 @@ class Repository
     {
         return $this->scheduled->update(
             ['_id' => ['$in' => $jobIds]],
-            ['$set' => ['locked' => false]],
+            ['$set' => ['locked' => false, 'last_execution.crashed' => true]],
             ['multiple' => true]
         )['n'];
     }

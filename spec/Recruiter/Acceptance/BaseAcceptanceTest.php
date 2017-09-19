@@ -1,12 +1,14 @@
 <?php
 namespace Recruiter\Acceptance;
 
-use Recruiter\Recruiter;
-use Recruiter\Factory;
-use Recruiter\Workable\ShellCommand;
 use Onebip\Concurrency\Timeout;
+use PHPUnit\Framework\TestCase;
+use Recruiter\Factory;
+use Recruiter\Recruiter;
+use Recruiter\RetryPolicy;
+use Recruiter\Workable\ShellCommand;
 
-abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
+abstract class BaseAcceptanceTest extends TestCase
 {
     public function setUp()
     {
@@ -143,6 +145,17 @@ abstract class BaseAcceptanceTest extends \PHPUnit_Framework_TestCase
         $workable
             ->asJobOf($this->recruiter)
             ->inGroup($tag)
+            ->inBackground()
+            ->execute();
+        $this->jobs++;
+    }
+
+    protected function enqueueJobWithRetryPolicy($duration = 10, RetryPolicy $retryPolicy)
+    {
+        $workable = ShellCommand::fromCommandLine("sleep " . ($duration / 1000));
+        $workable
+            ->asJobOf($this->recruiter)
+            ->retryWithPolicy($retryPolicy)
             ->inBackground()
             ->execute();
         $this->jobs++;

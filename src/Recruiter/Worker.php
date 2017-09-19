@@ -73,8 +73,6 @@ class Worker
             );
             return (string) $job->id();
         } else {
-            //TODO:! check memory limit??
-            //$memoryLimit->ensure(memory_get_usage());
             $this->stillHere();
             return false;
         }

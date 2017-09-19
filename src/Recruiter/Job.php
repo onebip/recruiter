@@ -1,23 +1,21 @@
 <?php
-
 namespace Recruiter;
 
-use Onebip;
-use MongoId;
-use MongoCollection;
-use MongoWriteConcernException;
 use Exception;
 use InvalidArgumentException;
-
-use Timeless as T;
-use Timeless\Moment;
-
-use Recruiter\RetryPolicy;
-use Recruiter\Taggable;
-use Recruiter\Job\Repository;
+use MongoCollection;
+use MongoId;
+use MongoWriteConcernException;
+use Onebip;
 use Recruiter\Job\Event;
 use Recruiter\Job\EventListener;
+use Recruiter\Job\Repository;
+use Recruiter\RetryPolicy;
+use Recruiter\Taggable;
+use RuntimeException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Timeless as T;
+use Timeless\Moment;
 
 class Job
 {
@@ -34,6 +32,7 @@ class Job
             $workable,
             ($workable instanceof Retriable) ?
                 $workable->retryWithPolicy() : new RetryPolicy\DoNotDoItAgain(),
+            new JobExecution(),
             $repository
         );
     }
@@ -44,17 +43,18 @@ class Job
             $document,
             WorkableInJob::import($document),
             RetryPolicyInJob::import($document),
+            JobExecution::import($document),
             $repository
         );
     }
 
-    public function __construct($status, Workable $workable, RetryPolicy $retryPolicy, Repository $repository)
+    public function __construct($status, Workable $workable, RetryPolicy $retryPolicy, JobExecution $lastJobExecution, Repository $repository)
     {
         $this->status = $status;
         $this->workable = $workable;
         $this->retryPolicy = $retryPolicy;
+        $this->lastJobExecution = $lastJobExecution;
         $this->repository = $repository;
-        $this->lastJobExecution = new JobExecution();
     }
 
     public function id()
@@ -90,7 +90,7 @@ class Job
     public function inGroup($group)
     {
         if (is_array($group)) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 "Group can be only single string, for other uses use `taggedAs` method.
                 Received group: `" . var_export($group, true) . "`"
             );
@@ -120,11 +120,13 @@ class Job
     {
         $methodToCall = $this->status['workable']['method'];
         try {
-            $this->beforeExecution($eventDispatcher);
-            $result = $this->workable->$methodToCall($this->retryStatistics());
-            $this->afterExecution($result, $eventDispatcher);
-            return $result;
-        } catch(\Exception $exception) {
+            if ($this->recoverFromCrash($eventDispatcher)) {
+                $this->beforeExecution($eventDispatcher);
+                $result = $this->workable->$methodToCall($this->retryStatistics());
+                $this->afterExecution($result, $eventDispatcher);
+                return $result;
+            }
+        } catch(Exception $exception) {
             $this->afterFailure($exception, $eventDispatcher);
         }
     }
@@ -168,6 +170,7 @@ class Job
     public function beforeExecution(EventDispatcherInterface $eventDispatcher)
     {
         $this->status['attempts'] += 1;
+        $this->lastJobExecution = new JobExecution();
         $this->lastJobExecution->started($this->scheduledAt());
         $this->emit('job.started', $eventDispatcher);
         if ($this->hasBeenScheduled()) {
@@ -192,6 +195,14 @@ class Job
         return $this->status['done'];
     }
 
+    private function recoverFromCrash(EventDispatcherInterface $eventDispatcher)
+    {
+        if ($this->lastJobExecution->isCrashed()) {
+            return !$archived = $this->afterFailure(new WorkerDiedInTheLineOfDutyException(), $eventDispatcher);
+        }
+        return true;
+    }
+
     private function afterFailure($exception, $eventDispatcher)
     {
         $this->lastJobExecution->failedWith($exception);
@@ -199,9 +210,11 @@ class Job
         $this->retryPolicy->schedule($jobAfterFailure);
         $this->emit('job.ended', $eventDispatcher);
         $jobAfterFailure->archiveIfNotScheduled();
-        if ($jobAfterFailure->hasBeenArchived()) {
+        $archived = $jobAfterFailure->hasBeenArchived();
+        if ($archived) {
             $this->emit('job.failure.last', $eventDispatcher);
         }
+        return $archived;
     }
 
     private function emit($eventType, $eventDispatcher)
@@ -287,7 +300,7 @@ class Job
     public static function rollbackLockedNotIn(MongoCollection $collection, array $excluded)
     {
         try {
-            return $collection->update(
+            $result = $collection->update(
                 [
                     'locked' => true,
                     '_id' => ['$nin' => $excluded],
@@ -295,12 +308,14 @@ class Job
                 [
                     '$set' => [
                         'locked' => false,
+                        'last_execution.crashed' => true,
                     ]
                 ],
                 [
                     'multiple' => true,
                 ]
-            )['n'];
+            );
+            return $result['n'];
         } catch (MongoWriteConcernException $e) {
             throw new InvalidArgumentException("Not valid excluded jobs filter: " . var_export($excluded, true), -1, $e);
         }

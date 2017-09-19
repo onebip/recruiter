@@ -117,9 +117,7 @@ class Recruiter
 
     public function assignJobsToWorkers()
     {
-        $bookedJobs = $this->bookJobsForWorkers();
-
-        return $this->assignLockedJobsToWorkers($bookedJobs);
+        return $this->assignLockedJobsToWorkers($this->bookJobsForWorkers());
     }
 
     /**

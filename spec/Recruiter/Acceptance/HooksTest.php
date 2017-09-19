@@ -58,9 +58,12 @@ class HooksTest extends BaseAcceptanceTest
             ->execute();
 
         $runAJob = function ($howManyTimes, $worker) {
-            for ($i = 0; $i < $howManyTimes; $i++) {
-                $this->recruiter->assignJobsToWorkers();
+            for ($i = 0; $i < $howManyTimes; ) {
+                list($_, $assigned) = $this->recruiter->assignJobsToWorkers();
                 $worker->work();
+                if ($assigned > 0) {
+                    $i++;
+                }
             }
         };
 
