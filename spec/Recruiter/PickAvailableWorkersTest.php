@@ -80,11 +80,6 @@ class PickAvailableWorkersTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($this->workersPerUnit, $totalWorkersGiven);
     }
 
-    public function testPickedIsTheSumOfTheCallbackResults()
-    {
-        $this->markTestIncomplete('Move on RecruiterTest');
-    }
-
     private function withAvailableWorkers($workers)
     {
         $workersThatShouldBeFound = [];
