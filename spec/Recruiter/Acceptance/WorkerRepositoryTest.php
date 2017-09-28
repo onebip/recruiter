@@ -28,6 +28,7 @@ class WorkerRepositoryTest extends BaseAcceptanceTest
 
     protected function givenWorkerWithPid($pid)
     {
-        $this->roster->save(['pid' => $pid]);
+        $document = ['pid' => $pid];
+        $this->roster->save($document);
     }
 }

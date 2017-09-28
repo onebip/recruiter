@@ -32,7 +32,7 @@ class FactoryTest extends \PHPUnit_Framework_TestCase
         $mongoDb = $this->factory->getMongoDb(
                 $host = 'localhost:27017',
                 $options = [
-                    'connectTimeoutMS' => '1000',
+                    'connectTimeoutMS' => 1000,
                     'w' => '0',
                 ],
                 $dbName = 'recruiter'
@@ -45,7 +45,7 @@ class FactoryTest extends \PHPUnit_Framework_TestCase
     {
         return $this->factory->getMongoDb(
              $host = $this->dbHost,
-             $options = ['connectTimeoutMS' => '1000'],
+             $options = ['connectTimeoutMS' => 1000],
              $dbName = $this->dbName
         );
     }

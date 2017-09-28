@@ -22,7 +22,8 @@ class Repository
 
     public function save($worker)
     {
-        $this->roster->save($worker->export());
+        $document = $worker->export();
+        $this->roster->save($document);
     }
 
     public function atomicUpdate($worker, array $changeSet)
