@@ -79,8 +79,8 @@ class TargetHost implements Recruiter\Option
             if (empty($matches['qs'])) {
                 $matches['qs'] = '';
             }
-            parse_str($matches['qs'], $queryString);
-            return [$matches['hosts'], $matches['db'], $queryString];
+            $options = self::optionsFrom($matches['qs']);
+            return [$matches['hosts'], $matches['db'], $options];
         }
         throw new UnexpectedValueException(
             sprintf(
@@ -88,5 +88,16 @@ class TargetHost implements Recruiter\Option
                 $target
             )
         );
+    }
+
+    public static function optionsFrom($queryString)
+    {
+        parse_str($matches['qs'], $options);
+        foreach ($options as $key => $value) {
+            if (preg_match('/^\d+$/', $value)) {
+                $options[$key] = intval($value);
+            }
+        }
+        return $options;
     }
 }
