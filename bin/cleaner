@@ -3,14 +3,15 @@
 
 autoload();
 
-use Recruiter\Cleaner;
-use Recruiter\WaitStrategy;
-use Recruiter\Job\Repository;
 use Onebip\Concurrency\MongoLock;
+use Recruiter\Cleaner;
+use Recruiter\Factory;
+use Recruiter\Job\Repository;
+use Recruiter\Option\TargetHost;
+use Recruiter\WaitStrategy;
 use Timeless\Interval;
 use Ulrichsg\Getopt\Getopt;
 use Ulrichsg\Getopt\Option;
-use Recruiter\Factory;
 
 $defaultTarget = 'localhost:27017/recruiter';
 $options = [
@@ -28,7 +29,7 @@ $options = [
 $cliOptions = new Getopt($options);
 $cliOptions->parse();
 
-list($hosts, $dbName, $options) = parseMongoDSN($cliOptions['target']);
+list($hosts, $dbName, $options) = TargetHost::parse($cliOptions['target']);
 $factory = new Factory();
 $db = $factory->getMongoDb($hosts, $options, $dbName);
 
@@ -120,25 +121,3 @@ function ensureMemoryLimitsAreRespected($currentUsage, $limit) {
         posix_kill(posix_getpid(), SIGTERM);
     }
 }
-
-function parseMongoDSN($target) {
-    if (preg_match(
-        '/^'
-        . '(mongodb:\/\/)?'
-        . '(?P<hosts>[^\/]+)'
-        . '(?:\/(?P<db>\w+))?'
-        . '(\?(?P<qs>.*))?'
-        . '/',
-        $target,
-        $matches
-    )) {
-        if (empty($matches['db'])) {
-            $matches['db'] = 'recruiter';
-        }
-        if (empty($matches['qs'])) {
-            $matches['qs'] = '';
-        }
-        parse_str($matches['qs'], $queryString);
-        return [$matches['hosts'], $matches['db'], $queryString];
-    }
-};
