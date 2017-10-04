@@ -97,6 +97,9 @@ class TargetHost implements Recruiter\Option
             if (preg_match('/^\d+$/', $value)) {
                 $options[$key] = intval($value);
             }
+            if (empty($options[$key])) {
+                unset($options[$key]);
+            }
         }
         return $options;
     }
