@@ -4,6 +4,7 @@ namespace Recruiter\Acceptance;
 use Onebip\Clock\SystemClock;
 use Recruiter\Workable\LazyBones;
 use Recruiter\Workable\ThrowsFatalError;
+use Recruiter\Workable\FailsInConstructor;
 use Recruiter\Option\MemoryLimit;
 use Recruiter\RetryPolicy\RetryManyTimes;
 use Timeless as T;
@@ -20,6 +21,39 @@ class FaultToleranceTest extends BaseAcceptanceTest
         list ($assignments, $totalNumber) = $this->recruiter->assignJobsToWorkers();
         $this->assertEquals(1, count($assignments));
         $this->assertEquals(1, $totalNumber);
+    }
+
+    public function testRetryPolicyMustBeAppliedEvenWhenWorkerDiesInConstructor()
+    {
+        (new FailsInConstructor([], false))
+            ->asJobOf($this->recruiter)
+            ->inBackground()
+            ->retryWithPolicy(RetryManyTimes::forTimes(1, 0))
+            ->execute();
+
+        $worker = $this->startWorker();
+        $this->waitForNumberOfWorkersToBe(1);
+
+        list ($assignments, $_) = $this->recruiter->assignJobsToWorkers();
+        $this->assertEquals(1, count($assignments));
+        sleep(2);
+        $jobDocument = $this->scheduled->find()->getNext();
+        $this->assertEquals(1, $jobDocument['attempts']);
+        $this->assertEquals('Recruiter\\Workable\\FailsInConstructor', $jobDocument['workable']['class']);
+        $this->assertContains('This job failed while instantiating a workable', $jobDocument['last_execution']['message']);
+        $this->assertContains('I am supposed to fail in constructor code for testing purpose', $jobDocument['last_execution']['message']);
+
+        list ($assignments, $_) = $this->recruiter->assignJobsToWorkers();
+        $this->assertEquals(1, count($assignments));
+        sleep(2);
+        $jobDocument = $this->archived->find()->getNext();
+        $this->assertEquals(2, $jobDocument['attempts']);
+        $this->assertEquals('Recruiter\\Workable\\FailsInConstructor', $jobDocument['workable']['class']);
+        $this->assertContains('This job failed while instantiating a workable', $jobDocument['last_execution']['message']);
+        $this->assertContains('I am supposed to fail in constructor code for testing purpose', $jobDocument['last_execution']['message']);
+
+        list ($assignments, $_) = $this->recruiter->assignJobsToWorkers();
+        $this->assertEquals(0, count($assignments));
     }
 
     public function testRetryPolicyMustBeAppliedEvenWhenWorkerDies()

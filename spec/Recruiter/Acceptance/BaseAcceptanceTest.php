@@ -22,6 +22,8 @@ abstract class BaseAcceptanceTest extends TestCase
         $this->files = ['/tmp/recruiter.log', '/tmp/worker.log'];
         $this->cleanLogs();
         $this->roster = $this->recruiterDb->selectCollection('roster');
+        $this->scheduled = $this->recruiterDb->selectCollection('scheduled');
+        $this->archived = $this->recruiterDb->selectCollection('archived');
         $this->recruiter = new Recruiter($this->recruiterDb);
         $this->jobs = 0;
         $this->processRecruiter = null;

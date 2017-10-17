@@ -1,12 +1,13 @@
 <?php
 namespace Recruiter\Job;
 
-use MongoDB;
+use Exception;
 use MongoCollection;
-use Recruiter\Recruiter;
+use MongoDB;
 use Recruiter\Job;
-use Timeless as T;
+use Recruiter\Recruiter;
 use RuntimeException;
+use Timeless as T;
 
 class Repository
 {
@@ -37,7 +38,7 @@ class Repository
     {
         $found = $this->map($this->scheduled->find(['_id' => $id]));
         if (count($found) === 0) {
-            throw new \Exception("Unable to find scheduled job with ObjectId('{$id}')");
+            throw new Exception("Unable to find scheduled job with ObjectId('{$id}')");
         }
         return $found[0];
     }
