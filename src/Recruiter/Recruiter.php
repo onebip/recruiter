@@ -56,6 +56,11 @@ class Recruiter
         return $this->jobs->scheduledCount();
     }
 
+    public function queuedGroupedBy($field, array $query = [], $group = null)
+    {
+        return $this->jobs->queuedGroupedBy($field, $query, $group);
+    }
+
     public function statistics($group = null, Moment $at = null, array $query = [])
     {
         $totalsScheduledJobs = $this->jobs->scheduledCount($group, $query);

@@ -153,6 +153,33 @@ class Repository
         return $this->scheduled->count($query);
     }
 
+    public function queuedGroupedBy($field, array $query = [], $group = null)
+    {
+        $query['scheduled_at']['$lte'] = T\MongoDate::from(T\now());
+        if ($group !== null) {
+            $query['group'] = $group;
+        }
+
+        $document = $this->scheduled->aggregate($pipeline = [
+            ['$match' => $query],
+            ['$group' => [
+                '_id' => '$' . $field,
+                'count' => ['$sum' => 1],
+            ]],
+        ]);
+
+        if (!$document['ok']) {
+            throw new RuntimeException("Pipeline failed: " . var_export($pipeline, true));
+        }
+
+        $distinctAndCount = [];
+        foreach ($document['result'] as $r) {
+            $distinctAndCount[$r['_id']] = $r['count'];
+        }
+
+        return $distinctAndCount;
+    }
+
     public function recentHistory($group = null, T\Moment $at = null, array $query = [])
     {
         if ($at === null) {

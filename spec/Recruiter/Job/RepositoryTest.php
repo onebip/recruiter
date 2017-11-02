@@ -96,6 +96,42 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testCountsQueuedJobsGroupingByASpecificKeyword()
+    {
+        $workable1 =  $this
+                ->getMockBuilder('Recruiter\Workable')
+                ->getMock();
+
+        $workable2 =  $this
+                ->getMockBuilder('Recruiter\Workable')
+                ->getMock();
+
+        $workable1
+            ->expects($this->any())
+            ->method('export')
+            ->will($this->returnValue(['seller' => 'seller1']));
+
+        $workable2
+            ->expects($this->any())
+            ->method('export')
+            ->will($this->returnValue(['seller' => 'seller2']));
+
+        $job1 = $this->aJob($workable1);
+        $job2 = $this->aJob($workable2);
+        $job3 = $this->aJob($workable2);
+
+        $this->aJobToSchedule($job1)->inGroup('generic')->inBackground()->execute();
+        $this->aJobToSchedule($job2)->inGroup('generic')->inBackground()->execute();
+        $this->aJobToSchedule($job3)->inGroup('generic')->inBackground()->execute();
+        $this->assertEquals(
+            [
+                'seller1' => '1',
+                'seller2' => '2',
+            ],
+            $this->repository->queuedGroupedBy('workable.parameters.seller', [])
+        );
+    }
+
     public function testCleanOldArchived()
     {
         $ed = $this->eventDispatcher;
@@ -118,18 +154,24 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, $this->repository->countArchived());
     }
 
-    private function aJob()
+    private function aJob($workable = null)
     {
-        $workable = $this
-            ->getMockBuilder('Recruiter\Workable')
-            ->getMock();
+        if (is_null($workable)) {
+            $workable = $this
+                ->getMockBuilder('Recruiter\Workable')
+                ->getMock();
+        }
 
         return Job::around($workable, $this->repository)
             ->scheduleAt(T\now()->before(T\seconds(5)));
     }
 
-    private function aJobToSchedule()
+    private function aJobToSchedule($job = null)
     {
-        return new JobToSchedule($this->aJob());
+        if (is_null($job)) {
+            $job = $this->aJob();
+        }
+
+        return new JobToSchedule($job);
     }
 }
