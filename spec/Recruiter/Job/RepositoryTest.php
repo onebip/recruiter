@@ -132,7 +132,45 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testCountUnpickedScheduledJobs()
+    public function testGetExpiredUnpickedScheduledJobs()
+    {
+        $workable1 =  $this
+                ->getMockBuilder('Recruiter\Workable')
+                ->getMock();
+
+        $workable1
+            ->expects($this->any())
+            ->method('export')
+            ->will($this->returnValue(['job1' => 'expired_and_unpicked']));
+
+        $workable2 =  $this
+                ->getMockBuilder('Recruiter\Workable')
+                ->getMock();
+
+        $workable2
+            ->expects($this->any())
+            ->method('export')
+            ->will($this->returnValue(['job2' => 'expired_and_unpicked']));
+        $workable3 =  $this
+                ->getMockBuilder('Recruiter\Workable')
+                ->getMock();
+        $workable3
+            ->expects($this->any())
+            ->method('export')
+            ->will($this->returnValue(['job3' => 'in_schedulation']));
+        $this->aJobToSchedule($this->aJob($workable1))->inBackground()->execute();
+        $this->aJobToSchedule($this->aJob($workable2))->inBackground()->execute();
+        $this->clock->now();
+        $oneHourInSeconds = 60*60;
+        $this->clock->driftForwardBySeconds($oneHourInSeconds);
+        $this->aJobToSchedule($this->aJob($workable3))->inBackground()->execute();
+        $jobs = $this->repository->expiredUnpickedScheduledJobs();
+        foreach ($jobs as $job) {
+            $this->assertEquals('expired_and_unpicked', reset($job->export()['workable']['parameters']));
+        }
+    }
+
+    public function testCountExpiredUnpickedScheduledJobs()
     {
         $workable1 =  $this
                 ->getMockBuilder('Recruiter\Workable')
@@ -150,7 +188,7 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $oneHourInSeconds = 60*60;
         $this->clock->driftForwardBySeconds($oneHourInSeconds);
         $this->aJobToSchedule($this->aJob($workable3))->inBackground()->execute();
-        $this->assertEquals(2, $this->repository->countUnpickedScheduledJobs('generic'));
+        $this->assertEquals(2, $this->repository->countExpiredUnpickedScheduledJobs());
     }
 
     public function testCleanOldArchived()

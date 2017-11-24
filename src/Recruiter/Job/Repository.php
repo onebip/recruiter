@@ -244,11 +244,20 @@ class Repository
     /**
      * @param int
      */
-    public function countUnpickedScheduledJobs()
+    public function countExpiredUnpickedScheduledJobs()
     {
         $query = [];
         $query['scheduled_at']['$lt'] = T\MongoDate::from(T\now());
         return $this->scheduled->count($query);
+    }
+
+    public function expiredUnpickedScheduledJobs()
+    {
+        $query = [];
+        $query['scheduled_at']['$lt'] = T\MongoDate::from(T\now());
+        return $this->map(
+            $this->scheduled->find($query)
+        );
     }
 
     private function map($cursor)
