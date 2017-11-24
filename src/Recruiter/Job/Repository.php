@@ -79,10 +79,10 @@ class Repository
             [
                 'last_execution.ended_at' => [
                     '$lte' => T\MongoDate::from($upperLimit),
-                ]
-            ],
-            ['_id' => 1]
-        );
+                    ]
+                ],
+                ['_id' => 1]
+            );
 
         $deleted = 0;
         foreach ($documents as $document) {
@@ -99,9 +99,9 @@ class Repository
             [
                 'created_at' => [
                     '$lte' => T\MongoDate::from($upperLimit),
+                    ]
                 ]
-            ]
-        );
+            );
         return $result['ok'] ? $result['n'] : 0;
     }
 
@@ -188,9 +188,9 @@ class Repository
         $lastMinute = array_merge($query, [
             'last_execution.ended_at' => [
                 '$gt' => T\MongoDate::from($at->before(T\minute(1))),
-                '$lte' => T\MongoDate::from($at)
-            ],
-        ]);
+                    '$lte' => T\MongoDate::from($at)
+                ],
+            ]);
         if ($group !== null) {
             $lastMinute['group'] = $group;
         }
@@ -239,6 +239,16 @@ class Repository
                 'average' => $averageExecutionTime,
             ],
         ];
+    }
+
+    /**
+     * @param int
+     */
+    public function countUnpickedScheduledJobs()
+    {
+        $query = [];
+        $query['scheduled_at']['$lt'] = T\MongoDate::from(T\now());
+        return $this->scheduled->count($query);
     }
 
     private function map($cursor)

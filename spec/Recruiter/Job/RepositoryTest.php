@@ -132,6 +132,27 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testCountUnpickedScheduledJobs()
+    {
+        $workable1 =  $this
+                ->getMockBuilder('Recruiter\Workable')
+                ->getMock();
+
+        $workable2 =  $this
+                ->getMockBuilder('Recruiter\Workable')
+                ->getMock();
+        $workable3 =  $this
+                ->getMockBuilder('Recruiter\Workable')
+                ->getMock();
+        $this->aJobToSchedule($this->aJob($workable1))->inBackground()->execute();
+        $this->aJobToSchedule($this->aJob($workable2))->inBackground()->execute();
+        $this->clock->now();
+        $oneHourInSeconds = 60*60;
+        $this->clock->driftForwardBySeconds($oneHourInSeconds);
+        $this->aJobToSchedule($this->aJob($workable3))->inBackground()->execute();
+        $this->assertEquals(2, $this->repository->countUnpickedScheduledJobs('generic'));
+    }
+
     public function testCleanOldArchived()
     {
         $ed = $this->eventDispatcher;
