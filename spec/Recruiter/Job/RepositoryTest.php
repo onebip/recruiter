@@ -132,7 +132,7 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testGetExpiredUnpickedScheduledJobs()
+    public function testGetExpiredButStillScheduledJobs()
     {
         $workable1 =  $this
                 ->getMockBuilder('Recruiter\Workable')
@@ -164,31 +164,39 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $oneHourInSeconds = 60*60;
         $this->clock->driftForwardBySeconds($oneHourInSeconds);
         $this->aJobToSchedule($this->aJob($workable3))->inBackground()->execute();
-        $jobs = $this->repository->expiredUnpickedScheduledJobs();
+        $jobs = $this->repository->expiredButStillScheduledJobs();
         foreach ($jobs as $job) {
             $this->assertEquals('expired_and_unpicked', reset($job->export()['workable']['parameters']));
         }
     }
 
-    public function testCountExpiredUnpickedScheduledJobs()
+    public function testCountExpiredButStillScheduledJobs()
     {
-        $workable1 =  $this
-                ->getMockBuilder('Recruiter\Workable')
-                ->getMock();
-
-        $workable2 =  $this
-                ->getMockBuilder('Recruiter\Workable')
-                ->getMock();
-        $workable3 =  $this
-                ->getMockBuilder('Recruiter\Workable')
-                ->getMock();
-        $this->aJobToSchedule($this->aJob($workable1))->inBackground()->execute();
-        $this->aJobToSchedule($this->aJob($workable2))->inBackground()->execute();
+        $this->aJobToSchedule($this->aJob())->inBackground()->execute();
+        $this->aJobToSchedule($this->aJob())->inBackground()->execute();
         $this->clock->now();
         $oneHourInSeconds = 60*60;
         $this->clock->driftForwardBySeconds($oneHourInSeconds);
-        $this->aJobToSchedule($this->aJob($workable3))->inBackground()->execute();
-        $this->assertEquals(2, $this->repository->countExpiredUnpickedScheduledJobs());
+        $this->aJobToSchedule($this->aJob())->inBackground()->execute();
+        $this->assertEquals(2, $this->repository->countExpiredButStillScheduledJobs());
+    }
+
+    public function testCountRecentJobsWithManyAttempts()
+    {
+        $ed = $this->eventDispatcher;
+        $this->repository->archive($this->aJob()->beforeExecution($ed)->beforeExecution($ed)->afterExecution(42, $ed));
+        $this->clock->now();
+        $threeHoursInSeconds = 3*60*60;
+        $this->clock->driftForwardBySeconds($threeHoursInSeconds);
+        $from = $this->clock->now(); 
+        $this->repository->archive($this->aJob()->beforeExecution($ed)->beforeExecution($ed)->afterExecution(42, $ed));
+        $this->repository->archive($this->aJob()->beforeExecution($ed)->beforeExecution($ed)->afterExecution(42, $ed));
+        $oneHourInSeconds = 60*60;
+        $this->clock->driftForwardBySeconds($oneHourInSeconds);
+        $this->aJobToSchedule($this->aJob()->beforeExecution($ed)->beforeExecution($ed))->inBackground()->execute();
+        $this->aJobToSchedule($this->aJob()->beforeExecution($ed)->beforeExecution($ed))->inBackground()->execute();
+        $this->aJobToSchedule($this->aJob())->inBackground()->execute();
+        $this->assertEquals(4, $this->repository->countRecentJobsWithManyAttempts($from));
     }
 
     public function testCleanOldArchived()

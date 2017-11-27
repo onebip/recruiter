@@ -244,14 +244,35 @@ class Repository
     /**
      * @param int
      */
-    public function countExpiredUnpickedScheduledJobs()
+    public function countRecentJobsWithManyAttempts(T\Moment $upperLimit)
+    {
+        $archived = $this->archived->count([
+            'last_execution.ended_at' => [
+                '$gte' => T\MongoDate::from($upperLimit),
+            ],
+            'attempts' => [
+                '$gt' => 1
+            ]
+        ]);
+        $scheduled = $this->scheduled->count([
+            'attempts' => [
+                '$gt' => 1
+            ]
+        ]);
+        return $archived+$scheduled;
+    }
+
+    /**
+     * @param int
+     */
+    public function countExpiredButStillScheduledJobs()
     {
         $query = [];
         $query['scheduled_at']['$lt'] = T\MongoDate::from(T\now());
         return $this->scheduled->count($query);
     }
 
-    public function expiredUnpickedScheduledJobs()
+    public function expiredButStillScheduledJobs()
     {
         $query = [];
         $query['scheduled_at']['$lt'] = T\MongoDate::from(T\now());
