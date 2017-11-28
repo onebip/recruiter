@@ -281,6 +281,24 @@ class Repository
         );
     }
 
+    public function recentJobsWithManyAttempts(T\Moment $upperLimit)
+    {
+        $archived = $this->map($this->archived->find([
+            'last_execution.ended_at' => [
+                '$gte' => T\MongoDate::from($upperLimit),
+            ],
+            'attempts' => [
+                '$gt' => 1
+            ]
+        ]));
+        $scheduled = $this->map($this->scheduled->find([
+            'attempts' => [
+                '$gt' => 1
+            ]
+        ]));
+        return array_merge($archived, $scheduled);
+    }
+
     private function map($cursor)
     {
         $jobs = [];

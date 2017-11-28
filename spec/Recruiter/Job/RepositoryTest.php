@@ -199,6 +199,80 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(4, $this->repository->countRecentJobsWithManyAttempts($from));
     }
 
+    public function testGetRecentJobsWithManyAttempts()
+    {
+        $ed = $this->eventDispatcher;
+        $workable1 =  $this
+                ->getMockBuilder('Recruiter\Workable')
+                ->getMock();
+
+        $workable1
+            ->expects($this->any())
+            ->method('export')
+            ->will($this->returnValue(['job1' => 'many_attempts_and_archived_but_too_old']));
+
+        $workable2 =  $this
+                ->getMockBuilder('Recruiter\Workable')
+                ->getMock();
+
+        $workable2
+            ->expects($this->any())
+            ->method('export')
+            ->will($this->returnValue(['job2' => 'many_attempts_and_archived']));
+
+        $workable3 =  $this
+                ->getMockBuilder('Recruiter\Workable')
+                ->getMock();
+        $workable3
+            ->expects($this->any())
+            ->method('export')
+            ->will($this->returnValue(['job3' => 'many_attempts_and_archived']));
+
+        $workable4 =  $this
+                ->getMockBuilder('Recruiter\Workable')
+                ->getMock();
+        $workable4
+            ->expects($this->any())
+            ->method('export')
+            ->will($this->returnValue(['job4' => 'many_attempts_and_scheduled']));
+        $workable5 =  $this
+                ->getMockBuilder('Recruiter\Workable')
+                ->getMock();
+        $workable5
+            ->expects($this->any())
+            ->method('export')
+            ->will($this->returnValue(['job5' => 'many_attempts_and_scheduled']));
+        $workable6 =  $this
+                ->getMockBuilder('Recruiter\Workable')
+                ->getMock();
+        $workable6
+            ->expects($this->any())
+            ->method('export')
+            ->will($this->returnValue(['job6' => 'one_attempt_and_scheduled']));
+        $this->repository->archive($this->aJob($workable1)->beforeExecution($ed)->beforeExecution($ed)->afterExecution(42, $ed));
+        $this->clock->now();
+        $threeHoursInSeconds = 3*60*60;
+        $this->clock->driftForwardBySeconds($threeHoursInSeconds);
+        $from = $this->clock->now(); 
+        $this->repository->archive($this->aJob($workable2)->beforeExecution($ed)->beforeExecution($ed)->afterExecution(42, $ed));
+        $this->repository->archive($this->aJob($workable3)->beforeExecution($ed)->beforeExecution($ed)->afterExecution(42, $ed));
+        $oneHourInSeconds = 60*60;
+        $this->clock->driftForwardBySeconds($oneHourInSeconds);
+        $this->aJobToSchedule($this->aJob($workable4)->beforeExecution($ed)->beforeExecution($ed))->inBackground()->execute();
+        $this->aJobToSchedule($this->aJob($workable5)->beforeExecution($ed)->beforeExecution($ed))->inBackground()->execute();
+        $this->aJobToSchedule($this->aJob($workable6))->inBackground()->execute();
+        $jobs = $this->repository->recentJobsWithManyAttempts($from);
+        $jobsFounds = 0;
+        foreach ($jobs as $job) {
+            $this->assertRegExp(
+                '/many_attempts_and_archived|many_attempts_and_scheduled/',
+                reset($job->export()['workable']['parameters'])
+            );
+            $jobsFounds++;
+        }
+        $this->assertEquals(4, $jobsFounds);
+    }    
+
     public function testCleanOldArchived()
     {
         $ed = $this->eventDispatcher;
