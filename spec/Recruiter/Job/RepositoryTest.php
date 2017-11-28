@@ -96,15 +96,10 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testCountsQueuedJobsGroupingByASpecificKeyword()
+    public function testCountQueuedJobsGroupingByASpecificKeyword()
     {
-        $workable1 =  $this
-                ->getMockBuilder('Recruiter\Workable')
-                ->getMock();
-
-        $workable2 =  $this
-                ->getMockBuilder('Recruiter\Workable')
-                ->getMock();
+        $workable1 = $this->workableMock();
+        $workable2 = $this->workableMock();
 
         $workable1
             ->expects($this->any())
@@ -134,26 +129,19 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
 
     public function testGetExpiredButStillScheduledJobs()
     {
-        $workable1 =  $this
-                ->getMockBuilder('Recruiter\Workable')
-                ->getMock();
-
+        $workable1 = $this->workableMock();
         $workable1
             ->expects($this->any())
             ->method('export')
             ->will($this->returnValue(['job1' => 'expired_and_unpicked']));
 
-        $workable2 =  $this
-                ->getMockBuilder('Recruiter\Workable')
-                ->getMock();
-
+        $workable2 = $this->workableMock();
         $workable2
             ->expects($this->any())
             ->method('export')
             ->will($this->returnValue(['job2' => 'expired_and_unpicked']));
-        $workable3 =  $this
-                ->getMockBuilder('Recruiter\Workable')
-                ->getMock();
+
+        $workable3 = $this->workableMock();
         $workable3
             ->expects($this->any())
             ->method('export')
@@ -202,49 +190,38 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
     public function testGetRecentJobsWithManyAttempts()
     {
         $ed = $this->eventDispatcher;
-        $workable1 =  $this
-                ->getMockBuilder('Recruiter\Workable')
-                ->getMock();
 
+        $workable1 = $this->workableMock();
         $workable1
             ->expects($this->any())
             ->method('export')
             ->will($this->returnValue(['job1' => 'many_attempts_and_archived_but_too_old']));
 
-        $workable2 =  $this
-                ->getMockBuilder('Recruiter\Workable')
-                ->getMock();
-
+        $workable2 = $this->workableMock();
         $workable2
             ->expects($this->any())
             ->method('export')
             ->will($this->returnValue(['job2' => 'many_attempts_and_archived']));
 
-        $workable3 =  $this
-                ->getMockBuilder('Recruiter\Workable')
-                ->getMock();
+        $workable3 = $this->workableMock();
         $workable3
             ->expects($this->any())
             ->method('export')
             ->will($this->returnValue(['job3' => 'many_attempts_and_archived']));
 
-        $workable4 =  $this
-                ->getMockBuilder('Recruiter\Workable')
-                ->getMock();
+        $workable4 = $this->workableMock();
         $workable4
             ->expects($this->any())
             ->method('export')
             ->will($this->returnValue(['job4' => 'many_attempts_and_scheduled']));
-        $workable5 =  $this
-                ->getMockBuilder('Recruiter\Workable')
-                ->getMock();
+
+        $workable5 = $this->workableMock();
         $workable5
             ->expects($this->any())
             ->method('export')
             ->will($this->returnValue(['job5' => 'many_attempts_and_scheduled']));
-        $workable6 =  $this
-                ->getMockBuilder('Recruiter\Workable')
-                ->getMock();
+
+        $workable6 = $this->workableMock();
         $workable6
             ->expects($this->any())
             ->method('export')
@@ -298,9 +275,7 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
     private function aJob($workable = null)
     {
         if (is_null($workable)) {
-            $workable = $this
-                ->getMockBuilder('Recruiter\Workable')
-                ->getMock();
+            $workable = $this->workableMock();
         }
 
         return Job::around($workable, $this->repository)
@@ -314,5 +289,12 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         }
 
         return new JobToSchedule($job);
+    }
+
+    private function workableMock()
+    {
+        return $this
+                ->getMockBuilder('Recruiter\Workable')
+                ->getMock();
     }
 }

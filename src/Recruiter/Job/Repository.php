@@ -267,17 +267,21 @@ class Repository
      */
     public function countExpiredButStillScheduledJobs()
     {
-        $query = [];
-        $query['scheduled_at']['$lt'] = T\MongoDate::from(T\now());
-        return $this->scheduled->count($query);
+        return $this->scheduled->count([
+            'scheduled_at' => [
+                '$lt' => T\MongoDate::from(T\now())
+            ]
+        ]);
     }
 
     public function expiredButStillScheduledJobs()
     {
-        $query = [];
-        $query['scheduled_at']['$lt'] = T\MongoDate::from(T\now());
         return $this->map(
-            $this->scheduled->find($query)
+            $this->scheduled->find([ 
+                'scheduled_at' => [
+                    '$lt' => T\MongoDate::from(T\now())
+                ]
+            ])
         );
     }
 
