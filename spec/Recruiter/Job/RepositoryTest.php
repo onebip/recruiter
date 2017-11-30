@@ -6,6 +6,9 @@ use Recruiter\Factory;
 use Recruiter\JobToSchedule;
 use DateTime;
 use Timeless as T;
+use Timeless\Interval;
+use Timeless\Moment;
+use Recruiter\RetryPolicy\ExponentialBackoff;
 
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -250,6 +253,69 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(4, $jobsFounds);
     }    
 
+    public function testCountSlowRecentJobs()
+    {
+        $ed = $this->eventDispatcher;
+        $elapseTimeInSecondsBeforeJobsExecutionEnd = 6;
+
+        $from = $this->clock->now();
+        $scheduledJobSlowOld = $this->jobMockWithCustomExecutionTime(
+            $from,
+            $from,
+            $from->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s'))
+        );
+        $this->repository->save($scheduledJobSlowOld);
+        $archivedJobSlowExpired = $this->aJob()->beforeExecution($ed);
+        $this->clock->driftForwardBySeconds($elapseTimeInSecondsBeforeJobsExecutionEnd);
+        $archivedJobSlowExpired->afterExecution(42, $ed);
+        $threeHoursInSeconds = 3*60*60;
+        $this->clock->driftForwardBySeconds($threeHoursInSeconds);
+        $lowerLimit = $from = $this->clock->now(); 
+        $scheduledJobSlow = $this->jobMockWithCustomExecutionTime(
+            $from,
+            $from,
+            $from->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s'))
+        );
+        $this->repository->save($scheduledJobSlow);
+        $archivedJobSlow1 = $this->aJob()->beforeExecution($ed);
+        $this->clock->driftForwardBySeconds($elapseTimeInSecondsBeforeJobsExecutionEnd);
+        $archivedJobSlow1->afterExecution(42, $ed);
+        $this->repository->archive($archivedJobSlow1);
+        $archivedJobSlow2 = $this->aJob()->beforeExecution($ed);
+        $this->clock->driftForwardBySeconds($elapseTimeInSecondsBeforeJobsExecutionEnd);
+        $archivedJobSlow2->afterExecution(42, $ed);
+        $this->repository->archive($archivedJobSlow2);
+        $oneHourInSeconds = 60*60;
+        $this->clock->driftForwardBySeconds($oneHourInSeconds);
+        $from = $this->clock->now(); 
+        $archivedJobNotSlow = $this->aJob()->beforeExecution($ed);
+        $archivedJobNotSlow->afterExecution(42, $ed);
+        $this->repository->archive($archivedJobNotSlow);
+        $scheduledJobSlow = $this->jobMockWithCustomExecutionTime(
+            $from,
+            $from,
+            $from->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s'))
+        );
+        $this->repository->save($scheduledJobSlow);
+        $oneHourInSeconds = 60*60;
+        $this->clock->driftForwardBySeconds($oneHourInSeconds);
+        $upperLimit = $from = $this->clock->now(); 
+        $scheduledJob = $this->jobMockWithCustomExecutionTime(
+            $from
+        );
+        $this->repository->save($scheduledJob);
+        $oneHourInSeconds = 60*60;
+        $this->clock->driftForwardBySeconds($oneHourInSeconds);
+        $from = $this->clock->now(); 
+        $scheduledJobSlow = $this->jobMockWithCustomExecutionTime(
+            $from,
+            $lowerLimit,
+            $lowerLimit->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s'))
+        );
+        $this->repository->save($scheduledJobSlow);
+        $this->assertEquals(4, $this->repository->countSlowRecentJobs($lowerLimit, $upperLimit));
+    }
+
     public function testCleanOldArchived()
     {
         $ed = $this->eventDispatcher;
@@ -296,5 +362,42 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         return $this
                 ->getMockBuilder('Recruiter\Workable')
                 ->getMock();
+    }
+
+    private function jobExecutionMock($executionParameters)
+    {
+        $jobExecutionMock = $this
+                ->getMockBuilder('Recruiter\JobExecution')
+                ->getMock();
+        $jobExecutionMock->expects($this->once())
+            ->method('export')
+            ->will($this->returnValue($executionParameters));
+
+        return $jobExecutionMock;
+    }
+
+    private function jobMockWithCustomExecutionTime(
+        Moment $scheduledAt,
+        Moment $startedAt=null,
+        Moment $endedAt=null
+    )
+    {
+        $workable = $this->workableMock();
+        $customExecutionTime = [
+            'scheduled_at' => T\MongoDate::from($scheduledAt)
+        ];
+        if ($startedAt) {
+            $customExecutionTime['last_execution']['started_at'] = T\MongoDate::from($startedAt);
+        }
+        if ($endedAt) {
+            $customExecutionTime['last_execution']['ended_at'] = T\MongoDate::from($endedAt);
+        }
+        return new Job(
+            $this->aJob($workable)->export(),
+            $workable, 
+            new ExponentialBackoff(100, T\seconds(5)),
+            $this->jobExecutionMock($customExecutionTime),
+            $this->repository
+        );
     }
 }

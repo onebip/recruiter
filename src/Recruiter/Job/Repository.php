@@ -244,6 +244,57 @@ class Repository
     /**
      * @param int
      */
+    public function countSlowRecentJobs(
+        T\Moment $lowerLimit,
+        T\Moment $upperLimit,
+        $secondsToConsiderJobAsSlow=5
+    )
+    {
+        $archived = $this->archived->aggregate([
+            [
+                '$match' => [
+                    'last_execution.ended_at' => [
+                        '$gte' => T\MongoDate::from($lowerLimit),
+                    ],
+                ]
+            ],
+            [
+                '$project' => [
+                    '_id' => '$_id',
+                    'execution_time' => [
+                        '$subtract' => [
+                            '$last_execution.ended_at',
+                            '$last_execution.started_at'
+                        ]
+                    ],
+                ]
+            ],
+            [
+                '$match' => [
+                    'execution_time' => [
+                        '$gt' => $secondsToConsiderJobAsSlow*1000 
+                    ]
+                ],
+            ],
+        ])['result'];
+
+        return count($archived) + $this->scheduled->count([
+            'scheduled_at' => [
+                '$gte' => T\MongoDate::from($lowerLimit),
+                '$lte' => T\MongoDate::from($upperLimit)
+            ],
+            'last_execution.started_at' => [
+                '$exists' => true,
+            ],
+            'last_execution.ended_at' => [
+                '$exists' => true,
+            ],
+        ]);
+    }
+
+    /**
+     * @param int
+     */
     public function countRecentJobsWithManyAttempts(T\Moment $upperLimit)
     {
         $archived = $this->archived->count([
@@ -299,6 +350,65 @@ class Repository
             'attempts' => [
                 '$gt' => 1
             ]
+        ]));
+        return array_merge($archived, $scheduled);
+    }
+
+    public function slowRecentJobs(T\Moment $upperLimit, T\Moment $lowerLimit)
+    {
+        $secondsToConsiderJobAsSlow = 10;
+        $archivedArray = $this->archived->aggregate([
+            [
+                '$match' => [
+                    'last_execution.ended_at' => [
+                        '$gte' => T\MongoDate::from($upperLimit),
+                    ],
+                ]
+            ],
+            [
+                '$project' => [
+                    '_id' => '$_id',
+                    'execution_time' => [
+                        '$subtract' => [
+                            '$last_execution.ended_at',
+                            '$last_execution.started_at'
+                        ]
+                    ],
+                    'done' => '$done',
+                    'created_at' => '$created_at',
+                    'locked' => '$locked',
+                    'attempts' => '$attempts',
+                    'group' => '$group',
+                    'workable' => '$workable',
+                    'tags' => '$tags',
+                    'scheduled_at' => '$scheduled_at',
+                    'last_execution' => '$last_execution',
+                    'retry_policy' => '$retry_policy',
+                ]
+            ],
+            [
+                '$match' => [
+                    'execution_time' => [
+                        '$gt' => $secondsToConsiderJobAsSlow*1000 
+                    ]
+                ],
+            ],
+        ])['result'];
+        $archived= [];
+        foreach ($archivedArray as $archivedJob) {
+            $archived[] = Job::import($archivedJob, $this);
+        }
+        $scheduled = $this->map($this->scheduled->find([
+            'scheduled_at' => [
+                '$gte' => T\MongoDate::from($lowerLimit),
+                '$lte' => T\MongoDate::from($upperLimit)
+            ],
+            'last_execution.started_at' => [
+                '$exists' => true,
+            ],
+            'last_execution.ended_at' => [
+                '$exists' => true,
+            ],
         ]));
         return array_merge($archived, $scheduled);
     }
