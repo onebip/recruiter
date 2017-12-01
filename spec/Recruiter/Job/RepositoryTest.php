@@ -234,7 +234,6 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
     {
         $ed = $this->eventDispatcher;
         $elapseTimeInSecondsBeforeJobsExecutionEnd = 6;
-
         $from = $this->clock->now();
         $scheduledJobSlowOld = $this->jobMockWithCustomExecutionTime(
             $from,
@@ -372,7 +371,6 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
             ])
         );
         $this->repository->save($scheduledJobSlow);
-
         $jobs = $this->repository->slowRecentJobs($lowerLimit, $upperLimit);
         $jobsFounds = 0;
         foreach ($jobs as $job) {
