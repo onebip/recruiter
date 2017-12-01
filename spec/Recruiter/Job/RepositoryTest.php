@@ -132,23 +132,15 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
 
     public function testGetExpiredButStillScheduledJobs()
     {
-        $workable1 = $this->workableMock();
-        $workable1
-            ->expects($this->any())
-            ->method('export')
-            ->will($this->returnValue(['job1' => 'expired_and_unpicked']));
-
-        $workable2 = $this->workableMock();
-        $workable2
-            ->expects($this->any())
-            ->method('export')
-            ->will($this->returnValue(['job2' => 'expired_and_unpicked']));
-
-        $workable3 = $this->workableMock();
-        $workable3
-            ->expects($this->any())
-            ->method('export')
-            ->will($this->returnValue(['job3' => 'in_schedulation']));
+        $workable1 = $this->workableMockWithCustomParameters([
+            'job1' => 'expired_and_unpicked'
+        ]);
+        $workable2 = $this->workableMockWithCustomParameters([
+            'job2' => 'expired_and_unpicked'
+        ]);
+        $workable3 = $this->workableMockWithCustomParameters([
+            'job3' => 'in_schedulation'
+        ]);
         $this->aJobToSchedule($this->aJob($workable1))->inBackground()->execute();
         $this->aJobToSchedule($this->aJob($workable2))->inBackground()->execute();
         $this->clock->now();
@@ -156,9 +148,12 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->clock->driftForwardBySeconds($oneHourInSeconds);
         $this->aJobToSchedule($this->aJob($workable3))->inBackground()->execute();
         $jobs = $this->repository->expiredButStillScheduledJobs();
+        $jobsFounds = 0;
         foreach ($jobs as $job) {
             $this->assertEquals('expired_and_unpicked', reset($job->export()['workable']['parameters']));
+            $jobsFounds++;
         }
+        $this->assertEquals(2, $jobsFounds);
     }
 
     public function testCountExpiredButStillScheduledJobs()
@@ -193,42 +188,24 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
     public function testGetRecentJobsWithManyAttempts()
     {
         $ed = $this->eventDispatcher;
-
-        $workable1 = $this->workableMock();
-        $workable1
-            ->expects($this->any())
-            ->method('export')
-            ->will($this->returnValue(['job1' => 'many_attempts_and_archived_but_too_old']));
-
-        $workable2 = $this->workableMock();
-        $workable2
-            ->expects($this->any())
-            ->method('export')
-            ->will($this->returnValue(['job2' => 'many_attempts_and_archived']));
-
-        $workable3 = $this->workableMock();
-        $workable3
-            ->expects($this->any())
-            ->method('export')
-            ->will($this->returnValue(['job3' => 'many_attempts_and_archived']));
-
-        $workable4 = $this->workableMock();
-        $workable4
-            ->expects($this->any())
-            ->method('export')
-            ->will($this->returnValue(['job4' => 'many_attempts_and_scheduled']));
-
-        $workable5 = $this->workableMock();
-        $workable5
-            ->expects($this->any())
-            ->method('export')
-            ->will($this->returnValue(['job5' => 'many_attempts_and_scheduled']));
-
-        $workable6 = $this->workableMock();
-        $workable6
-            ->expects($this->any())
-            ->method('export')
-            ->will($this->returnValue(['job6' => 'one_attempt_and_scheduled']));
+        $workable1 = $this->workableMockWithCustomParameters([
+            'job1' => 'many_attempts_and_archived_but_too_old'
+        ]);
+        $workable2 = $this->workableMockWithCustomParameters([
+            'job2' => 'many_attempts_and_archived'
+        ]);
+        $workable3 = $this->workableMockWithCustomParameters([
+            'job3' => 'many_attempts_and_archived'
+        ]);
+        $workable4 = $this->workableMockWithCustomParameters([
+            'job4' => 'many_attempts_and_scheduled'
+        ]);
+        $workable5 = $this->workableMockWithCustomParameters([
+            'job5' => 'many_attempts_and_scheduled'
+        ]);
+        $workable6 = $this->workableMockWithCustomParameters([
+            'job6' => 'one_attempt_and_scheduled'
+        ]);
         $this->repository->archive($this->aJob($workable1)->beforeExecution($ed)->beforeExecution($ed)->afterExecution(42, $ed));
         $this->clock->now();
         $threeHoursInSeconds = 3*60*60;
