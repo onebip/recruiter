@@ -295,11 +295,11 @@ class Repository
     /**
      * @param int
      */
-    public function countRecentJobsWithManyAttempts(T\Moment $upperLimit)
+    public function countRecentJobsWithManyAttempts(T\Moment $lowerLimit)
     {
         $archived = $this->archived->count([
             'last_execution.ended_at' => [
-                '$gte' => T\MongoDate::from($upperLimit),
+                '$gte' => T\MongoDate::from($lowerLimit),
             ],
             'attempts' => [
                 '$gt' => 1
@@ -336,11 +336,11 @@ class Repository
         );
     }
 
-    public function recentJobsWithManyAttempts(T\Moment $upperLimit)
+    public function recentJobsWithManyAttempts(T\Moment $lowerLimit)
     {
         $archived = $this->map($this->archived->find([
             'last_execution.ended_at' => [
-                '$gte' => T\MongoDate::from($upperLimit),
+                '$gte' => T\MongoDate::from($lowerLimit),
             ],
             'attempts' => [
                 '$gt' => 1

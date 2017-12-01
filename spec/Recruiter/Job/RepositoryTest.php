@@ -179,7 +179,7 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->clock->now();
         $threeHoursInSeconds = 3*60*60;
         $this->clock->driftForwardBySeconds($threeHoursInSeconds);
-        $from = $this->clock->now(); 
+        $lowerLimit = $this->clock->now(); 
         $this->repository->archive($this->aJob()->beforeExecution($ed)->beforeExecution($ed)->afterExecution(42, $ed));
         $this->repository->archive($this->aJob()->beforeExecution($ed)->beforeExecution($ed)->afterExecution(42, $ed));
         $oneHourInSeconds = 60*60;
@@ -187,7 +187,7 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->aJobToSchedule($this->aJob()->beforeExecution($ed)->beforeExecution($ed))->inBackground()->execute();
         $this->aJobToSchedule($this->aJob()->beforeExecution($ed)->beforeExecution($ed))->inBackground()->execute();
         $this->aJobToSchedule($this->aJob())->inBackground()->execute();
-        $this->assertEquals(4, $this->repository->countRecentJobsWithManyAttempts($from));
+        $this->assertEquals(4, $this->repository->countRecentJobsWithManyAttempts($lowerLimit));
     }
 
     public function testGetRecentJobsWithManyAttempts()
@@ -233,7 +233,7 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->clock->now();
         $threeHoursInSeconds = 3*60*60;
         $this->clock->driftForwardBySeconds($threeHoursInSeconds);
-        $from = $this->clock->now(); 
+        $lowerLimit = $this->clock->now(); 
         $this->repository->archive($this->aJob($workable2)->beforeExecution($ed)->beforeExecution($ed)->afterExecution(42, $ed));
         $this->repository->archive($this->aJob($workable3)->beforeExecution($ed)->beforeExecution($ed)->afterExecution(42, $ed));
         $oneHourInSeconds = 60*60;
@@ -241,7 +241,7 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->aJobToSchedule($this->aJob($workable4)->beforeExecution($ed)->beforeExecution($ed))->inBackground()->execute();
         $this->aJobToSchedule($this->aJob($workable5)->beforeExecution($ed)->beforeExecution($ed))->inBackground()->execute();
         $this->aJobToSchedule($this->aJob($workable6))->inBackground()->execute();
-        $jobs = $this->repository->recentJobsWithManyAttempts($from);
+        $jobs = $this->repository->recentJobsWithManyAttempts($lowerLimit);
         $jobsFounds = 0;
         foreach ($jobs as $job) {
             $this->assertRegExp(
