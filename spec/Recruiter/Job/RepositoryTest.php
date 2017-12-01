@@ -288,8 +288,7 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $oneHourInSeconds = 60*60;
         $this->clock->driftForwardBySeconds($oneHourInSeconds);
         $from = $this->clock->now(); 
-        $archivedJobNotSlow = $this->aJob()->beforeExecution($ed);
-        $archivedJobNotSlow->afterExecution(42, $ed);
+        $archivedJobNotSlow = $this->aJob()->beforeExecution($ed)->afterExecution(42, $ed);
         $this->repository->archive($archivedJobNotSlow);
         $scheduledJobSlow = $this->jobMockWithCustomExecutionTime(
             $from,
@@ -316,6 +315,98 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(4, $this->repository->countSlowRecentJobs($lowerLimit, $upperLimit));
     }
 
+    public function testGetSlowRecentJobs()
+    {
+        $ed = $this->eventDispatcher;
+        $elapseTimeInSecondsBeforeJobsExecutionEnd = 6;
+        $from = $this->clock->now();
+        $scheduledJobSlowOld = $this->jobMockWithCustomExecutionTime(
+            $from,
+            $from,
+            $from->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s')),
+            $this->workableMockWithCustomParameters([
+                'job_scheduled_old' => 'slow_jobs_scheduled_but_too_old'
+            ])
+        );
+        $this->repository->save($scheduledJobSlowOld);
+        $archivedJobSlowExpired = $this->aJob($this->workableMockWithCustomParameters([
+                'job_archived_old' => 'slow_job_archived_but_too_old'
+            ])
+        )->beforeExecution($ed);
+        $this->clock->driftForwardBySeconds($elapseTimeInSecondsBeforeJobsExecutionEnd);
+        $archivedJobSlowExpired->afterExecution(42, $ed);
+        $threeHoursInSeconds = 3*60*60;
+        $this->clock->driftForwardBySeconds($threeHoursInSeconds);
+        $lowerLimit = $from = $this->clock->now(); 
+        $scheduledJobSlow = $this->jobMockWithCustomExecutionTime(
+            $from,
+            $from,
+            $from->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s')),
+            $this->workableMockWithCustomParameters([
+                'job1_scheduled' => 'slow_job_recent_scheduled'
+            ])
+        );
+        $this->repository->save($scheduledJobSlow);
+        $archivedJobSlow1 = $this->aJob($this->workableMockWithCustomParameters([
+                'job1_archived' => 'slow_job_recent_archived'
+            ])
+        )->beforeExecution($ed);
+        $archivedJobSlow2 = $this->aJob($this->workableMockWithCustomParameters([
+                'job2_archived' => 'slow_job_recent_archived'
+            ])
+        )->beforeExecution($ed);
+        $this->clock->driftForwardBySeconds($elapseTimeInSecondsBeforeJobsExecutionEnd);
+        $archivedJobSlow1->afterExecution(41, $ed);
+        $this->repository->archive($archivedJobSlow1);
+        $archivedJobSlow2->afterExecution(42, $ed);
+        $this->repository->archive($archivedJobSlow2);
+        $oneHourInSeconds = 60*60;
+        $this->clock->driftForwardBySeconds($oneHourInSeconds);
+        $from = $this->clock->now(); 
+        $archivedJobNotSlow = $this->aJob($this->workableMockWithCustomParameters([
+                'job_archived' => 'job_archived_not_slow'
+            ])
+        )->beforeExecution($ed)->afterExecution(42, $ed);
+        $scheduledJobSlow = $this->jobMockWithCustomExecutionTime(
+            $from,
+            $from,
+            $from->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s')),
+            $this->workableMockWithCustomParameters([
+                'job2_scheduled' => 'slow_job_recent_scheduled'
+            ])
+        );
+        $this->repository->save($scheduledJobSlow);
+        $oneHourInSeconds = 60*60;
+        $this->clock->driftForwardBySeconds($oneHourInSeconds);
+        $upperLimit = $from = $this->clock->now(); 
+        $scheduledJob = $this->jobMockWithCustomExecutionTime(
+            $from
+        );
+        $this->repository->save($scheduledJob);
+        $oneHourInSeconds = 60*60;
+        $this->clock->driftForwardBySeconds($oneHourInSeconds);
+        $from = $this->clock->now(); 
+        $scheduledJobSlow = $this->jobMockWithCustomExecutionTime(
+            $from,
+            $from,
+            $from->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s')),
+            $this->workableMockWithCustomParameters([
+                'job2_scheduled' => 'slow_job_recent_scheduled'
+            ])
+        );
+        $this->repository->save($scheduledJobSlow);
+
+        $jobs = $this->repository->slowRecentJobs($lowerLimit, $upperLimit);
+        $jobsFounds = 0;
+        foreach ($jobs as $job) {
+            $this->assertRegExp(
+                '/slow_job_recent_archived|slow_job_recent_scheduled/',
+                reset($job->export()['workable']['parameters'])
+            );
+            $jobsFounds++;
+        }
+        $this->assertEquals(4, $jobsFounds);
+    }
     public function testCleanOldArchived()
     {
         $ed = $this->eventDispatcher;
@@ -364,6 +455,16 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
                 ->getMock();
     }
 
+    private function workableMockWithCustomParameters($parameters)
+    { 
+        $workable = $this->workableMock();
+        $workable
+            ->expects($this->any())
+            ->method('export')
+            ->will($this->returnValue($parameters));
+        return $workable;
+    }
+
     private function jobExecutionMock($executionParameters)
     {
         $jobExecutionMock = $this
@@ -379,10 +480,13 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
     private function jobMockWithCustomExecutionTime(
         Moment $scheduledAt,
         Moment $startedAt=null,
-        Moment $endedAt=null
+        Moment $endedAt=null,
+        $workable=null
     )
     {
-        $workable = $this->workableMock();
+        if (empty($workable)) {
+            $workable = $this->workableMock();
+        }
         $customExecutionTime = [
             'scheduled_at' => T\MongoDate::from($scheduledAt)
         ];

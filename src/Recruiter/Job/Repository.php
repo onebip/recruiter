@@ -354,14 +354,17 @@ class Repository
         return array_merge($archived, $scheduled);
     }
 
-    public function slowRecentJobs(T\Moment $upperLimit, T\Moment $lowerLimit)
+    public function slowRecentJobs(
+        T\Moment $lowerLimit,
+        T\Moment $upperLimit,
+        $secondsToConsiderJobAsSlow=5
+    )
     {
-        $secondsToConsiderJobAsSlow = 10;
         $archivedArray = $this->archived->aggregate([
             [
                 '$match' => [
                     'last_execution.ended_at' => [
-                        '$gte' => T\MongoDate::from($upperLimit),
+                        '$gte' => T\MongoDate::from($lowerLimit),
                     ],
                 ]
             ],
