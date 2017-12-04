@@ -75,7 +75,8 @@ class Repository
 
     public function cleanArchived(T\Moment $upperLimit)
     {
-        $documents = $this->archived->find([
+        $documents = $this->archived->find(
+            [
                 'last_execution.ended_at' => [
                     '$lte' => T\MongoDate::from($upperLimit),
                 ]
