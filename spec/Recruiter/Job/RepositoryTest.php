@@ -179,10 +179,17 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->repository->archive($this->aJob()->beforeExecution($ed)->beforeExecution($ed)->afterExecution(42, $ed));
         $oneHourInSeconds = 60*60;
         $this->clock->driftForwardBySeconds($oneHourInSeconds);
-        $this->aJobToSchedule($this->aJob()->beforeExecution($ed)->beforeExecution($ed))->inBackground()->execute();
-        $this->aJobToSchedule($this->aJob()->beforeExecution($ed)->beforeExecution($ed))->inBackground()->execute();
+        $createdAt = $endedAt = $this->clock->now(); 
+        $this->repository->save($this->jobMockWithManyAttemptsAndCustomParameters($createdAt, $endedAt));
+        $this->repository->save($this->jobMockWithManyAttemptsAndCustomParameters($createdAt, $endedAt));
         $this->aJobToSchedule($this->aJob())->inBackground()->execute();
-        $this->assertEquals(4, $this->repository->countRecentJobsWithManyAttempts($lowerLimit));
+        $upperLimit = $this->clock->now(); 
+        $oneHourInSeconds = 60*60;
+        $this->clock->driftForwardBySeconds($oneHourInSeconds);
+        $createdAt = $endedAt = $this->clock->now(); 
+        $this->repository->archive($this->aJob()->beforeExecution($ed)->beforeExecution($ed)->afterExecution(42, $ed));
+        $this->repository->save($this->jobMockWithManyAttemptsAndCustomParameters($createdAt, $endedAt));
+        $this->assertEquals(4, $this->repository->countRecentJobsWithManyAttempts($lowerLimit, $upperLimit));
     }
 
     public function testGetRecentJobsWithManyAttempts()
@@ -197,12 +204,12 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $workable3 = $this->workableMockWithCustomParameters([
             'job3' => 'many_attempts_and_archived'
         ]);
-        $workable4 = $this->workableMockWithCustomParameters([
+        $workable4  = [
             'job4' => 'many_attempts_and_scheduled'
-        ]);
-        $workable5 = $this->workableMockWithCustomParameters([
+        ];
+        $workable5  = [
             'job5' => 'many_attempts_and_scheduled'
-        ]);
+        ];
         $workable6 = $this->workableMockWithCustomParameters([
             'job6' => 'one_attempt_and_scheduled'
         ]);
@@ -215,10 +222,12 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->repository->archive($this->aJob($workable3)->beforeExecution($ed)->beforeExecution($ed)->afterExecution(42, $ed));
         $oneHourInSeconds = 60*60;
         $this->clock->driftForwardBySeconds($oneHourInSeconds);
-        $this->aJobToSchedule($this->aJob($workable4)->beforeExecution($ed)->beforeExecution($ed))->inBackground()->execute();
-        $this->aJobToSchedule($this->aJob($workable5)->beforeExecution($ed)->beforeExecution($ed))->inBackground()->execute();
+        $createdAt = $endedAt = $this->clock->now(); 
+        $this->repository->save($this->jobMockWithManyAttemptsAndCustomParameters($createdAt, $endedAt, $workable4));
+        $this->repository->save($this->jobMockWithManyAttemptsAndCustomParameters($createdAt, $endedAt, $workable5));
+        $upperLimit = $this->clock->now(); 
         $this->aJobToSchedule($this->aJob($workable6))->inBackground()->execute();
-        $jobs = $this->repository->recentJobsWithManyAttempts($lowerLimit);
+        $jobs = $this->repository->recentJobsWithManyAttempts($lowerLimit, $upperLimit);
         $jobsFounds = 0;
         foreach ($jobs as $job) {
             $this->assertRegExp(
@@ -478,5 +487,43 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
             $this->jobExecutionMock($customExecutionTime),
             $this->repository
         );
+    }
+
+    private function jobMockWithManyAttemptsAndCustomParameters(
+        Moment $createdAt=null,
+        Moment $endedAt=null,
+        array $workableParameters=null
+    )
+    {
+        $parameters = [
+            '_id' => new \MongoId(),
+            'created_at' => T\MongoDate::from($createdAt),
+            "done" => false,
+            "attempts" => 10,
+            "group" => "generic",
+            "scheduled_at" => T\MongoDate::from($createdAt),
+            "last_execution" => [
+                "started_at" => T\MongoDate::from($createdAt),
+                "ended_at" => T\MongoDate::from($endedAt)
+            ],
+            "retry_policy" => [
+                "class" => "Recruiter\\RetryPolicy\\DoNotDoItAgain",
+                "parameters" => []
+            ]
+        ];
+
+        if (!empty($workableParameters)) {
+            $parameters['workable']['class'] = 'Fake_Workable';
+            $parameters['workable']['method'] = 'execute';
+            $parameters['workable']['parameters'] = $workableParameters;
+        }
+        $job = $this
+                ->getMockBuilder('Recruiter\Job')
+                ->disableOriginalConstructor()
+                ->getMock();
+        $job->expects($this->once())
+            ->method('export')
+            ->will($this->returnValue($parameters));
+        return $job;
     }
 }
