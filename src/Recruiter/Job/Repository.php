@@ -318,21 +318,21 @@ class Repository
     /**
      * @param int
      */
-    public function countDelayedScheduledJobs()
+    public function countDelayedScheduledJobs(T\Moment $lowerLimit)
     {
         return $this->scheduled->count([
             'scheduled_at' => [
-                '$lte' => T\MongoDate::from(T\hour(5)->sinceNow())
+                '$lte' => T\MongoDate::from($lowerLimit)
             ]
         ]);
     }
 
-    public function delayedScheduledJobs()
+    public function delayedScheduledJobs(T\Moment $lowerLimit)
     {
         return $this->map(
             $this->scheduled->find([ 
                 'scheduled_at' => [
-                    '$lte' => T\MongoDate::from(T\hour(5)->sinceNow())
+                    '$lte' => T\MongoDate::from($lowerLimit)
                 ]
             ])
         );

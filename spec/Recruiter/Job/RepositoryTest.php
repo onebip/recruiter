@@ -143,11 +143,11 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         ]);
         $this->aJobToSchedule($this->aJob($workable1))->inBackground()->execute();
         $this->aJobToSchedule($this->aJob($workable2))->inBackground()->execute();
-        $this->clock->now();
+        $lowerLimit = $this->clock->now();
         $fiveHoursInSeconds = 5*60*60;
         $this->clock->driftForwardBySeconds($fiveHoursInSeconds);
         $this->aJobToSchedule($this->aJob($workable3))->inBackground()->execute();
-        $jobs = $this->repository->delayedScheduledJobs();
+        $jobs = $this->repository->delayedScheduledJobs($lowerLimit);
         $jobsFounds = 0;
         foreach ($jobs as $job) {
             $this->assertEquals('delayed_and_unpicked', reset($job->export()['workable']['parameters']));
@@ -160,11 +160,11 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
     {
         $this->aJobToSchedule($this->aJob())->inBackground()->execute();
         $this->aJobToSchedule($this->aJob())->inBackground()->execute();
-        $this->clock->now();
-        $fiveHoursInSeconds = 5*60*60;
-        $this->clock->driftForwardBySeconds($fiveHoursInSeconds);
+        $lowerLimit = $this->clock->now();
+        $twoHoursInSeconds = 2*60*60;
+        $this->clock->driftForwardBySeconds($twoHoursInSeconds);
         $this->aJobToSchedule($this->aJob())->inBackground()->execute();
-        $this->assertEquals(2, $this->repository->countDelayedScheduledJobs());
+        $this->assertEquals(2, $this->repository->countDelayedScheduledJobs($lowerLimit));
     }
 
     public function testCountRecentJobsWithManyAttempts()
