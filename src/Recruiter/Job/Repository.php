@@ -318,21 +318,21 @@ class Repository
     /**
      * @param int
      */
-    public function countExpiredButStillScheduledJobs()
+    public function countDelayedScheduledJobs()
     {
         return $this->scheduled->count([
             'scheduled_at' => [
-                '$lt' => T\MongoDate::from(T\now())
+                '$lte' => T\MongoDate::from(T\hour(5)->sinceNow())
             ]
         ]);
     }
 
-    public function expiredButStillScheduledJobs()
+    public function delayedScheduledJobs()
     {
         return $this->map(
             $this->scheduled->find([ 
                 'scheduled_at' => [
-                    '$lt' => T\MongoDate::from(T\now())
+                    '$lte' => T\MongoDate::from(T\hour(5)->sinceNow())
                 ]
             ])
         );

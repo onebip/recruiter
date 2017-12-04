@@ -130,13 +130,13 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testGetExpiredButStillScheduledJobs()
+    public function testGetDelayedScheduledJobs()
     {
         $workable1 = $this->workableMockWithCustomParameters([
-            'job1' => 'expired_and_unpicked'
+            'job1' => 'delayed_and_unpicked'
         ]);
         $workable2 = $this->workableMockWithCustomParameters([
-            'job2' => 'expired_and_unpicked'
+            'job2' => 'delayed_and_unpicked'
         ]);
         $workable3 = $this->workableMockWithCustomParameters([
             'job3' => 'in_schedulation'
@@ -144,27 +144,27 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->aJobToSchedule($this->aJob($workable1))->inBackground()->execute();
         $this->aJobToSchedule($this->aJob($workable2))->inBackground()->execute();
         $this->clock->now();
-        $oneHourInSeconds = 60*60;
-        $this->clock->driftForwardBySeconds($oneHourInSeconds);
+        $fiveHoursInSeconds = 5*60*60;
+        $this->clock->driftForwardBySeconds($fiveHoursInSeconds);
         $this->aJobToSchedule($this->aJob($workable3))->inBackground()->execute();
-        $jobs = $this->repository->expiredButStillScheduledJobs();
+        $jobs = $this->repository->delayedScheduledJobs();
         $jobsFounds = 0;
         foreach ($jobs as $job) {
-            $this->assertEquals('expired_and_unpicked', reset($job->export()['workable']['parameters']));
+            $this->assertEquals('delayed_and_unpicked', reset($job->export()['workable']['parameters']));
             $jobsFounds++;
         }
         $this->assertEquals(2, $jobsFounds);
     }
 
-    public function testCountExpiredButStillScheduledJobs()
+    public function testCountDelayedScheduledJobs()
     {
         $this->aJobToSchedule($this->aJob())->inBackground()->execute();
         $this->aJobToSchedule($this->aJob())->inBackground()->execute();
         $this->clock->now();
-        $oneHourInSeconds = 60*60;
-        $this->clock->driftForwardBySeconds($oneHourInSeconds);
+        $fiveHoursInSeconds = 5*60*60;
+        $this->clock->driftForwardBySeconds($fiveHoursInSeconds);
         $this->aJobToSchedule($this->aJob())->inBackground()->execute();
-        $this->assertEquals(2, $this->repository->countExpiredButStillScheduledJobs());
+        $this->assertEquals(2, $this->repository->countDelayedScheduledJobs());
     }
 
     public function testCountRecentJobsWithManyAttempts()
