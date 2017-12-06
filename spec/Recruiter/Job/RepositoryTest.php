@@ -180,15 +180,15 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $oneHourInSeconds = 60*60;
         $this->clock->driftForwardBySeconds($oneHourInSeconds);
         $createdAt = $endedAt = $this->clock->now(); 
-        $this->repository->save($this->jobMockWithManyAttemptsAndCustomParameters($createdAt, $endedAt));
-        $this->repository->save($this->jobMockWithManyAttemptsAndCustomParameters($createdAt, $endedAt));
+        $this->repository->save($this->jobMockWithAttemptsAndCustomParameters($createdAt, $endedAt));
+        $this->repository->save($this->jobMockWithAttemptsAndCustomParameters($createdAt, $endedAt));
         $this->aJobToSchedule($this->aJob())->inBackground()->execute();
         $upperLimit = $this->clock->now(); 
         $oneHourInSeconds = 60*60;
         $this->clock->driftForwardBySeconds($oneHourInSeconds);
         $createdAt = $endedAt = $this->clock->now(); 
         $this->repository->archive($this->aJob()->beforeExecution($ed)->beforeExecution($ed)->afterExecution(42, $ed));
-        $this->repository->save($this->jobMockWithManyAttemptsAndCustomParameters($createdAt, $endedAt));
+        $this->repository->save($this->jobMockWithAttemptsAndCustomParameters($createdAt, $endedAt));
         $this->assertEquals(4, $this->repository->countRecentJobsWithManyAttempts($lowerLimit, $upperLimit));
     }
 
@@ -223,8 +223,8 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $oneHourInSeconds = 60*60;
         $this->clock->driftForwardBySeconds($oneHourInSeconds);
         $createdAt = $endedAt = $this->clock->now(); 
-        $this->repository->save($this->jobMockWithManyAttemptsAndCustomParameters($createdAt, $endedAt, $workable4));
-        $this->repository->save($this->jobMockWithManyAttemptsAndCustomParameters($createdAt, $endedAt, $workable5));
+        $this->repository->save($this->jobMockWithAttemptsAndCustomParameters($createdAt, $endedAt, $workable4));
+        $this->repository->save($this->jobMockWithAttemptsAndCustomParameters($createdAt, $endedAt, $workable5));
         $upperLimit = $this->clock->now(); 
         $this->aJobToSchedule($this->aJob($workable6))->inBackground()->execute();
         $jobs = $this->repository->recentJobsWithManyAttempts($lowerLimit, $upperLimit);
@@ -243,25 +243,25 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
     {
         $ed = $this->eventDispatcher;
         $elapseTimeInSecondsBeforeJobsExecutionEnd = 6;
-        $from = $this->clock->now();
-        $scheduledJobSlowOld = $this->jobMockWithCustomExecutionTime(
-            $from,
-            $from,
-            $from->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s'))
+        $createdAt = $endedAt = $this->clock->now(); 
+        $this->repository->save(
+            $this->jobMockWithAttemptsAndCustomParameters(
+                $createdAt,
+                $endedAt->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s'))
+            )
         );
-        $this->repository->save($scheduledJobSlowOld);
         $archivedJobSlowExpired = $this->aJob()->beforeExecution($ed);
         $this->clock->driftForwardBySeconds($elapseTimeInSecondsBeforeJobsExecutionEnd);
         $archivedJobSlowExpired->afterExecution(42, $ed);
         $threeHoursInSeconds = 3*60*60;
         $this->clock->driftForwardBySeconds($threeHoursInSeconds);
-        $lowerLimit = $from = $this->clock->now(); 
-        $scheduledJobSlow = $this->jobMockWithCustomExecutionTime(
-            $from,
-            $from,
-            $from->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s'))
+        $lowerLimit = $createdAt = $endedAt = $this->clock->now(); 
+        $this->repository->save(
+            $this->jobMockWithAttemptsAndCustomParameters(
+                $createdAt,
+                $endedAt->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s'))
+            )
         );
-        $this->repository->save($scheduledJobSlow);
         $archivedJobSlow1 = $this->aJob()->beforeExecution($ed);
         $this->clock->driftForwardBySeconds($elapseTimeInSecondsBeforeJobsExecutionEnd);
         $archivedJobSlow1->afterExecution(42, $ed);
@@ -272,31 +272,33 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->repository->archive($archivedJobSlow2);
         $oneHourInSeconds = 60*60;
         $this->clock->driftForwardBySeconds($oneHourInSeconds);
-        $from = $this->clock->now(); 
+        $createdAt = $endedAt = $this->clock->now(); 
         $archivedJobNotSlow = $this->aJob()->beforeExecution($ed)->afterExecution(42, $ed);
         $this->repository->archive($archivedJobNotSlow);
-        $scheduledJobSlow = $this->jobMockWithCustomExecutionTime(
-            $from,
-            $from,
-            $from->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s'))
+        $this->repository->save(
+            $this->jobMockWithAttemptsAndCustomParameters(
+                $createdAt,
+                $endedAt->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s'))
+            )
         );
-        $this->repository->save($scheduledJobSlow);
         $oneHourInSeconds = 60*60;
         $this->clock->driftForwardBySeconds($oneHourInSeconds);
-        $upperLimit = $from = $this->clock->now(); 
-        $scheduledJob = $this->jobMockWithCustomExecutionTime(
-            $from
+        $upperLimit = $createdAt = $endedAt = $this->clock->now(); 
+        $this->repository->save(
+            $this->jobMockWithAttemptsAndCustomParameters(
+                $createdAt,
+                $endedAt
+            )
         );
-        $this->repository->save($scheduledJob);
         $oneHourInSeconds = 60*60;
         $this->clock->driftForwardBySeconds($oneHourInSeconds);
-        $from = $this->clock->now(); 
-        $scheduledJobSlow = $this->jobMockWithCustomExecutionTime(
-            $from,
-            $lowerLimit,
-            $lowerLimit->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s'))
+        $createdAt = $endedAt = $this->clock->now(); 
+        $this->repository->save(
+            $this->jobMockWithAttemptsAndCustomParameters(
+                $createdAt,
+                $endedAt->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s'))
+            )
         );
-        $this->repository->save($scheduledJobSlow);
         $this->assertEquals(4, $this->repository->countSlowRecentJobs($lowerLimit, $upperLimit));
     }
 
@@ -304,16 +306,14 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
     {
         $ed = $this->eventDispatcher;
         $elapseTimeInSecondsBeforeJobsExecutionEnd = 6;
-        $from = $this->clock->now();
-        $scheduledJobSlowOld = $this->jobMockWithCustomExecutionTime(
-            $from,
-            $from,
-            $from->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s')),
-            $this->workableMockWithCustomParameters([
-                'job_scheduled_old' => 'slow_jobs_scheduled_but_too_old'
-            ])
+        $createdAt = $endedAt = $this->clock->now(); 
+        $this->repository->save(
+            $this->jobMockWithAttemptsAndCustomParameters(
+                $createdAt,
+                $endedAt->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s')),
+                ['job_scheduled_old' => 'slow_jobs_scheduled_but_too_old']
+            )
         );
-        $this->repository->save($scheduledJobSlowOld);
         $archivedJobSlowExpired = $this->aJob($this->workableMockWithCustomParameters([
                 'job_archived_old' => 'slow_job_archived_but_too_old'
             ])
@@ -322,16 +322,14 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $archivedJobSlowExpired->afterExecution(42, $ed);
         $threeHoursInSeconds = 3*60*60;
         $this->clock->driftForwardBySeconds($threeHoursInSeconds);
-        $lowerLimit = $from = $this->clock->now(); 
-        $scheduledJobSlow = $this->jobMockWithCustomExecutionTime(
-            $from,
-            $from,
-            $from->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s')),
-            $this->workableMockWithCustomParameters([
-                'job1_scheduled' => 'slow_job_recent_scheduled'
-            ])
+        $lowerLimit = $createdAt = $endedAt = $this->clock->now(); 
+        $this->repository->save(
+            $this->jobMockWithAttemptsAndCustomParameters(
+                $createdAt,
+                $endedAt->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s')),
+                ['job1_scheduled' => 'slow_job_recent_scheduled']
+            )
         );
-        $this->repository->save($scheduledJobSlow);
         $archivedJobSlow1 = $this->aJob($this->workableMockWithCustomParameters([
                 'job1_archived' => 'slow_job_recent_archived'
             ])
@@ -347,39 +345,38 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->repository->archive($archivedJobSlow2);
         $oneHourInSeconds = 60*60;
         $this->clock->driftForwardBySeconds($oneHourInSeconds);
-        $from = $this->clock->now(); 
+        $createdAt = $endedAt = $this->clock->now(); 
         $archivedJobNotSlow = $this->aJob($this->workableMockWithCustomParameters([
                 'job_archived' => 'job_archived_not_slow'
             ])
         )->beforeExecution($ed)->afterExecution(42, $ed);
-        $scheduledJobSlow = $this->jobMockWithCustomExecutionTime(
-            $from,
-            $from,
-            $from->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s')),
-            $this->workableMockWithCustomParameters([
-                'job2_scheduled' => 'slow_job_recent_scheduled'
-            ])
+        $this->repository->save(
+            $this->jobMockWithAttemptsAndCustomParameters(
+                $createdAt,
+                $endedAt->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s')),
+                ['job2_scheduled' => 'slow_job_recent_scheduled']
+            )
         );
-        $this->repository->save($scheduledJobSlow);
         $oneHourInSeconds = 60*60;
         $this->clock->driftForwardBySeconds($oneHourInSeconds);
-        $upperLimit = $from = $this->clock->now(); 
-        $scheduledJob = $this->jobMockWithCustomExecutionTime(
-            $from
+        $upperLimit = $createdAt = $endedAt = $this->clock->now(); 
+        $this->repository->save(
+            $this->jobMockWithAttemptsAndCustomParameters(
+                $createdAt,
+                $endedAt,
+                ['job_scheduled' => 'job_recent_scheduled_slow']
+            )
         );
-        $this->repository->save($scheduledJob);
         $oneHourInSeconds = 60*60;
         $this->clock->driftForwardBySeconds($oneHourInSeconds);
-        $from = $this->clock->now(); 
-        $scheduledJobSlow = $this->jobMockWithCustomExecutionTime(
-            $from,
-            $from,
-            $from->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s')),
-            $this->workableMockWithCustomParameters([
-                'job2_scheduled' => 'slow_job_recent_scheduled'
-            ])
+        $createdAt = $endedAt = $this->clock->now(); 
+        $this->repository->save(
+            $this->jobMockWithAttemptsAndCustomParameters(
+                $createdAt,
+                $endedAt->after(Interval::parse($elapseTimeInSecondsBeforeJobsExecutionEnd . ' s')),
+                ['job3_scheduled' => 'slow_job_recent_scheduled']
+            )
         );
-        $this->repository->save($scheduledJobSlow);
         $jobs = $this->repository->slowRecentJobs($lowerLimit, $upperLimit);
         $jobsFounds = 0;
         foreach ($jobs as $job) {
@@ -391,6 +388,7 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         }
         $this->assertEquals(4, $jobsFounds);
     }
+
     public function testCleanOldArchived()
     {
         $ed = $this->eventDispatcher;
@@ -435,8 +433,8 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
     private function workableMock()
     {
         return $this
-                ->getMockBuilder('Recruiter\Workable')
-                ->getMock();
+            ->getMockBuilder('Recruiter\Workable')
+            ->getMock();
     }
 
     private function workableMockWithCustomParameters($parameters)
@@ -452,8 +450,8 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
     private function jobExecutionMock($executionParameters)
     {
         $jobExecutionMock = $this
-                ->getMockBuilder('Recruiter\JobExecution')
-                ->getMock();
+            ->getMockBuilder('Recruiter\JobExecution')
+            ->getMock();
         $jobExecutionMock->expects($this->once())
             ->method('export')
             ->will($this->returnValue($executionParameters));
@@ -461,35 +459,7 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         return $jobExecutionMock;
     }
 
-    private function jobMockWithCustomExecutionTime(
-        Moment $scheduledAt,
-        Moment $startedAt=null,
-        Moment $endedAt=null,
-        $workable=null
-    )
-    {
-        if (empty($workable)) {
-            $workable = $this->workableMock();
-        }
-        $customExecutionTime = [
-            'scheduled_at' => T\MongoDate::from($scheduledAt)
-        ];
-        if ($startedAt) {
-            $customExecutionTime['last_execution']['started_at'] = T\MongoDate::from($startedAt);
-        }
-        if ($endedAt) {
-            $customExecutionTime['last_execution']['ended_at'] = T\MongoDate::from($endedAt);
-        }
-        return new Job(
-            $this->aJob($workable)->export(),
-            $workable, 
-            new ExponentialBackoff(100, T\seconds(5)),
-            $this->jobExecutionMock($customExecutionTime),
-            $this->repository
-        );
-    }
-
-    private function jobMockWithManyAttemptsAndCustomParameters(
+    private function jobMockWithAttemptsAndCustomParameters(
         Moment $createdAt=null,
         Moment $endedAt=null,
         array $workableParameters=null

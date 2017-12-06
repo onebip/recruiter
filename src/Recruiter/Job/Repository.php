@@ -280,18 +280,42 @@ class Repository
             ],
         ])['result'];
 
-        return count($archived) + $this->scheduled->count([
-            'scheduled_at' => [
-                '$gte' => T\MongoDate::from($lowerLimit),
-                '$lte' => T\MongoDate::from($upperLimit)
+        $scheduled = $this->scheduled->aggregate([
+            [
+                '$match' => [
+                    'scheduled_at' => [
+                        '$gte' => T\MongoDate::from($lowerLimit),
+                        '$lte' => T\MongoDate::from($upperLimit)
+                    ],
+                    'last_execution.started_at' => [
+                        '$exists' => true,
+                    ],
+                    'last_execution.ended_at' => [
+                        '$exists' => true,
+                    ],
+                ]
             ],
-            'last_execution.started_at' => [
-                '$exists' => true,
+            [
+                '$project' => [
+                    '_id' => '$_id',
+                    'execution_time' => [
+                        '$subtract' => [
+                            '$last_execution.ended_at',
+                            '$last_execution.started_at'
+                        ]
+                    ],
+                ]
             ],
-            'last_execution.ended_at' => [
-                '$exists' => true,
+            [
+                '$match' => [
+                    'execution_time' => [
+                        '$gt' => $secondsToConsiderJobAsSlow*1000 
+                    ]
+                ],
             ],
-        ]);
+        ])['result'];
+
+        return count($archived) + count($scheduled);
     }
 
     /**
@@ -419,18 +443,54 @@ class Repository
         foreach ($archivedArray as $archivedJob) {
             $archived[] = Job::import($archivedJob, $this);
         }
-        $scheduled = $this->map($this->scheduled->find([
-            'scheduled_at' => [
-                '$gte' => T\MongoDate::from($lowerLimit),
-                '$lte' => T\MongoDate::from($upperLimit)
+        $scheduledArray = $this->scheduled->aggregate([
+            [
+                '$match' => [
+                    'scheduled_at' => [
+                        '$gte' => T\MongoDate::from($lowerLimit),
+                        '$lte' => T\MongoDate::from($upperLimit)
+                    ],
+                    'last_execution.started_at' => [
+                        '$exists' => true,
+                    ],
+                    'last_execution.ended_at' => [
+                        '$exists' => true,
+                    ],
+                ]
             ],
-            'last_execution.started_at' => [
-                '$exists' => true,
+            [
+                '$project' => [
+                    '_id' => '$_id',
+                    'execution_time' => [
+                        '$subtract' => [
+                            '$last_execution.ended_at',
+                            '$last_execution.started_at'
+                        ]
+                    ],
+                    'done' => '$done',
+                    'created_at' => '$created_at',
+                    'locked' => '$locked',
+                    'attempts' => '$attempts',
+                    'group' => '$group',
+                    'workable' => '$workable',
+                    'tags' => '$tags',
+                    'scheduled_at' => '$scheduled_at',
+                    'last_execution' => '$last_execution',
+                    'retry_policy' => '$retry_policy',
+                ]
             ],
-            'last_execution.ended_at' => [
-                '$exists' => true,
+            [
+                '$match' => [
+                    'execution_time' => [
+                        '$gt' => $secondsToConsiderJobAsSlow*1000 
+                    ]
+                ],
             ],
-        ]));
+        ])['result'];
+        $scheduled= [];
+        foreach ($scheduledArray as $scheduledJob) {
+            $scheduled[] = Job::import($scheduledJob, $this);
+        }
         return array_merge($archived, $scheduled);
     }
 
