@@ -49,6 +49,11 @@ class WaitStrategy
         return $this;
     }
 
+    public function timeToWait()
+    {
+        return new Interval($this->timeToWait);
+    }
+
     public function timeToWaitAtMost()
     {
         return new Interval($this->timeToWaitAtMost);

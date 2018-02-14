@@ -45,10 +45,12 @@ printf(
     posix_getpid(), date('c')
 );
 while (!askedToStop()) {
+    $rollbackStartAt = microtime(true);
     $rolledBack = $recruiter->rollbackLockedJobs();
+    $rollbackEndAt = microtime(true);
     printf(
-        '[RECRUITER][%d][%s] rolled back %d jobs' . PHP_EOL,
-        posix_getpid(), date('c'), $rolledBack
+        '[RECRUITER][%d][%s] rolled back %d jobs in %fms' . PHP_EOL,
+        posix_getpid(), date('c'), $rolledBack, ($rollbackEndAt - $rollbackStartAt) * 1000
     );
     $pickStartAt = microtime(true);
     list ($assignment, $actualNumber) = $recruiter->assignJobsToWorkers();
@@ -76,6 +78,10 @@ while (!askedToStop()) {
     printf(
         '[RECRUITER][%d][%s] unlocked %d jobs due to dead workers' . PHP_EOL,
         posix_getpid(), date('c'), $unlockedJobs
+    );
+    printf(
+        '[RECRUITER][%d][%s] going to sleep for %s' . PHP_EOL,
+        posix_getpid(), date('c'), $waitStrategy->timeToWait()->format('ms')
     );
     (count($assignment) > 0) ?
         $waitStrategy->reset() :
