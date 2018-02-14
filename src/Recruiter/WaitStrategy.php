@@ -27,7 +27,7 @@ class WaitStrategy
 
     public function goForward()
     {
-        $this->timeToWait =  max(
+        $this->timeToWait = max(
             $this->timeToWait / 2,
             $this->timeToWaitAtLeast
         );
