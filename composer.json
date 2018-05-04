@@ -12,7 +12,7 @@
     }],
     "require": {
         "php": ">=5.6",
-        "psr/log": "1.0.0",
+        "psr/log": "^1.0",
         "gabrielelana/byte-units": "~0.1",
         "ulrichsg/getopt-php": "~2.1",
         "onebip/onebip-array": "dev-master",
