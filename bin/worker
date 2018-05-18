@@ -50,6 +50,16 @@ while (true) {
             posix_getpid(), date('c'), $doneSomeWork
         );
     }
+
+    if (askedToStop()) {
+        if ($worker->retireIfNotAssigned()) {
+            printf(
+                '[WORKER][%d][%s] %s' . PHP_EOL, posix_getpid(), date('c'),
+                'worker retired'
+            );
+            break;
+        }
+    }
     ($doneSomeWork) ?
         $waitStrategy->reset() :
         $waitStrategy->wait()->backOff();
