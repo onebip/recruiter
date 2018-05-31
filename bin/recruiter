@@ -29,22 +29,21 @@ foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
     });
 }
 
-$recruiter->ensureIsTheOnlyOne(
-    $waitStrategy->timeToWaitAtMost(),
-    $otherwise = function($message) {
-        printf(
-            '[RECRUITER][%d][%s] unable to start more than one recruiter at a time, sorry space cowboy... (%s)' . PHP_EOL,
-            posix_getpid(), date('c'), $message
-        );
-        exit(0);
-    }
-);
-
 printf(
     '[RECRUITER][%d][%s] ready to recruit!' . PHP_EOL,
     posix_getpid(), date('c')
 );
 while (!askedToStop()) {
+    if (!$recruiter->becomeMaster($waitStrategy->timeToWaitAtMost())) {
+        printf(
+            '[RECRUITER][%d][%s] going to sleep for %s because I\'m not the master' . PHP_EOL,
+            posix_getpid(), date('c'), $waitStrategy->timeToWait()->format('ms')
+        );
+
+        $waitStrategy->wait()->backOff();
+        continue;
+    }
+
     $rollbackStartAt = microtime(true);
     $rolledBack = $recruiter->rollbackLockedJobs();
     $rollbackEndAt = microtime(true);
@@ -70,7 +69,6 @@ while (!askedToStop()) {
         $actualNumber
     );
     $memoryLimit->ensure($memoryUsage);
-    $recruiter->stillHere($waitStrategy->timeToWaitAtMost());
     $unlockedJobs = $recruiter->retireDeadWorkers(
         new SystemClock(),
         $consideredDeadAfter

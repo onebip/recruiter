@@ -50,27 +50,29 @@ foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
     });
 }
 
-$cleaner->ensureIsTheOnlyOne(
-    $waitStrategy->timeToWaitAtMost(),
-    $otherwise = function($message) {
-        printf(
-            '[CLEANER][%d][%s] unable to start more than one cleaner at a time, sorry space cowboy... (%s)' . PHP_EOL,
-            posix_getpid(), date('c'), $message
-        );
-        exit(0);
-    }
-);
-
 printf(
     '[CLEANER][%d][%s] ready to clean!' . PHP_EOL,
     posix_getpid(), date('c')
 );
 while (!askedToStop()) {
+    if (!$recruiter->becomeMaster($waitStrategy->timeToWaitAtMost())) {
+        printf(
+            '[CLEANER][%d][%s] going to sleep for %s because I\'m not the master' . PHP_EOL,
+            posix_getpid(), date('c'), $waitStrategy->timeToWait()->format('ms')
+        );
+
+        $waitStrategy->wait()->backOff();
+        continue;
+    }
     $numberOfJobsCleaned = $cleaner->cleanArchived($gracePeriod);
     $memoryUsage = ByteUnits\bytes(memory_get_usage());
     printf(
         '[CLEANER][%d][%s][%s] cleaned up %d old jobs from the archive' . PHP_EOL,
         posix_getpid(), date('c'), $memoryUsage->format(), $numberOfJobsCleaned
+    );
+    printf(
+        '[CLEANER][%d][%s] going to sleep for %s' . PHP_EOL,
+        posix_getpid(), date('c'), $waitStrategy->timeToWait()->format('ms')
     );
     if ($numberOfJobsCleaned > 0) {
         $waitStrategy->reset();
@@ -78,7 +80,6 @@ while (!askedToStop()) {
         $waitStrategy->wait()->backOff();
     }
     ensureMemoryLimitsAreRespected($memoryUsage, $memoryLimit);
-    $cleaner->stillHere($waitStrategy->timeToWaitAtMost());
 }
 
 $cleaner->bye();

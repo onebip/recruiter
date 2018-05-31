@@ -37,33 +37,48 @@ class CleanerTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('Recruiter\Cleaner', $this->cleaner);
     }
 
-    public function testShouldInvokeCallableIfLockIsAlreadyAquired()
+    public function testShouldNotBeTheMasterIfBothRefreshAndAcquireFail()
     {
-        $sentinel = false;
-        $otherwise = function ($message) use (&$sentinel) {
-            $sentinel = true;
-        };
+        $lockException = new \Onebip\Concurrency\LockNotAvailableException();
+        $this
+            ->mongoLock
+            ->method('refresh')
+            ->will($this->throwException($lockException));
+
+        $this
+            ->mongoLock
+            ->method('acquire')
+            ->will($this->throwException($lockException));
+
+        $result = $this->cleaner->becomeMaster($this->interval);
+
+        $this->assertFalse($result);
+    }
+
+    public function testShouldBeTheMasterIfRefreshIsOk()
+    {
         $lockException = new \Onebip\Concurrency\LockNotAvailableException();
         $this
             ->mongoLock
             ->method('acquire')
             ->will($this->throwException($lockException));
 
-        $this->cleaner->ensureIsTheOnlyOne($this->interval, $otherwise);
+        $result = $this->cleaner->becomeMaster($this->interval);
 
-        $this->assertTrue($sentinel);
+        $this->assertTrue($result);
     }
 
-    public function testShouldNotInvokeCallableIfLockIsNotAlreadyAcquired()
+    public function testShouldBeTheMasterIfRefreshFailsButAcquireIsOk()
     {
-        $sentinel = false;
-        $otherwise = function ($message) use (&$sentinel) {
-            $sentinel = true;
-        };
+        $lockException = new \Onebip\Concurrency\LockNotAvailableException();
+        $this
+            ->mongoLock
+            ->method('refresh')
+            ->will($this->throwException($lockException));
 
-        $this->cleaner->ensureIsTheOnlyOne($this->interval, $otherwise);
+        $result = $this->cleaner->becomeMaster($this->interval);
 
-        $this->assertFalse($sentinel);
+        $this->assertTrue($result);
     }
 
     public function testDelegatesTheCleanupOfArchivedJobsToTheJobsRepository()
@@ -90,7 +105,7 @@ class CleanerTest extends \PHPUnit_Framework_TestCase
             ->method('refresh')
             ->with($expectedLockExpiration);
 
-        $this->cleaner->stillHere($this->interval);
+        $this->cleaner->becomeMaster($this->interval);
     }
 
     public function testShouldReleaseTheLock()

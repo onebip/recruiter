@@ -20,17 +20,24 @@ class Cleaner
         $this->lock = $lock;
     }
 
-    public function ensureIsTheOnlyOne(Interval $timeToWaitAtMost, callable $otherwise)
+    /**
+     * @step
+     * @return bool it worked
+     */
+    public function becomeMaster(Interval $timeToWaitAtMost): bool
     {
         try {
-            $this->lock->wait(
-                self::POLL_TIME,
-                $timeToWaitAtMost->seconds() * self::WAIT_FACTOR
-            );
-            $this->lock->acquire($this->leaseTimeOfLock($timeToWaitAtMost));
+            $this->lock->refresh($this->leaseTimeOfLock($timeToWaitAtMost));
         } catch(LockNotAvailableException $e) {
-            $otherwise($e->getMessage());
+            try {
+                $this->lock->wait(self::POLL_TIME, $timeToWaitAtMost->seconds() * self::WAIT_FACTOR);
+                $this->lock->acquire($this->leaseTimeOfLock($timeToWaitAtMost));
+            } catch(LockNotAvailableException $e) {
+                return false;
+            }
         }
+
+        return true;
     }
 
     public function cleanArchived(Interval $gracePeriod)
@@ -51,11 +58,6 @@ class Cleaner
     public function bye()
     {
         $this->lock->release(false);
-    }
-
-    public function stillHere(Interval $timeToWaitAtMost)
-    {
-        $this->lock->refresh($this->leaseTimeOfLock($timeToWaitAtMost));
     }
 
     /**
