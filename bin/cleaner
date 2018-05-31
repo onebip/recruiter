@@ -55,7 +55,7 @@ printf(
     posix_getpid(), date('c')
 );
 while (!askedToStop()) {
-    if (!$recruiter->becomeMaster($waitStrategy->timeToWaitAtMost())) {
+    if (!$cleaner->becomeMaster($waitStrategy->timeToWaitAtMost())) {
         printf(
             '[CLEANER][%d][%s] going to sleep for %s because I\'m not the master' . PHP_EOL,
             posix_getpid(), date('c'), $waitStrategy->timeToWait()->format('ms')
