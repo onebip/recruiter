@@ -1,6 +1,7 @@
 <?php
 namespace Recruiter;
 
+use DateTime;
 use MongoDB;
 use Timeless\Interval;
 use Timeless\Moment;
@@ -21,9 +22,7 @@ class Recruiter
     private $lock;
     private $eventDispatcher;
 
-    const WAIT_FACTOR = 6;
-    const LOCK_FACTOR = 10;
-    const POLL_TIME = 5;
+    const POLL_FACTOR = 0.5;
 
     public function __construct(MongoDB $db)
     {
@@ -88,14 +87,19 @@ class Recruiter
      * @step
      * @return bool it worked
      */
-    public function becomeMaster(Interval $timeToWaitAtMost): bool
+    public function becomeMaster(Interval $leaseTime, callable $otherwise = null): bool
     {
+        $pollTime = $this->pollTimeOfLock($leaseTime);
+
         try {
-            $this->lock->refresh($this->leaseTimeOfLock($timeToWaitAtMost));
+            $this->lock->refresh($leaseTime->seconds());
         } catch(LockNotAvailableException $e) {
             try {
-                $this->lock->wait(self::POLL_TIME, $timeToWaitAtMost->seconds() * self::WAIT_FACTOR);
-                $this->lock->acquire($this->leaseTimeOfLock($timeToWaitAtMost));
+                if (! is_null($otherwise)) {
+                    $otherwise(new Interval($pollTime * 1000));
+                }
+                $this->lock->wait($pollTime, $pollTime);
+                $this->lock->acquire($leaseTime->seconds());
             } catch(LockNotAvailableException $e) {
                 return false;
             }
@@ -271,8 +275,8 @@ class Recruiter
     /**
      * @return integer  seconds
      */
-    private function leaseTimeOfLock(Interval $maximumBackoff)
+    private function pollTimeOfLock(Interval $leaseTime)
     {
-        return round($maximumBackoff->seconds() * self::LOCK_FACTOR);
+        return round($leaseTime->seconds() * self::POLL_FACTOR);
     }
 }

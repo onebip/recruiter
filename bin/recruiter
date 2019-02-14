@@ -3,22 +3,25 @@
 
 autoload();
 
+use Onebip\Clock\SystemClock;
+use Onebip\Concurrency\PeriodicalCheck;
 use Recruiter\Cli;
 use Recruiter\Option;
 use Recruiter\Recruiter;
 use Recruiter\Worker;
-use Onebip\Clock\SystemClock;
-use Onebip\Concurrency\PeriodicalCheck;
+use Timeless\Interval;
 
 $cli = new Cli();
 $cli->add('recruiter', new Option\TargetHost('target'));
 $cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '1600ms'));
+$cli->add('lease-time', new Option\LeaseTime('lease-time', '60s'));
 $cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '256MB'));
 $cli->add('considered-dead-after', new Option\ConsideredDeadAfter('considered-dead-after', '30m'));
 $cli->parse();
 
 $recruiter = $cli->get('recruiter');
 $waitStrategy = $cli->get('wait-strategy');
+$leaseTime = $cli->get('lease-time');
 $memoryLimit = $cli->get('memory-limit');
 $consideredDeadAfter = $cli->get('considered-dead-after');
 
@@ -38,13 +41,12 @@ printf(
     posix_getpid(), date('c')
 );
 while (!askedToStop()) {
-    if (!$recruiter->becomeMaster($waitStrategy->timeToWaitAtMost())) {
+    if (!$recruiter->becomeMaster($leaseTime, function ($waitingTime) {
         printf(
             '[RECRUITER][%d][%s] going to sleep for %s because I\'m not the master' . PHP_EOL,
-            posix_getpid(), date('c'), $waitStrategy->timeToWait()->format('ms')
+            posix_getpid(), date('c'), $waitingTime->format('s')
         );
-
-        $waitStrategy->wait()->backOff();
+    })) {
         continue;
     }
 
