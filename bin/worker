@@ -26,6 +26,10 @@ $askedToStop = false;
 
 foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
     pcntl_signal($signal, function($signal) use(&$askedToStop) {
+        printf(
+            '[WORKER][%d][%s] received the signal: `%s`' . PHP_EOL,
+            posix_getpid(), date('c'), $signal
+        );
         $askedToStop = true;
     });
 }
