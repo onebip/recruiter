@@ -3,10 +3,11 @@ namespace Recruiter;
 
 use DateTime;
 use MongoDB;
+use Recruiter\Option\MemoryLimit;
+use Timeless as T;
 use Timeless\Interval;
 use Timeless\Moment;
-use Timeless as T;
-use Recruiter\Option\MemoryLimit;
+use Utils\Chainable;
 
 use Onebip\Clock;
 use Onebip\Concurrency\MongoLock;
@@ -87,25 +88,38 @@ class Recruiter
      * @step
      * @return bool it worked
      */
-    public function becomeMaster(Interval $leaseTime, callable $otherwise = null): bool
+    public function becomeMaster(Interval $leaseTime, callable $listener = null): bool
     {
-        $pollTime = $this->pollTimeOfLock($leaseTime);
-
-        try {
-            $this->lock->refresh($leaseTime->seconds());
-        } catch(LockNotAvailableException $e) {
-            try {
-                if (! is_null($otherwise)) {
-                    $otherwise(new Interval($pollTime * 1000));
-                }
-                $this->lock->wait($pollTime, $pollTime);
-                $this->lock->acquire($leaseTime->seconds());
-            } catch(LockNotAvailableException $e) {
-                return false;
-            }
+        if (is_null($listener)) {
+            $listener = function () {};
         }
 
-        return true;
+        $tryToAcquireLock = function () use ($leaseTime, $listener) {
+            $this->lock->acquire($leaseTime->seconds());
+            $listener('lock.acquired', $leaseTime);
+            return true;
+        };
+
+        $tryToRefreshLock = function () use ($leaseTime, $listener) {
+            $this->lock->refresh($leaseTime->seconds());
+            $listener('lock.refreshed', $leaseTime);
+            return true;
+        };
+
+        $tryToWaitLockExpiration = function () use ($leaseTime, $listener) {
+            $pollTime = $this->pollTimeOfLock($leaseTime);
+            $listener('lock.notAvailable', new Interval($pollTime * 1000));
+            $this->lock->wait($pollTime, $pollTime);
+            return false;
+        };
+
+        return Chainable::avoidException(LockNotAvailableException::class)
+            ->do($tryToAcquireLock)
+            ->or($tryToRefreshLock)
+            ->or($tryToWaitLockExpiration)
+            ->or(function() {return false;})
+            ->done()
+        ;
     }
 
     /**

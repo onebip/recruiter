@@ -36,16 +36,22 @@ foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
     });
 }
 
-printf(
-    '[RECRUITER][%d][%s] ready to recruit!' . PHP_EOL,
-    posix_getpid(), date('c')
-);
 while (!askedToStop()) {
-    if (!$recruiter->becomeMaster($leaseTime, function ($waitingTime) {
-        printf(
-            '[RECRUITER][%d][%s] going to sleep for %s because I\'m not the master' . PHP_EOL,
-            posix_getpid(), date('c'), $waitingTime->format('s')
-        );
+    if (!$recruiter->becomeMaster($leaseTime, function ($event, $waitingTime) {
+        switch ($event) {
+            case 'lock.notAvailable':
+                printf(
+                    '[RECRUITER][%d][%s] going to sleep for %s because I\'m not the master' . PHP_EOL,
+                    posix_getpid(), date('c'), $waitingTime->format('s')
+                );
+            break;
+            case 'lock.acquired':
+                printf(
+                    '[RECRUITER][%d][%s] ready to recruit!' . PHP_EOL,
+                    posix_getpid(), date('c')
+                );
+            break;
+        }
     })) {
         continue;
     }
