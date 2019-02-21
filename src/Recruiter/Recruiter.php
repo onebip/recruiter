@@ -7,7 +7,7 @@ use Recruiter\Option\MemoryLimit;
 use Timeless as T;
 use Timeless\Interval;
 use Timeless\Moment;
-use Utils\Chainable;
+use Recruiter\Utils\Chainable;
 
 use Onebip\Clock;
 use Onebip\Concurrency\MongoLock;

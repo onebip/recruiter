@@ -1,5 +1,5 @@
 <?php
-namespace Utils;
+namespace Recruiter\Utils;
 
 class Chainable
 {
