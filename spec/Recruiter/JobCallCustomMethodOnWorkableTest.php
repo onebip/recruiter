@@ -2,9 +2,12 @@
 
 namespace Recruiter;
 
-class JobCallCustomMethodOnWorkableTest extends \PHPUnit_Framework_TestCase
+use Exception;
+use PHPUnit\Framework\TestCase;
+
+class JobCallCustomMethodOnWorkableTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->workable = $this
             ->getMockBuilder('Recruiter\Workable')
@@ -23,14 +26,12 @@ class JobCallCustomMethodOnWorkableTest extends \PHPUnit_Framework_TestCase
     {
         $this->workable->expects($this->once())->method('send');
         $this->job->methodToCallOnWorkable('send');
-        $this->job->execute($this->getMock('Symfony\Component\EventDispatcher\EventDispatcherInterface'));
+        $this->job->execute($this->createMock('Symfony\Component\EventDispatcher\EventDispatcherInterface'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testRaiseExceptionWhenConfigureMethodToCallOnWorkableThatDoNotExists()
     {
+        $this->expectException(Exception::class);
         $this->job->methodToCallOnWorkable('methodThatDoNotExists');
     }
 

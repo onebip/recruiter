@@ -7,11 +7,12 @@ use Recruiter\Recruiter;
 
 class WorkerRepositoryTest extends BaseAcceptanceTest
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->repository = new Repository(
-            $this->recruiterDb, $this->recruiter
+            $this->recruiterDb,
+            $this->recruiter
         );
     }
 

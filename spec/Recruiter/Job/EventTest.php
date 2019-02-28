@@ -1,7 +1,9 @@
 <?php
 namespace Recruiter\Job;
 
-class EventTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class EventTest extends TestCase
 {
     public function testHasTagReturnsTrueWhenTheExportedJobContainsTheTag()
     {

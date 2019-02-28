@@ -1,17 +1,17 @@
 <?php
 namespace Recruiter\Acceptance;
 
+use Recruiter\Infrastructure\Memory\MemoryLimit;
 use Recruiter\Workable\AlwaysFail;
 use Recruiter\Workable\AlwaysSucceed;
-use Recruiter\Option\MemoryLimit;
 use Recruiter\RetryPolicy\RetryManyTimes;
 use Symfony\Component\EventDispatcher\Event;
 
 class HooksTest extends BaseAcceptanceTest
 {
-    public function setUp()
+    public function setUp(): void
     {
-        $this->memoryLimit = new MemoryLimit('memory-limit', '64MB');
+        $this->memoryLimit = new MemoryLimit('64MB');
         parent::setUp();
     }
 
@@ -20,8 +20,9 @@ class HooksTest extends BaseAcceptanceTest
         $this->events = [];
         $this->recruiter
             ->getEventDispatcher()
-            ->addListener('job.failure.last',
-                function(Event $event) {
+            ->addListener(
+                'job.failure.last',
+                function (Event $event) {
                     $this->events[] = $event;
                 }
             );
@@ -45,8 +46,9 @@ class HooksTest extends BaseAcceptanceTest
         $this->events = [];
         $this->recruiter
             ->getEventDispatcher()
-            ->addListener('job.failure.last',
-                function(Event $event) {
+            ->addListener(
+                'job.failure.last',
+                function (Event $event) {
                     $this->events[] = $event;
                 }
             );
@@ -58,7 +60,7 @@ class HooksTest extends BaseAcceptanceTest
             ->execute();
 
         $runAJob = function ($howManyTimes, $worker) {
-            for ($i = 0; $i < $howManyTimes; ) {
+            for ($i = 0; $i < $howManyTimes;) {
                 list($_, $assigned) = $this->recruiter->assignJobsToWorkers();
                 $worker->work();
                 if ($assigned > 0) {
@@ -80,8 +82,9 @@ class HooksTest extends BaseAcceptanceTest
         $this->events = [];
         $this->recruiter
             ->getEventDispatcher()
-            ->addListener('job.started',
-                function(Event $event) {
+            ->addListener(
+                'job.started',
+                function (Event $event) {
                     $this->events[] = $event;
                 }
             );
@@ -104,8 +107,9 @@ class HooksTest extends BaseAcceptanceTest
         $this->events = [];
         $this->recruiter
             ->getEventDispatcher()
-            ->addListener('job.ended',
-                function(Event $event) {
+            ->addListener(
+                'job.ended',
+                function (Event $event) {
                     $this->events[] = $event;
                 }
             );

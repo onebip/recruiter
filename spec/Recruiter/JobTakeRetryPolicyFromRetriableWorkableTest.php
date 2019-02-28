@@ -2,12 +2,13 @@
 
 namespace Recruiter;
 
+use PHPUnit\Framework\TestCase;
 use Timeless as T;
 use Recruiter\RetryPolicy;
 
-class JobTakeRetryPolicyFromRetriableWorkableTest extends \PHPUnit_Framework_TestCase
+class JobTakeRetryPolicyFromRetriableWorkableTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->repository = $this
             ->getMockBuilder('Recruiter\Job\Repository')
@@ -15,12 +16,12 @@ class JobTakeRetryPolicyFromRetriableWorkableTest extends \PHPUnit_Framework_Tes
             ->getMock();
 
         $this->eventDispatcher = $this
-            ->getMock('Symfony\Component\EventDispatcher\EventDispatcherInterface');
+            ->createMock('Symfony\Component\EventDispatcher\EventDispatcherInterface');
     }
 
     public function testTakeRetryPolicyFromRetriableInstance()
     {
-        $retryPolicy = $this->getMock('Recruiter\RetryPolicy\BaseRetryPolicy');
+        $retryPolicy = $this->createMock('Recruiter\RetryPolicy\BaseRetryPolicy');
         $retryPolicy->expects($this->once())->method('schedule');
 
         $workable = new WorkableThatIsAlsoRetriable($retryPolicy);

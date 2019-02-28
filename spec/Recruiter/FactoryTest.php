@@ -3,10 +3,11 @@
 namespace Recruiter;
 
 use MongoDB;
+use PHPUnit\Framework\TestCase;
 
-class FactoryTest extends \PHPUnit_Framework_TestCase
+class FactoryTest extends TestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->factory = new Factory();
         $this->dbHost = 'localhost:27017';
@@ -30,12 +31,12 @@ class FactoryTest extends \PHPUnit_Framework_TestCase
     public function testShouldOverwriteTheWriteConcernPassedInTheOptions()
     {
         $mongoDb = $this->factory->getMongoDb(
-                $host = 'localhost:27017',
-                $options = [
+            $host = 'localhost:27017',
+            $options = [
                     'connectTimeoutMS' => 1000,
                     'w' => '0',
                 ],
-                $dbName = 'recruiter'
+            $dbName = 'recruiter'
         );
 
         $this->assertEquals('majority', $mongoDb->getWriteConcern()['w']);
@@ -44,9 +45,9 @@ class FactoryTest extends \PHPUnit_Framework_TestCase
     private function creationOfDefaultMongoDb()
     {
         return $this->factory->getMongoDb(
-             $host = $this->dbHost,
-             $options = ['connectTimeoutMS' => 1000],
-             $dbName = $this->dbName
+            $host = $this->dbHost,
+            $options = ['connectTimeoutMS' => 1000],
+            $dbName = $this->dbName
         );
     }
 }

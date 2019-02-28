@@ -3,17 +3,19 @@
 namespace Recruiter\RetryPolicy;
 
 use Exception;
+use InvalidArgumentException;
+use PHPUnit\Framework\TestCase;
 
-class RetriableExceptionFilterTest extends \PHPUnit_Framework_TestCase
+class RetriableExceptionFilterTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
-        $this->filteredRetryPolicy = $this->getMock('Recruiter\RetryPolicy');
+        $this->filteredRetryPolicy = $this->createMock('Recruiter\RetryPolicy');
     }
 
     public function testCallScheduleOnRetriableException()
     {
-        $exception = $this->getMock('Exception');
+        $exception = $this->createMock('Exception');
         $classOfException = get_class($exception);
         $filter = new RetriableExceptionFilter($this->filteredRetryPolicy, [$classOfException]);
 
@@ -26,7 +28,7 @@ class RetriableExceptionFilterTest extends \PHPUnit_Framework_TestCase
 
     public function testDoNotCallScheduleOnNonRetriableException()
     {
-        $exception = $this->getMock('Exception');
+        $exception = $this->createMock('Exception');
         $classOfException = get_class($exception);
         $filter = new RetriableExceptionFilter($this->filteredRetryPolicy, [$classOfException]);
 
@@ -39,7 +41,7 @@ class RetriableExceptionFilterTest extends \PHPUnit_Framework_TestCase
 
     public function testWhenExceptionIsNotRetriableThenArchiveTheJob()
     {
-        $exception = $this->getMock('Exception');
+        $exception = $this->createMock('Exception');
         $classOfException = get_class($exception);
         $filter = new RetriableExceptionFilter($this->filteredRetryPolicy, [$classOfException]);
 
@@ -97,17 +99,18 @@ class RetriableExceptionFilterTest extends \PHPUnit_Framework_TestCase
     {
         $filteredRetryPolicy = new DoNotDoItAgain();
         $filter = new RetriableExceptionFilter($filteredRetryPolicy);
+        $exported = $filter->export();
 
-        $filter = RetriableExceptionFilter::import($filter->export());
+        $filter = RetriableExceptionFilter::import($exported);
         $filter->schedule($this->jobFailedWithException(new Exception('Test')));
+
+        $this->assertEquals($exported, $filter->export());
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     * @expectedExceptionMessage Only subclasses of Exception can be retriable exceptions, 'StdClass' is not
-     */
     public function testRetriableExceptionsThatAreNotExceptions()
     {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Only subclasses of Exception can be retriable exceptions, 'StdClass' is not");
         $retryPolicy = new DoNotDoItAgain();
         $notAnExceptionClass = 'StdClass';
         new RetriableExceptionFilter($retryPolicy, [$notAnExceptionClass]);
