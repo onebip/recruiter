@@ -103,7 +103,7 @@ class CleanerCommand implements RobustCommand
 
     public function name(): string
     {
-        return 'recruiter:cleaner';
+        return 'start:cleaner';
     }
 
     public function description(): string

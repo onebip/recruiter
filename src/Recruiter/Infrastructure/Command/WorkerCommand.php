@@ -96,7 +96,7 @@ class WorkerCommand implements RobustCommand
 
     public function name(): string
     {
-        return 'recruiter:worker';
+        return 'start:worker';
     }
 
     public function description(): string

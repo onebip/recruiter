@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Recruiter\Command;
+namespace Recruiter\Infrastructure\Command;
 
 use ByteUnits;
 use DateTimeImmutable;
@@ -70,8 +70,6 @@ class RecruiterCommand implements RobustCommand
         $assignment = $this->assignJobsToWorkers();
         $this->retireDeadWorkers();
 
-        $this->log(sprintf('going to sleep for %sms', $this->waitStrategy->current()));
-
         return count($assignment) > 0;
     }
 
@@ -135,7 +133,7 @@ class RecruiterCommand implements RobustCommand
 
     public function name(): string
     {
-        return 'recruiter:recruiter';
+        return 'start:recruiter';
     }
 
     public function description(): string
@@ -161,8 +159,6 @@ class RecruiterCommand implements RobustCommand
         $lock = MongoLock::forProgram('RECRUITER', $db->selectCollection('metadata'));
 
         $this->leadershipStrategy = new Dictatorship($lock, Interval::parse($input->getOption('lease-time'))->seconds());
-
-        error_log(var_export(Interval::parse($input->getOption('backoff-from'))->ms(), true));
 
         $this->waitStrategy = new ExponentialBackoffStrategy(
             Interval::parse($input->getOption('backoff-from'))->ms(),
