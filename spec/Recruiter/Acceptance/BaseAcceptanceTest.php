@@ -98,7 +98,7 @@ abstract class BaseAcceptanceTest extends TestCase
             2 => ['pipe', 'w'],
         ];
         $cwd = __DIR__ . '/../../../';
-        $process = proc_open('exec php bin/cleaner --wait-at-least=5s --wait-at-most=1m  >> /tmp/cleaner.log 2>&1', $descriptors, $pipes, $cwd);
+        $process = proc_open('exec php bin/cli.php recruter:cleaner --wait-at-least=5s --wait-at-most=1m --lease-time 20 >> /tmp/cleaner.log 2>&1', $descriptors, $pipes, $cwd);
         Timeout::inSeconds(1, "cleaner to be up")
             ->until(function () use ($process) {
                 $status = proc_get_status($process);
