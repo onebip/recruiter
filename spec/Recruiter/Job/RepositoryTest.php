@@ -1,15 +1,16 @@
 <?php
 namespace Recruiter\Job;
 
-use PHPUnit\Framework\TestCase;
-use Recruiter\Job;
-use Recruiter\Factory;
-use Recruiter\JobToSchedule;
 use DateTime;
+use PHPUnit\Framework\TestCase;
+use Recruiter\Factory;
+use Recruiter\Infrastructure\Persistence\Mongodb\URI as MongoURI;
+use Recruiter\Job;
+use Recruiter\JobToSchedule;
+use Recruiter\RetryPolicy\ExponentialBackoff;
 use Timeless as T;
 use Timeless\Interval;
 use Timeless\Moment;
-use Recruiter\RetryPolicy\ExponentialBackoff;
 
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -18,11 +19,7 @@ class RepositoryTest extends TestCase
     public function setUp(): void
     {
         $factory = new Factory();
-        $this->recruiterDb = $factory->getMongoDb(
-            $hosts = 'localhost:27017',
-            $options = [],
-            $dbName = 'recruiter'
-        );
+        $this->recruiterDb = $factory->getMongoDb(MongoURI::from('mongodb://localhost:27017/recruiter'), []);
         $this->recruiterDb->drop();
         $this->repository = new Repository($this->recruiterDb);
         $this->clock = T\clock()->stop();

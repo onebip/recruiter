@@ -9,21 +9,10 @@ use UnexpectedValueException;
 
 class Factory
 {
-    public function getMongoDb($hosts, $options, $dbName)
-    {
-        $optionsWithMajorityConcern = array_merge($options, ['w' => 'majority']);
-        foreach ($optionsWithMajorityConcern as $optionKey => $optionValue) {
-            if (empty($optionValue)) {
-                unset($optionsWithMajorityConcern[$optionKey]);
-            }
-        }
-        return (new MongoClient($hosts, $optionsWithMajorityConcern))->selectDb($dbName);
-    }
-
-    public function getMongoDb2(URI $uri) //FIXME:! remove the old method and rename this one
+    public function getMongoDb(URI $uri, array $options = []) //FIXME:! remove the old method and rename this one
     {
         try {
-            $optionsWithMajorityConcern = array_merge($uri->options(), ['w' => 'majority']);
+            $optionsWithMajorityConcern = array_merge($uri->options(), $options, ['w' => 'majority']);
             foreach ($optionsWithMajorityConcern as $optionKey => $optionValue) {
                 if (empty($optionValue)) {
                     unset($optionsWithMajorityConcern[$optionKey]);

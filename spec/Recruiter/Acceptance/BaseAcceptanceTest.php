@@ -4,6 +4,7 @@ namespace Recruiter\Acceptance;
 use Onebip\Concurrency\Timeout;
 use PHPUnit\Framework\TestCase;
 use Recruiter\Factory;
+use Recruiter\Infrastructure\Persistence\Mongodb\URI as MongoURI;
 use Recruiter\Recruiter;
 use Recruiter\RetryPolicy;
 use Recruiter\Workable\ShellCommand;
@@ -15,11 +16,7 @@ abstract class BaseAcceptanceTest extends TestCase
     public function setUp(): void
     {
         $factory = new Factory();
-        $this->recruiterDb = $factory->getMongoDb(
-            $hosts = 'localhost:27017',
-            $options = [],
-            $dbName = 'recruiter'
-        );
+        $this->recruiterDb = $factory->getMongoDb(MongoURI::from('mongodb://localhost:27017/recruiter'), []);
         $this->cleanDb();
         $this->files = ['/tmp/recruiter.log', '/tmp/worker.log'];
         $this->cleanLogs();

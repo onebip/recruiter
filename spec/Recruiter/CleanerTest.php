@@ -18,12 +18,7 @@ class CleanerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->mongoLock = $this->createMock('Onebip\Concurrency\Lock');
-
-        $this->cleaner = new Cleaner(
-            $this->jobRepository,
-            $this->mongoLock
-        );
+        $this->cleaner = new Cleaner($this->jobRepository);
 
         $this->interval = Interval::parse('10s');
     }
@@ -36,50 +31,6 @@ class CleanerTest extends TestCase
     public function testShouldCreateCleaner()
     {
         $this->assertInstanceOf('Recruiter\Cleaner', $this->cleaner);
-    }
-
-    public function testShouldNotBeTheMasterIfBothRefreshAndAcquireFail()
-    {
-        $lockException = new \Onebip\Concurrency\LockNotAvailableException();
-        $this
-            ->mongoLock
-            ->method('refresh')
-            ->will($this->throwException($lockException));
-
-        $this
-            ->mongoLock
-            ->method('acquire')
-            ->will($this->throwException($lockException));
-
-        $result = $this->cleaner->becomeMaster($this->interval);
-
-        $this->assertFalse($result);
-    }
-
-    public function testShouldBeTheMasterIfRefreshIsOk()
-    {
-        $lockException = new \Onebip\Concurrency\LockNotAvailableException();
-        $this
-            ->mongoLock
-            ->method('acquire')
-            ->will($this->throwException($lockException));
-
-        $result = $this->cleaner->becomeMaster($this->interval);
-
-        $this->assertTrue($result);
-    }
-
-    public function testShouldBeTheMasterIfRefreshFailsButAcquireIsOk()
-    {
-        $lockException = new \Onebip\Concurrency\LockNotAvailableException();
-        $this
-            ->mongoLock
-            ->method('refresh')
-            ->will($this->throwException($lockException));
-
-        $result = $this->cleaner->becomeMaster($this->interval);
-
-        $this->assertTrue($result);
     }
 
     public function testDelegatesTheCleanupOfArchivedJobsToTheJobsRepository()
@@ -96,26 +47,5 @@ class CleanerTest extends TestCase
             $jobsCleaned,
             $this->cleaner->cleanArchived($this->interval)
         );
-    }
-
-    public function testShouldRefreshTheLock()
-    {
-        $expectedLockExpiration = round($this->interval->seconds() * Cleaner::LOCK_FACTOR);
-        $this->mongoLock
-            ->expects($this->once())
-            ->method('refresh')
-            ->with($expectedLockExpiration);
-
-        $this->cleaner->becomeMaster($this->interval);
-    }
-
-    public function testShouldReleaseTheLock()
-    {
-        $this->mongoLock
-            ->expects($this->once())
-            ->method('release')
-            ->with(false);
-
-        $this->cleaner->bye();
     }
 }

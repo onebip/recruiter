@@ -118,7 +118,7 @@ class WorkerCommand implements RobustCommand
 
     public function init(InputInterface $input): void
     {
-        $db = $this->factory->getMongoDb2(MongoURI::from($input->getOption('target')));
+        $db = $this->factory->getMongoDb(MongoURI::from($input->getOption('target')));
 
         $this->waitStrategy = new ExponentialBackoffStrategy(
             Interval::parse($input->getOption('backoff-from'))->ms(),
