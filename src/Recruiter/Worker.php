@@ -2,16 +2,16 @@
 
 namespace Recruiter;
 
-use MongoId;
+use DateInterval;
 use MongoCollection;
-use Timeless as T;
-use Timeless\Interval;
-use Recruiter\Worker\Repository;
-use Recruiter\Option\MemoryLimit;
-use Recruiter\Option\MemoryLimitExceededException;
+use MongoId;
 use Onebip;
 use Onebip\Clock;
-use DateInterval;
+use Recruiter\Infrastructure\Memory\MemoryLimit;
+use Recruiter\Option\MemoryLimitExceededException;
+use Recruiter\Worker\Repository;
+use Timeless as T;
+use Timeless\Interval;
 
 class Worker
 {
@@ -24,8 +24,7 @@ class Worker
         Recruiter $recruiter,
         Repository $repository,
         MemoryLimit $memoryLimit
-    )
-    {
+    ) {
         $worker = new self(self::initialize(), $recruiter, $repository, $memoryLimit);
         $worker->save();
         return $worker;
@@ -35,7 +34,8 @@ class Worker
     {
         return new self(
             self::fromMongoDocumentToInternalStatus($document),
-            $recruiter, $repository
+            $recruiter,
+            $repository
         );
     }
 
@@ -44,8 +44,7 @@ class Worker
         Recruiter $recruiter,
         Repository $repository,
         MemoryLimit $memoryLimit
-    )
-    {
+    ) {
         $this->status = $status;
         $this->recruiter = $recruiter;
         $this->repository = $repository;
@@ -134,7 +133,7 @@ class Worker
     {
         try {
             $this->memoryLimit->ensure(memory_get_usage());
-        } catch(MemoryLimitExceededException $e) {
+        } catch (MemoryLimitExceededException $e) {
             printf(
                 '[WORKER][%d][%s] worker %s retired after exception: `%s - %s`' . PHP_EOL,
                 posix_getpid(),
@@ -145,7 +144,7 @@ class Worker
             );
 
             $this->retireAfterMemoryLimitIsExceeded();
-            exit (1);
+            exit(1);
         }
         $this->status['working'] = false;
         $this->status['available'] = true;
@@ -217,7 +216,9 @@ class Worker
         if (count($workers) > 0) {
             $unitsOfWorkers = Onebip\array_group_by(
                 $workers,
-                function($worker) {return $worker['work_on'];}
+                function ($worker) {
+                    return $worker['work_on'];
+                }
             );
             foreach ($unitsOfWorkers as $workOn => $workersInUnit) {
                 $workersInUnit = Onebip\array_pluck($workersInUnit, '_id');
@@ -231,7 +232,9 @@ class Worker
     public static function tryToAssignJobsToWorkers(MongoCollection $collection, $jobs, $workers)
     {
         $assignment = array_combine(
-            Onebip\array_map($workers, function($id) {return (string)$id;}),
+            Onebip\array_map($workers, function ($id) {
+                return (string)$id;
+            }),
             $jobs
         );
         $result = $collection->update(

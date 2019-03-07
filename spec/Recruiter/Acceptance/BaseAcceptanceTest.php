@@ -81,7 +81,7 @@ abstract class BaseAcceptanceTest extends TestCase
         $cwd = __DIR__ . '/../../../';
         /* $process = proc_open('exec php bin/recruiter --backoff-to=5s --lease-time 10s --considered-dead-after 20s >> /tmp/recruiter.log 2>&1', $descriptors, $pipes, $cwd); */
 
-        $process = proc_open('exec php bin/renameme.php recruiter:recruiter --backoff-to 5000 --lease-time 10000 --considered-dead-after 20s >> /tmp/recruiter.log 2>&1', $descriptors, $pipes, $cwd);
+        $process = proc_open('exec php bin/cli.php recruiter:recruiter --backoff-to 5000 --lease-time 10 --considered-dead-after 20s >> /tmp/recruiter.log 2>&1', $descriptors, $pipes, $cwd);
         Timeout::inSeconds(1, "recruiter to be up")
             ->until(function () use ($process) {
                 $status = proc_get_status($process);
@@ -115,7 +115,7 @@ abstract class BaseAcceptanceTest extends TestCase
             2 => ['pipe', 'w'],
         ];
         $cwd = __DIR__ . '/../../../';
-        $process = proc_open('exec php bin/renameme.php recruiter:worker --bootstrap=examples/bootstrap.php --backoff-from 100 --backoff-to 15000 >> /tmp/worker.log 2>&1', $descriptors, $pipes, $cwd);
+        $process = proc_open('exec php bin/cli.php recruiter:worker --bootstrap=examples/bootstrap.php --backoff-from 100 --backoff-to 15000 >> /tmp/worker.log 2>&1', $descriptors, $pipes, $cwd);
 
         Timeout::inSeconds(1, "worker to be up")
             ->until(function () use ($process) {

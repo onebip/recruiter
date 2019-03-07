@@ -3,6 +3,9 @@
 namespace Recruiter;
 
 use MongoClient;
+use MongoConnectionException;
+use Recruiter\Infrastructure\Persistence\Mongodb\URI;
+use UnexpectedValueException;
 
 class Factory
 {
@@ -15,5 +18,26 @@ class Factory
             }
         }
         return (new MongoClient($hosts, $optionsWithMajorityConcern))->selectDb($dbName);
+    }
+
+    public function getMongoDb2(URI $uri) //FIXME:! remove the old method and rename this one
+    {
+        try {
+            $optionsWithMajorityConcern = array_merge($uri->options(), ['w' => 'majority']);
+            foreach ($optionsWithMajorityConcern as $optionKey => $optionValue) {
+                if (empty($optionValue)) {
+                    unset($optionsWithMajorityConcern[$optionKey]);
+                }
+            }
+
+            return (new MongoClient($uri->host(), $optionsWithMajorityConcern))->selectDb($uri->dbName());
+        } catch (MongoConnectionException $e) {
+            throw new UnexpectedValueException(
+                sprintf(
+                    "'No MongoDB running at '%s'",
+                    $uri->__toString()
+                )
+            );
+        }
     }
 }

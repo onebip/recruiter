@@ -36,7 +36,8 @@ class TargetHost implements Recruiter\Option
             );
     }
 
-    public function pickFrom(GetOpt\GetOpt $optionsFromCommandLine) {
+    public function pickFrom(GetOpt\GetOpt $optionsFromCommandLine)
+    {
         $recruiter = new Recruiter\Recruiter(
             $this->validate(
                 $optionsFromCommandLine->getOption($this->name)
@@ -51,11 +52,12 @@ class TargetHost implements Recruiter\Option
         try {
             list($hosts, $dbName, $options) = $this->parse($target ?: $this->defaultTarget);
             return $this->factory->getMongoDb($hosts, $options, $dbName);
-        } catch(MongoConnectionException $e) {
+        } catch (MongoConnectionException $e) {
             throw new UnexpectedValueException(
                 sprintf(
                     "Option '%s': no MongoDB running at '%s'",
-                    $this->name, $hosts
+                    $this->name,
+                    $hosts
                 )
             );
         }
@@ -64,15 +66,15 @@ class TargetHost implements Recruiter\Option
     public static function parse($target)
     {
         if (preg_match(
-                '/^'
+            '/^'
                 . '(mongodb:\/\/)?'
                 . '(?P<hosts>[^\/]+)'
                 . '(?:\/(?P<db>\w+))?'
                 . '(\?(?P<qs>.*))?'
                 . '/',
-                $target,
-                $matches
-            )) {
+            $target,
+            $matches
+        )) {
             if (empty($matches['db'])) {
                 $matches['db'] = 'recruiter';
             }
