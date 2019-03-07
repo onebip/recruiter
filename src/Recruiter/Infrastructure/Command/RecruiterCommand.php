@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Recruiter\Infrastructure\Command;
 
 use ByteUnits;
-use DateTimeImmutable;
+use Exception;
 use Geezer\Command\RobustCommand;
 use Geezer\Leadership\Dictatorship;
 use Geezer\Leadership\LeadershipStrategy;
@@ -16,12 +16,10 @@ use Recruiter\Factory;
 use Recruiter\Infrastructure\Memory\MemoryLimit;
 use Recruiter\Infrastructure\Persistence\Mongodb\URI as MongoURI;
 use Recruiter\Recruiter;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
 use Timeless\Interval;
 
 class RecruiterCommand implements RobustCommand
@@ -113,7 +111,7 @@ class RecruiterCommand implements RobustCommand
         $this->log(sprintf('unlocked %d jobs due to dead workers', $unlockedJobs));
     }
 
-    public function shutdown(): bool
+    public function shutdown(?Exception $e = null): bool
     {
         $this->recruiter->bye();
         $this->log('ok, see you space cowboy...');

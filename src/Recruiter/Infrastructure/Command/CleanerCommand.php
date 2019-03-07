@@ -4,26 +4,21 @@ declare(strict_types=1);
 namespace Recruiter\Infrastructure\Command;
 
 use ByteUnits;
-use DateTimeImmutable;
+use Exception;
 use Geezer\Command\RobustCommand;
 use Geezer\Leadership\Dictatorship;
 use Geezer\Leadership\LeadershipStrategy;
 use Geezer\Timing\ExponentialBackoffStrategy;
 use Geezer\Timing\WaitStrategy;
-use Onebip\Clock\SystemClock;
 use Onebip\Concurrency\MongoLock;
 use Recruiter\Cleaner;
 use Recruiter\Factory;
 use Recruiter\Infrastructure\Memory\MemoryLimit;
 use Recruiter\Infrastructure\Persistence\Mongodb\URI as MongoURI;
 use Recruiter\Job\Repository;
-use Recruiter\Recruiter;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
 use Timeless\Interval;
 
 class CleanerCommand implements RobustCommand
@@ -85,7 +80,7 @@ class CleanerCommand implements RobustCommand
         return $numberOfJobsCleaned > 0;
     }
 
-    public function shutdown(): bool
+    public function shutdown(?Exception $e = null): bool
     {
         $this->log('ok, see you space cowboy...');
         return true;
