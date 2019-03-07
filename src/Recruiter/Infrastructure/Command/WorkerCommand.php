@@ -16,7 +16,7 @@ use Onebip\Concurrency\MongoLock;
 use Recruiter\Factory;
 use Recruiter\Infrastructure\Filesystem\BootstrapFile;
 use Recruiter\Infrastructure\Memory\MemoryLimit;
-use Recruiter\Infrastructure\Persistence\Mongodb\URI;
+use Recruiter\Infrastructure\Persistence\Mongodb\URI as MongoURI;
 use Recruiter\Recruiter;
 use Recruiter\Worker;
 use Symfony\Component\Console\Command\Command;
@@ -108,8 +108,8 @@ class WorkerCommand implements RobustCommand
     {
         return new InputDefinition([
             new InputOption('target', 't', InputOption::VALUE_REQUIRED, 'HOSTNAME[:PORT][/DB] MongoDB coordinates', 'mongodb://localhost:27017/recruiter'),
-            new InputOption('backoff-to', 'b', InputOption::VALUE_REQUIRED, 'Upper limit of time to wait before next polling (milliseconds)', '6400'),
-            new InputOption('backoff-from', null, InputOption::VALUE_REQUIRED, 'Time to wait at least before to search for new jobs (milliseconds)', '200'),
+            new InputOption('backoff-to', 'b', InputOption::VALUE_REQUIRED, 'Upper limit of time to wait before next polling', '6400ms'),
+            new InputOption('backoff-from', null, InputOption::VALUE_REQUIRED, 'Time to wait at least before to search for new jobs', '200ms'),
             new InputOption('memory-limit', 'm', InputOption::VALUE_REQUIRED, 'Maximum amount of memory allocable', '64MB'),
             new InputOption('work-on', 'g', InputOption::VALUE_REQUIRED, 'Work only on jobs grouped with this label [%s]'),
             new InputOption('bootstrap', 's', InputOption::VALUE_REQUIRED, 'A PHP file that loads the worker environment'),
@@ -118,9 +118,13 @@ class WorkerCommand implements RobustCommand
 
     public function init(InputInterface $input): void
     {
-        $db = $this->factory->getMongoDb2(URI::from($input->getOption('target')));
+        $db = $this->factory->getMongoDb2(MongoURI::from($input->getOption('target')));
 
-        $this->waitStrategy = new ExponentialBackoffStrategy(intval($input->getOption('backoff-from')), intval($input->getOption('backoff-to')));
+        $this->waitStrategy = new ExponentialBackoffStrategy(
+            Interval::parse($input->getOption('backoff-from'))->ms(),
+            Interval::parse($input->getOption('backoff-to'))->ms()
+        );
+
         $memoryLimit = new MemoryLimit($input->getOption('memory-limit'));
 
         $this->leadershipStrategy = new Anarchy();

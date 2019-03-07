@@ -14,7 +14,7 @@ use Onebip\Clock\SystemClock;
 use Onebip\Concurrency\MongoLock;
 use Recruiter\Factory;
 use Recruiter\Infrastructure\Memory\MemoryLimit;
-use Recruiter\Infrastructure\Persistence\Mongodb\URI;
+use Recruiter\Infrastructure\Persistence\Mongodb\URI as MongoURI;
 use Recruiter\Recruiter;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -147,9 +147,9 @@ class RecruiterCommand implements RobustCommand
     {
         return new InputDefinition([
             new InputOption('target', 't', InputOption::VALUE_REQUIRED, 'HOSTNAME[:PORT][/DB] MongoDB coordinates', 'mongodb://localhost:27017/recruiter'),
-            new InputOption('backoff-to', 'b', InputOption::VALUE_REQUIRED, 'Upper limit of time to wait before next polling (milliseconds)', '1600'),
-            new InputOption('backoff-from', null, InputOption::VALUE_REQUIRED, 'Time to wait at least before to search for new jobs (milliseconds)', '200'),
-            new InputOption('lease-time', 'l', InputOption::VALUE_REQUIRED, 'Maximum time to hold a lock before a refresh (seconds)', 60),
+            new InputOption('backoff-to', 'b', InputOption::VALUE_REQUIRED, 'Upper limit of time to wait before next polling (milliseconds)', '1600ms'),
+            new InputOption('backoff-from', null, InputOption::VALUE_REQUIRED, 'Time to wait at least before to search for new jobs (milliseconds)', '200ms'),
+            new InputOption('lease-time', 'l', InputOption::VALUE_REQUIRED, 'Maximum time to hold a lock before a refresh', '60s'),
             new InputOption('memory-limit', 'm', InputOption::VALUE_REQUIRED, 'Maximum amount of memory allocable', '256MB'),
             new InputOption('considered-dead-after', 'd', InputOption::VALUE_REQUIRED, 'Upper limit of time to wait before considering a worker dead', '30m'),
         ]);
@@ -157,12 +157,17 @@ class RecruiterCommand implements RobustCommand
 
     public function init(InputInterface $input): void
     {
-        $db = $this->factory->getMongoDb2(URI::from($input->getOption('target')));
+        $db = $this->factory->getMongoDb2(MongoURI::from($input->getOption('target')));
         $lock = MongoLock::forProgram('RECRUITER', $db->selectCollection('metadata'));
 
-        $this->leadershipStrategy = new Dictatorship($lock, intval($input->getOption('lease-time')));
+        $this->leadershipStrategy = new Dictatorship($lock, Interval::parse($input->getOption('lease-time'))->seconds());
 
-        $this->waitStrategy = new ExponentialBackoffStrategy(intval($input->getOption('backoff-from')), intval($input->getOption('backoff-to')));
+        error_log(var_export(Interval::parse($input->getOption('backoff-from'))->ms(), true));
+
+        $this->waitStrategy = new ExponentialBackoffStrategy(
+            Interval::parse($input->getOption('backoff-from'))->ms(),
+            Interval::parse($input->getOption('backoff-to'))->ms()
+        );
 
         $this->consideredDeadAfter = Interval::parse($input->getOption('considered-dead-after'));
 
