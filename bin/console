@@ -3,14 +3,21 @@
 require __DIR__.'/../vendor/autoload.php';
 
 use Geezer\Command\RobustCommandRunner;
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use Recruiter\Factory;
 use Recruiter\Infrastructure\Command\CleanerCommand;
 use Recruiter\Infrastructure\Command\RecruiterCommand;
 use Recruiter\Infrastructure\Command\WorkerCommand;
 use Symfony\Component\Console\Application;
 
-// FIXME:!
-$logger = new Psr\Log\NullLogger();
+$output = "[%context.datetime%][%context.hostname%:%context.pid%][%context.program%][%level_name%] %message%\n";
+$formatter = new LineFormatter($output);
+$streamHandler = new StreamHandler('php://stdout', Logger::DEBUG);
+$streamHandler->setFormatter($formatter);
+$logger = new Logger('recruiter');
+$logger->pushHandler($streamHandler);
 
 $application = new Application();
 

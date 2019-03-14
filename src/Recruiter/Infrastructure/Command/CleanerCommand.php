@@ -11,6 +11,8 @@ use Geezer\Leadership\LeadershipStrategy;
 use Geezer\Timing\ExponentialBackoffStrategy;
 use Geezer\Timing\WaitStrategy;
 use Onebip\Concurrency\MongoLock;
+use Psr\Log\LogLevel;
+use Psr\Log\LoggerInterface;
 use Recruiter\Cleaner;
 use Recruiter\Factory;
 use Recruiter\Infrastructure\Memory\MemoryLimit;
@@ -54,11 +56,17 @@ class CleanerCommand implements RobustCommand
     private $gracePeriod;
 
     /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * @param mixed $factory
      */
-    public function __construct($factory)
+    public function __construct($factory, LoggerInterface $logger)
     {
         $this->factory = $factory;
+        $this->logger = $logger;
     }
 
     public function execute(): bool
@@ -136,13 +144,17 @@ class CleanerCommand implements RobustCommand
         $this->cleaner = new Cleaner($jobRepository);
     }
 
-    private function log(string $message): void
+    private function log(string $message, string $level = LogLevel::DEBUG): void
     {
-        printf(
-            '[CLEANER][%d][%s] %s' . PHP_EOL,
-            posix_getpid(),
-            date('c'),
-            $message
+        $this->logger->log(
+            $level,
+            $message,
+            [
+                'hostname' => gethostname(),
+                'program' => $this->name(),
+                'datetime' => date('c'),
+                'pid' => posix_getpid(),
+            ]
         );
     }
 }

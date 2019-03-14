@@ -26,6 +26,7 @@
         "alcaeus/mongo-php-adapter": "^1.1",
         "easywelfare/geezer": "^2.0",
         "gabrielelana/byte-units": "~0.1",
+        "monolog/monolog": ">=1",
         "onebip/onebip-array": "dev-master",
         "onebip/onebip-concurrency": "dev-master",
         "psr/log": "^1.0",

@@ -9,6 +9,8 @@ use Geezer\Leadership\Anarchy;
 use Geezer\Leadership\LeadershipStrategy;
 use Geezer\Timing\ExponentialBackoffStrategy;
 use Geezer\Timing\WaitStrategy;
+use Psr\Log\LogLevel;
+use Psr\Log\LoggerInterface;
 use Recruiter\Factory;
 use Recruiter\Infrastructure\Filesystem\BootstrapFile;
 use Recruiter\Infrastructure\Memory\MemoryLimit;
@@ -43,11 +45,17 @@ class WorkerCommand implements RobustCommand
     private $waitStrategy;
 
     /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * @param mixed $factory
      */
-    public function __construct($factory)
+    public function __construct($factory, LoggerInterface $logger)
     {
         $this->factory = $factory;
+        $this->logger = $logger;
     }
 
     public function execute(): bool
@@ -134,13 +142,17 @@ class WorkerCommand implements RobustCommand
         }
     }
 
-    private function log(string $message): void
+    private function log(string $message, string $level = LogLevel::DEBUG): void
     {
-        printf(
-            '[WORKER][%d][%s] %s' . PHP_EOL,
-            posix_getpid(),
-            date('c'),
-            $message
+        $this->logger->log(
+            $level,
+            $message,
+            [
+                'hostname' => gethostname(),
+                'program' => $this->name(),
+                'datetime' => date('c'),
+                'pid' => posix_getpid(),
+            ]
         );
     }
 }

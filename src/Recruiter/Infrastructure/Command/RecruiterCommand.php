@@ -6,12 +6,15 @@ namespace Recruiter\Infrastructure\Command;
 use ByteUnits;
 use Exception;
 use Geezer\Command\RobustCommand;
+use Geezer\Command\RobustCommandRunner;
 use Geezer\Leadership\Dictatorship;
 use Geezer\Leadership\LeadershipStrategy;
 use Geezer\Timing\ExponentialBackoffStrategy;
 use Geezer\Timing\WaitStrategy;
 use Onebip\Clock\SystemClock;
 use Onebip\Concurrency\MongoLock;
+use Psr\Log\LogLevel;
+use Psr\Log\LoggerInterface;
 use Recruiter\Factory;
 use Recruiter\Infrastructure\Memory\MemoryLimit;
 use Recruiter\Infrastructure\Persistence\Mongodb\URI as MongoURI;
@@ -55,11 +58,22 @@ class RecruiterCommand implements RobustCommand
     private $memoryLimit;
 
     /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
      * @param mixed $factory
      */
-    public function __construct($factory)
+    public function __construct($factory, LoggerInterface $logger)
     {
         $this->factory = $factory;
+        $this->logger = $logger;
+    }
+
+    public static function toRobustCommand(Factory $factory, LoggerInterface $logger): RobustCommandRunner
+    {
+        return new RobustCommandRunner(new static($factory, $logger), $logger);
     }
 
     public function execute(): bool
@@ -171,13 +185,17 @@ class RecruiterCommand implements RobustCommand
         $this->recruiter->createCollectionsAndIndexes();
     }
 
-    private function log(string $message): void
+    private function log(string $message, string $level = LogLevel::DEBUG): void
     {
-        printf(
-            '[RECRUITER][%d][%s] %s' . PHP_EOL,
-            posix_getpid(),
-            date('c'),
-            $message
+        $this->logger->log(
+            $level,
+            $message,
+            [
+                'hostname' => gethostname(),
+                'program' => $this->name(),
+                'datetime' => date('c'),
+                'pid' => posix_getpid(),
+            ]
         );
     }
 }
