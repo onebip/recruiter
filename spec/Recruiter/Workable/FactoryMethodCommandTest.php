@@ -29,7 +29,7 @@ class FactoryMethodCommandTest extends TestCase
         $workable = FactoryMethodCommand::from('Recruiter\Workable\DummyFactory::create')
             ->myObject()
             ->myNeedyMethod();
-        $workable->execute(['retry_number' => 0]);
+        $this->assertEquals(2, $workable->execute(['retry_number' => 2]));
     }
 }
 
@@ -55,6 +55,6 @@ class DummyObject
 
     public function myNeedyMethod(array $retryStatistics)
     {
-        return 42;
+        return $retryStatistics['retry_number'];
     }
 }
