@@ -40,7 +40,7 @@ class WorkableThatIsAlsoRetriable implements Workable, Retriable
         $this->retryWithPolicy = $retryWithPolicy;
     }
 
-    public function retryWithPolicy()
+    public function retryWithPolicy(): RetryPolicy
     {
         return $this->retryWithPolicy;
     }

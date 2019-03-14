@@ -30,12 +30,12 @@ trait RetryPolicyBehaviour
         throw new Exception('RetryPolicy::schedule(JobAfterFailure) need to be implemented');
     }
 
-    public function export()
+    public function export(): array
     {
         return $this->parameters;
     }
 
-    public static function import($parameters)
+    public static function import(array $parameters): RetryPolicy
     {
         return new self($parameters);
     }

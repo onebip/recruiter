@@ -32,21 +32,21 @@ final class RetryForever implements RetryPolicy
         $job->scheduleIn($this->timeToWaitBeforeRetry);
     }
 
-    public function export()
+    public function export(): array
     {
         return [
             'seconds_to_wait_before_retry' => $this->timeToWaitBeforeRetry->seconds()
         ];
     }
 
-    public static function import($parameters)
+    public static function import(array $parameters): RetryPolicy
     {
         return new self(
             T\seconds($parameters['seconds_to_wait_before_retry'])
         );
     }
 
-    public function maximumNumberOfRetries()
+    public function maximumNumberOfRetries(): int
     {
         return PHP_INT_MAX;
     }

@@ -39,7 +39,7 @@ class RetriableExceptionFilter implements RetryPolicy
         }
     }
 
-    public function export()
+    public function export(): array
     {
         return [
             'retriable_exceptions' => $this->retriableExceptions,
@@ -50,7 +50,7 @@ class RetriableExceptionFilter implements RetryPolicy
         ];
     }
 
-    public static function import($parameters)
+    public static function import(array $parameters): RetryPolicy
     {
         $filteredRetryPolicy = $parameters['filtered_retry_policy'];
         $retriableExceptions = $parameters['retriable_exceptions'];
@@ -60,7 +60,7 @@ class RetriableExceptionFilter implements RetryPolicy
         );
     }
 
-    public function maximumNumberOfRetries()
+    public function maximumNumberOfRetries(): int
     {
         return $this->filteredRetryPolicy->maximumNumberOfRetries();
     }
@@ -82,9 +82,10 @@ class RetriableExceptionFilter implements RetryPolicy
         if (!is_null($exception) && is_object($exception)) {
             return Onebip\array_some(
                 $this->retriableExceptions,
-                function($retriableExceptionType) use ($exception) {
+                function ($retriableExceptionType) use ($exception) {
                     return ($exception instanceof $retriableExceptionType);
-                });
+                }
+            );
         }
         return false;
     }

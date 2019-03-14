@@ -14,7 +14,7 @@ interface RetryPolicy
      * - archive the job
      * - do nothing (and the job will be archived anyway)
      *
-     * @param Recruiter\Job $job
+     * @param JobAfterFailure $job
      *
      * @return void
      */
@@ -25,20 +25,20 @@ interface RetryPolicy
      *
      * @return array
      */
-    public function export();
+    public function export(): array;
 
     /**
      * Import retry policy parameters
      *
      * @param array $parameters Previously exported parameters
      *
-     * @return Recruiter\RetryPolicy
+     * @return RetryPolicy
      */
-    public static function import($parameters);
+    public static function import(array $parameters): RetryPolicy;
 
 
     /**
      * @return int maximum number of retries
      */
-    public function maximumNumberOfRetries();
+    public function maximumNumberOfRetries(): int;
 }

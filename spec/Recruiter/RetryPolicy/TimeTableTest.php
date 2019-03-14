@@ -8,6 +8,8 @@ use Timeless as T;
 
 class TimeTableTest extends TestCase
 {
+    private $scheduler;
+
     public function setUp(): void
     {
         $this->scheduler = new TimeTable([

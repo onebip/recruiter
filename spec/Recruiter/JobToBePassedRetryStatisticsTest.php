@@ -30,7 +30,7 @@ class WorkableThatUsesRetryStatistics implements Workable, Retriable
 {
     use WorkableBehaviour;
 
-    public function retryWithPolicy()
+    public function retryWithPolicy(): RetryPolicy
     {
         return new DoNotDoItAgain();
     }

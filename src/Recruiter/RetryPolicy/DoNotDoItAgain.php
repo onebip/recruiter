@@ -15,7 +15,7 @@ class DoNotDoItAgain implements RetryPolicy
         // doing nothing means to avoid to reschedule the job
     }
 
-    public function maximumNumberOfRetries()
+    public function maximumNumberOfRetries(): int
     {
         return 1;
     }
