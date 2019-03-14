@@ -21,8 +21,8 @@ $logger->pushHandler($streamHandler);
 
 $application = new Application();
 
-$application->add(new RobustCommandRunner(new RecruiterCommand(new Factory()), $logger));
-$application->add(new RobustCommandRunner(new WorkerCommand(new Factory()), $logger));
-$application->add(new RobustCommandRunner(new CleanerCommand(new Factory()), $logger));
+$application->add(RecruiterCommand::toRobustCommand(new Factory(), $logger));
+$application->add(WorkerCommand::toRobustCommand(new Factory(), $logger));
+$application->add(CleanerCommand::toRobustCommand(new Factory(), $logger));
 
 $application->run();

@@ -6,6 +6,7 @@ namespace Recruiter\Infrastructure\Command;
 use ByteUnits;
 use Exception;
 use Geezer\Command\RobustCommand;
+use Geezer\Command\RobustCommandRunner;
 use Geezer\Leadership\Dictatorship;
 use Geezer\Leadership\LeadershipStrategy;
 use Geezer\Timing\ExponentialBackoffStrategy;
@@ -67,6 +68,11 @@ class CleanerCommand implements RobustCommand
     {
         $this->factory = $factory;
         $this->logger = $logger;
+    }
+
+    public static function toRobustCommand(Factory $factory, LoggerInterface $logger): RobustCommandRunner
+    {
+        return new RobustCommandRunner(new static($factory, $logger), $logger);
     }
 
     public function execute(): bool
