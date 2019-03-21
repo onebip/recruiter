@@ -2,7 +2,6 @@
 
 namespace Recruiter\Workable;
 
-
 use Recruiter\Workable;
 use Recruiter\WorkableBehaviour;
 
@@ -31,7 +30,7 @@ class LazyBones implements Workable
 
     public function execute()
     {
-        usleep($this->usToSleep + (rand(-$this->usOfDelta, $this->usOfDelta)));
+        usleep($this->usToSleep + (rand(intval(-$this->usOfDelta), $this->usOfDelta)));
     }
 
     public function export()

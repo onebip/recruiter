@@ -8,7 +8,7 @@ use MongoId;
 use Onebip;
 use Onebip\Clock;
 use Recruiter\Infrastructure\Memory\MemoryLimit;
-use Recruiter\Option\MemoryLimitExceededException;
+use Recruiter\Infrastructure\Memory\MemoryLimitExceededException;
 use Recruiter\Worker\Repository;
 use Timeless as T;
 use Timeless\Interval;
@@ -28,15 +28,6 @@ class Worker
         $worker = new self(self::initialize(), $recruiter, $repository, $memoryLimit);
         $worker->save();
         return $worker;
-    }
-
-    public static function import($document, Recruiter $recruiter, Repository $repository)
-    {
-        return new self(
-            self::fromMongoDocumentToInternalStatus($document),
-            $recruiter,
-            $repository
-        );
     }
 
     public function __construct(
