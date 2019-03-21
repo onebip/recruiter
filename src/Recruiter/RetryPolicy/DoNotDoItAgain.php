@@ -2,6 +2,7 @@
 
 namespace Recruiter\RetryPolicy;
 
+use Recruiter\Job;
 use Recruiter\RetryPolicy;
 use Recruiter\RetryPolicyBehaviour;
 use Recruiter\JobAfterFailure;
@@ -15,8 +16,8 @@ class DoNotDoItAgain implements RetryPolicy
         // doing nothing means to avoid to reschedule the job
     }
 
-    public function maximumNumberOfRetries(): int
+    public function isLastRetry(Job $job): bool
     {
-        return 1;
+        return true;
     }
 }

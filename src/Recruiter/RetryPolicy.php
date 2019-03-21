@@ -38,7 +38,7 @@ interface RetryPolicy
 
 
     /**
-     * @return int maximum number of retries
+     * @return bool true if is the last retry
      */
-    public function maximumNumberOfRetries(): int;
+    public function isLastRetry(Job $job): bool;
 }

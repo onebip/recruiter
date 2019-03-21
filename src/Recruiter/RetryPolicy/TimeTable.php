@@ -2,6 +2,7 @@
 
 namespace Recruiter\RetryPolicy;
 
+use Recruiter\Job;
 use Recruiter\RetryPolicy;
 use Recruiter\RetryPolicyBehaviour;
 use Recruiter\JobAfterFailure;
@@ -40,9 +41,11 @@ class TimeTable implements RetryPolicy
         }
     }
 
-    public function maximumNumberOfRetries(): int
+    public function isLastRetry(Job $job): bool
     {
-        return $this->howManyRetries;
+        $timeSpents = array_keys($this->timeTable);
+        $timeSpent = end($timeSpents);
+        return !$this->hasBeenCreatedLessThan($job, $timeSpent);
     }
 
     public function export(): array

@@ -2,6 +2,7 @@
 
 namespace Recruiter\RetryPolicy;
 
+use Recruiter\Job;
 use Recruiter\RetryPolicy;
 use Recruiter\RetryPolicyBehaviour;
 use Recruiter\JobAfterFailure;
@@ -77,8 +78,8 @@ class ExponentialBackoff implements RetryPolicy
         );
     }
 
-    public function maximumNumberOfRetries(): int
+    public function isLastRetry(Job $job): bool
     {
-        return $this->retryHowManyTimes;
+        return $job->numberOfAttempts() > $this->retryHowManyTimes;
     }
 }

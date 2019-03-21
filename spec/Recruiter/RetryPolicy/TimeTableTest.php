@@ -59,16 +59,32 @@ class TimeTableTest extends TestCase
         $this->scheduler->schedule($job);
     }
 
-    public function testCanCalculateTheMaximumNumberOfRetries()
+    public function testIsLastRetryReturnTrueIfJobWasCreatedMoreThanLastTimeSpen()
     {
-        $tt = new TimeTable(['1 minute ago' => '1 second']);
-        $this->assertEquals(60, $tt->maximumNumberOfRetries());
+        $job = $this->createMock('Recruiter\Job');
+        $job->expects($this->any())
+            ->method('createdAt')
+            ->will($this->returnValue(T\hours(3)->ago()));
 
-        $tt = new TimeTable(['1 minute ago' => '1 second', '5 minutes ago' => '1 minute']);
-        $this->assertEquals(64, $tt->maximumNumberOfRetries());
+        $tt = new TimeTable([
+            '1 minute ago' => '1 minute',
+            '1 hour ago' => '1 minute',
+        ]);
+        $this->assertTrue($tt->isLastRetry($job));
+    }
 
-        $tt = new TimeTable(['3 minute ago' => '1 second', '5 minutes ago' => '1 minute']);
-        $this->assertEquals(182, $tt->maximumNumberOfRetries());
+    public function testIsLastRetryReturnFalseIfJobWasCreatedLessThanLastTimeSpen()
+    {
+        $job = $this->createMock('Recruiter\Job');
+        $job->expects($this->any())
+            ->method('createdAt')
+            ->will($this->returnValue(T\hours(3)->ago()));
+
+        $tt = new TimeTable([
+            '1 hour ago' => '1 minute',
+            '24 hours ago' => '1 minute'
+        ]);
+        $this->assertFalse($tt->isLastRetry($job));
     }
 
     public function testInvalidTimeTableBecauseTimeWindow()
