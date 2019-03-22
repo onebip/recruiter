@@ -79,7 +79,7 @@ abstract class BaseAcceptanceTest extends TestCase
             2 => ['pipe', 'w'],
         ];
         $cwd = __DIR__ . '/../../../';
-        $process = proc_open('exec php bin/recruiter --backoff-to=5s --considered-dead-after 20s >> /tmp/recruiter.log 2>&1', $descriptors, $pipes, $cwd);
+        $process = proc_open('exec php bin/recruiter --backoff-to=5s --lease-time 10s --considered-dead-after 20s >> /tmp/recruiter.log 2>&1', $descriptors, $pipes, $cwd);
         Timeout::inSeconds(1, "recruiter to be up")
             ->until(function() use ($process) {
                 $status = proc_get_status($process);
@@ -129,8 +129,8 @@ abstract class BaseAcceptanceTest extends TestCase
         proc_terminate($process, $signal);
         $this->lastStatus = proc_get_status($process);
         Timeout
-            ::inSeconds(30, function() {
-                return 'termination of process: ' . var_export($this->lastStatus, true);
+            ::inSeconds(30, function() use ($signal) {
+                return 'termination of process: ' . var_export($this->lastStatus, true) . " after sending the `$signal` signal to it";
             })
             ->until(function() use ($process) {
                 $this->lastStatus = proc_get_status($process);

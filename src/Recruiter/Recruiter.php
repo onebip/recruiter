@@ -1,11 +1,13 @@
 <?php
 namespace Recruiter;
 
+use DateTime;
 use MongoDB;
+use Recruiter\Option\MemoryLimit;
+use Timeless as T;
 use Timeless\Interval;
 use Timeless\Moment;
-use Timeless as T;
-use Recruiter\Option\MemoryLimit;
+use Recruiter\Utils\Chainable;
 
 use Onebip\Clock;
 use Onebip\Concurrency\MongoLock;
@@ -21,9 +23,7 @@ class Recruiter
     private $lock;
     private $eventDispatcher;
 
-    const WAIT_FACTOR = 6;
-    const LOCK_FACTOR = 10;
-    const POLL_TIME = 5;
+    const POLL_FACTOR = 0.5;
 
     public function __construct(MongoDB $db)
     {
@@ -88,20 +88,38 @@ class Recruiter
      * @step
      * @return bool it worked
      */
-    public function becomeMaster(Interval $timeToWaitAtMost): bool
+    public function becomeMaster(Interval $leaseTime, callable $listener = null): bool
     {
-        try {
-            $this->lock->refresh($this->leaseTimeOfLock($timeToWaitAtMost));
-        } catch(LockNotAvailableException $e) {
-            try {
-                $this->lock->wait(self::POLL_TIME, $timeToWaitAtMost->seconds() * self::WAIT_FACTOR);
-                $this->lock->acquire($this->leaseTimeOfLock($timeToWaitAtMost));
-            } catch(LockNotAvailableException $e) {
-                return false;
-            }
+        if (is_null($listener)) {
+            $listener = function () {};
         }
 
-        return true;
+        $tryToAcquireLock = function () use ($leaseTime, $listener) {
+            $this->lock->acquire($leaseTime->seconds());
+            $listener('lock.acquired', $leaseTime);
+            return true;
+        };
+
+        $tryToRefreshLock = function () use ($leaseTime, $listener) {
+            $this->lock->refresh($leaseTime->seconds());
+            $listener('lock.refreshed', $leaseTime);
+            return true;
+        };
+
+        $tryToWaitLockExpiration = function () use ($leaseTime, $listener) {
+            $pollTime = $this->pollTimeOfLock($leaseTime);
+            $listener('lock.notAvailable', new Interval($pollTime * 1000));
+            $this->lock->wait($pollTime, $pollTime);
+            return false;
+        };
+
+        return Chainable::avoidException(LockNotAvailableException::class)
+            ->do($tryToAcquireLock)
+            ->or($tryToRefreshLock)
+            ->or($tryToWaitLockExpiration)
+            ->or(function() {return false;})
+            ->done()
+        ;
     }
 
     /**
@@ -271,8 +289,8 @@ class Recruiter
     /**
      * @return integer  seconds
      */
-    private function leaseTimeOfLock(Interval $maximumBackoff)
+    private function pollTimeOfLock(Interval $leaseTime)
     {
-        return round($maximumBackoff->seconds() * self::LOCK_FACTOR);
+        return round($leaseTime->seconds() * self::POLL_FACTOR);
     }
 }

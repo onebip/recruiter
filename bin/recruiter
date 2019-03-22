@@ -3,44 +3,56 @@
 
 autoload();
 
+use Onebip\Clock\SystemClock;
+use Onebip\Concurrency\PeriodicalCheck;
 use Recruiter\Cli;
 use Recruiter\Option;
 use Recruiter\Recruiter;
 use Recruiter\Worker;
-use Onebip\Clock\SystemClock;
-use Onebip\Concurrency\PeriodicalCheck;
+use Timeless\Interval;
 
 $cli = new Cli();
 $cli->add('recruiter', new Option\TargetHost('target'));
 $cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '1600ms'));
+$cli->add('lease-time', new Option\LeaseTime('lease-time', '60s'));
 $cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '256MB'));
 $cli->add('considered-dead-after', new Option\ConsideredDeadAfter('considered-dead-after', '30m'));
 $cli->parse();
 
 $recruiter = $cli->get('recruiter');
 $waitStrategy = $cli->get('wait-strategy');
+$leaseTime = $cli->get('lease-time');
 $memoryLimit = $cli->get('memory-limit');
 $consideredDeadAfter = $cli->get('considered-dead-after');
 
 $askedToStop = false;
 foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
     pcntl_signal($signal, function($signal) use(&$askedToStop) {
+        printf(
+            '[RECRUITER][%d][%s] received the signal: `%s`' . PHP_EOL,
+            posix_getpid(), date('c'), $signal
+        );
         $askedToStop = true;
     });
 }
 
-printf(
-    '[RECRUITER][%d][%s] ready to recruit!' . PHP_EOL,
-    posix_getpid(), date('c')
-);
 while (!askedToStop()) {
-    if (!$recruiter->becomeMaster($waitStrategy->timeToWaitAtMost())) {
-        printf(
-            '[RECRUITER][%d][%s] going to sleep for %s because I\'m not the master' . PHP_EOL,
-            posix_getpid(), date('c'), $waitStrategy->timeToWait()->format('ms')
-        );
-
-        $waitStrategy->wait()->backOff();
+    if (!$recruiter->becomeMaster($leaseTime, function ($event, $waitingTime) {
+        switch ($event) {
+            case 'lock.notAvailable':
+                printf(
+                    '[RECRUITER][%d][%s] going to sleep for %s because I\'m not the master' . PHP_EOL,
+                    posix_getpid(), date('c'), $waitingTime->format('s')
+                );
+            break;
+            case 'lock.acquired':
+                printf(
+                    '[RECRUITER][%d][%s] ready to recruit!' . PHP_EOL,
+                    posix_getpid(), date('c')
+                );
+            break;
+        }
+    })) {
         continue;
     }
 
