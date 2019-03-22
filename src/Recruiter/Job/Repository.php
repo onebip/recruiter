@@ -65,10 +65,7 @@ class Repository
         )['n'];
     }
 
-    /**
-     * @param int
-     */
-    public function countArchived()
+    public function countArchived(): int
     {
         return $this->archived->count();
     }
@@ -99,8 +96,7 @@ class Repository
                 'created_at' => [
                     '$lte' => T\MongoDate::from($upperLimit),
                 ]
-            ]
-        );
+            ]);
         return $result['ok'] ? $result['n'] : 0;
     }
 
@@ -109,8 +105,7 @@ class Repository
         T\Moment $at = null,
         T\Moment $from = null,
         array $query = []
-    )
-    {
+    ) {
         if ($at === null) {
             $at = T\now();
         }
@@ -222,7 +217,7 @@ class Repository
             $throughputPerMinute = 0.0;
             $averageLatency = 0.0;
             $averageExecutionTime = 0;
-        } else if (count($document['result']) === 1) {
+        } elseif (count($document['result']) === 1) {
             $throughputPerMinute = (float) $document['result'][0]['throughput'];
             $averageLatency = $document['result'][0]['latency'] / 1000;
             $averageExecutionTime = $document['result'][0]['execution_time'] / 1000;
@@ -243,15 +238,11 @@ class Repository
         ];
     }
 
-    /**
-     * @param int
-     */
     public function countSlowRecentJobs(
         T\Moment $lowerLimit,
         T\Moment $upperLimit,
-        $secondsToConsiderJobAsSlow=5
-    )
-    {
+        $secondsToConsiderJobAsSlow = 5
+    ): int {
         return count(
             $this->slowArchivedRecentJobs(
                 $lowerLimit,
@@ -267,29 +258,22 @@ class Repository
         );
     }
 
-    /**
-     * @param int
-     */
     public function countRecentJobsWithManyAttempts(
         T\Moment $lowerLimit,
         T\Moment $upperLimit
-    )
-    {
+    ): int {
         return $this->countRecentArchivedOrScheduledJobsWithManyAttempts(
-            $lowerLimit, 
+            $lowerLimit,
             $upperLimit,
             'archived'
         ) + $this->countRecentArchivedOrScheduledJobsWithManyAttempts(
-            $lowerLimit, 
+            $lowerLimit,
             $upperLimit,
             'scheduled'
         );
     }
 
-    /**
-     * @param int
-     */
-    public function countDelayedScheduledJobs(T\Moment $lowerLimit)
+    public function countDelayedScheduledJobs(T\Moment $lowerLimit): int
     {
         return $this->scheduled->count([
             'scheduled_at' => [
@@ -301,7 +285,7 @@ class Repository
     public function delayedScheduledJobs(T\Moment $lowerLimit)
     {
         return $this->map(
-            $this->scheduled->find([ 
+            $this->scheduled->find([
                 'scheduled_at' => [
                     '$lte' => T\MongoDate::from($lowerLimit)
                 ]
@@ -312,18 +296,17 @@ class Repository
     public function recentJobsWithManyAttempts(
         T\Moment $lowerLimit,
         T\Moment $upperLimit
-    )
-    {
+    ) {
         $archived = $this->map(
             $this->recentArchivedOrScheduledJobsWithManyAttempts(
-                $lowerLimit, 
+                $lowerLimit,
                 $upperLimit,
                 'archived'
             )
         );
         $scheduled = $this->map(
             $this->recentArchivedOrScheduledJobsWithManyAttempts(
-                $lowerLimit, 
+                $lowerLimit,
                 $upperLimit,
                 'scheduled'
             )
@@ -334,9 +317,8 @@ class Repository
     public function slowRecentJobs(
         T\Moment $lowerLimit,
         T\Moment $upperLimit,
-        $secondsToConsiderJobAsSlow=5
-    )
-    {
+        $secondsToConsiderJobAsSlow = 5
+    ) {
         $archived= [];
         $archivedArray = $this->slowArchivedRecentJobs(
             $lowerLimit,
@@ -357,13 +339,12 @@ class Repository
         }
         return array_merge($archived, $scheduled);
     }
-    
+
     private function slowArchivedRecentJobs(
         T\Moment $lowerLimit,
         T\Moment $upperLimit,
         $secondsToConsiderJobAsSlow
-    )
-    {
+    ) {
         return $this->archived->aggregate([
             [
                 '$match' => [
@@ -396,7 +377,7 @@ class Repository
             [
                 '$match' => [
                     'execution_time' => [
-                        '$gt' => $secondsToConsiderJobAsSlow*1000 
+                        '$gt' => $secondsToConsiderJobAsSlow*1000
                     ]
                 ],
             ],
@@ -407,8 +388,7 @@ class Repository
         T\Moment $lowerLimit,
         T\Moment $upperLimit,
         $secondsToConsiderJobAsSlow
-    )
-    {
+    ) {
         return $this->scheduled->aggregate([
             [
                 '$match' => [
@@ -448,7 +428,7 @@ class Repository
             [
                 '$match' => [
                     'execution_time' => [
-                        '$gt' => $secondsToConsiderJobAsSlow*1000 
+                        '$gt' => $secondsToConsiderJobAsSlow*1000
                     ]
                 ],
             ],
@@ -459,21 +439,19 @@ class Repository
         T\Moment $lowerLimit,
         T\Moment $upperLimit,
         $collectionName
-    )
-    {
+    ) {
         return $this->recentArchivedOrScheduledJobsWithManyAttempts(
             $lowerLimit,
             $upperLimit,
             $collectionName
-        )->count();       
+        )->count();
     }
 
     private function recentArchivedOrScheduledJobsWithManyAttempts(
         T\Moment $lowerLimit,
         T\Moment $upperLimit,
         $collectionName
-    )
-    {
+    ) {
         return $this->{$collectionName}->find([
             'last_execution.ended_at' => [
                 '$gte' => T\MongoDate::from($lowerLimit),

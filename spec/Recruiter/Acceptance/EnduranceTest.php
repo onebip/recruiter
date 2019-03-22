@@ -16,7 +16,7 @@ class EnduranceTest extends BaseAcceptanceTest
 {
     use Eris\TestTrait;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->jobRepository = new Repository($this->recruiterDb);
@@ -31,12 +31,12 @@ class EnduranceTest extends BaseAcceptanceTest
             ->forAll(
                 Generator\bind(
                     Generator\choose(1, 4),
-                    function($workers) {
+                    function ($workers) {
                         return Generator\tuple(
                             Generator\constant($workers),
                             Generator\seq(Generator\oneOf(
                                 Generator\map(
-                                    function($durationAndTag) {
+                                    function ($durationAndTag) {
                                         list($duration, $tag) = $durationAndTag;
                                         return ['enqueueJob', $duration, $tag];
                                     },
@@ -46,13 +46,13 @@ class EnduranceTest extends BaseAcceptanceTest
                                     )
                                 ),
                                 Generator\map(
-                                    function($workerIndex) {
+                                    function ($workerIndex) {
                                         return ['restartWorkerGracefully', $workerIndex];
                                     },
                                     Generator\choose(0, $workers - 1)
                                 ),
                                 Generator\map(
-                                    function($workerIndex) {
+                                    function ($workerIndex) {
                                         return ['restartWorkerByKilling', $workerIndex];
                                     },
                                     Generator\choose(0, $workers - 1)
@@ -60,7 +60,7 @@ class EnduranceTest extends BaseAcceptanceTest
                                 Generator\constant('restartRecruiterGracefully'),
                                 Generator\constant('restartRecruiterByKilling'),
                                 Generator\map(
-                                    function($milliseconds) {
+                                    function ($milliseconds) {
                                         return ['sleep', $milliseconds];
                                     },
                                     Generator\choose(1, 1000)
@@ -73,7 +73,7 @@ class EnduranceTest extends BaseAcceptanceTest
             ->hook(Listener\log('/tmp/recruiter-test-iterations.log'))
             ->hook(Listener\collectFrequencies())
             ->disableShrinking()
-            ->then(function($tuple) {
+            ->then(function ($tuple) {
                 list ($workers, $actions) = $tuple;
                 $this->clean();
                 $this->start($workers);
@@ -94,11 +94,11 @@ class EnduranceTest extends BaseAcceptanceTest
                 $estimatedTime = max(count($actions) * 4, 60);
                 Timeout::inSeconds(
                     $estimatedTime,
-                    function() {
+                    function () {
                         return "all $this->jobs jobs to be performed. Now is " . date('c') . " Logs: " . $this->files();
                     }
                 )
-                    ->until(function() {
+                    ->until(function () {
                         return $this->jobRepository->countArchived() === $this->jobs;
                     });
 
@@ -125,7 +125,8 @@ class EnduranceTest extends BaseAcceptanceTest
             $this->actionLog,
             sprintf(
                 "[ACTIONS][PHPUNIT][%s] %s" . PHP_EOL,
-                date('c'), json_encode($action)
+                date('c'),
+                json_encode($action)
             ),
             FILE_APPEND
         );

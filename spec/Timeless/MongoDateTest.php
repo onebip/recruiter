@@ -3,8 +3,9 @@ namespace Timeless;
 
 use Eris;
 use Eris\Generator;
+use PHPUnit\Framework\TestCase;
 
-class MongoDateTest extends \PHPUnit_Framework_TestCase
+class MongoDateTest extends TestCase
 {
     use Eris\TestTrait;
 
@@ -14,7 +15,7 @@ class MongoDateTest extends \PHPUnit_Framework_TestCase
             ->forAll(
                 Generator\choose(0, 1500 * 1000 * 1000)
             )
-            ->then(function($milliseconds) {
+            ->then(function ($milliseconds) {
                 $moment = new Moment($milliseconds);
                 $this->assertEquals(
                     $moment,

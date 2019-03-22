@@ -1,36 +1,30 @@
 <?php
 namespace Recruiter;
 
-use DateTime;
 use MongoDB;
-use Recruiter\Option\MemoryLimit;
+use Onebip\Clock;
+use Onebip\Concurrency\LockNotAvailableException;
+use Onebip\Concurrency\MongoLock;
+use Recruiter\Infrastructure\Memory\MemoryLimit;
+use Recruiter\Utils\Chainable;
+use RuntimeException;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Timeless as T;
 use Timeless\Interval;
 use Timeless\Moment;
-use Recruiter\Utils\Chainable;
-
-use Onebip\Clock;
-use Onebip\Concurrency\MongoLock;
-use Onebip\Concurrency\LockNotAvailableException;
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use RuntimeException;
 
 class Recruiter
 {
     private $db;
     private $jobs;
     private $workers;
-    private $lock;
     private $eventDispatcher;
-
-    const POLL_FACTOR = 0.5;
 
     public function __construct(MongoDB $db)
     {
         $this->db = $db;
         $this->jobs = new Job\Repository($db);
         $this->workers = new Worker\Repository($db, $this);
-        $this->lock = MongoLock::forProgram('RECRUITER', $db->selectCollection('metadata'));
         $this->eventDispatcher = new EventDispatcher();
     }
 
@@ -86,44 +80,6 @@ class Recruiter
 
     /**
      * @step
-     * @return bool it worked
-     */
-    public function becomeMaster(Interval $leaseTime, callable $listener = null): bool
-    {
-        if (is_null($listener)) {
-            $listener = function () {};
-        }
-
-        $tryToAcquireLock = function () use ($leaseTime, $listener) {
-            $this->lock->acquire($leaseTime->seconds());
-            $listener('lock.acquired', $leaseTime);
-            return true;
-        };
-
-        $tryToRefreshLock = function () use ($leaseTime, $listener) {
-            $this->lock->refresh($leaseTime->seconds());
-            $listener('lock.refreshed', $leaseTime);
-            return true;
-        };
-
-        $tryToWaitLockExpiration = function () use ($leaseTime, $listener) {
-            $pollTime = $this->pollTimeOfLock($leaseTime);
-            $listener('lock.notAvailable', new Interval($pollTime * 1000));
-            $this->lock->wait($pollTime, $pollTime);
-            return false;
-        };
-
-        return Chainable::avoidException(LockNotAvailableException::class)
-            ->do($tryToAcquireLock)
-            ->or($tryToRefreshLock)
-            ->or($tryToWaitLockExpiration)
-            ->or(function() {return false;})
-            ->done()
-        ;
-    }
-
-    /**
-     * @step
      * @return integer  how many
      */
     public function rollbackLockedJobs()
@@ -137,7 +93,6 @@ class Recruiter
      */
     public function bye()
     {
-        $this->lock->release();
     }
 
     public function assignJobsToWorkers()
@@ -185,12 +140,15 @@ class Recruiter
                 throw new RuntimeException("Conflicting assignments: current were " . var_export($assignments, true) . " and we want to also assign " . var_export($newAssignments, true));
             }
             $assignments = array_merge(
-                $assignments, $newAssignments
+                $assignments,
+                $newAssignments
             );
             $totalActualAssignments += $actualAssignmentsNumber;
         }
         return [
-            array_map(function($value) { return (string) $value; }, $assignments),
+            array_map(function ($value) {
+                return (string) $value;
+            }, $assignments),
             $totalActualAssignments
         ];
     }
@@ -284,13 +242,5 @@ class Recruiter
         $workers = array_slice($workers, 0, $assignments);
         $jobs = array_slice($jobs, 0, $assignments);
         return [$assignments, $jobs, $workers];
-    }
-
-    /**
-     * @return integer  seconds
-     */
-    private function pollTimeOfLock(Interval $leaseTime)
-    {
-        return round($leaseTime->seconds() * self::POLL_FACTOR);
     }
 }

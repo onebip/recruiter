@@ -4,20 +4,19 @@ namespace Recruiter\Acceptance;
 use Onebip\Concurrency\Timeout;
 use PHPUnit\Framework\TestCase;
 use Recruiter\Factory;
+use Recruiter\Infrastructure\Persistence\Mongodb\URI as MongoURI;
 use Recruiter\Recruiter;
 use Recruiter\RetryPolicy;
 use Recruiter\Workable\ShellCommand;
 
 abstract class BaseAcceptanceTest extends TestCase
 {
-    public function setUp()
+    protected $recruiterDb;
+
+    public function setUp(): void
     {
         $factory = new Factory();
-        $this->recruiterDb = $factory->getMongoDb(
-            $hosts = 'localhost:27017',
-            $options = [],
-            $dbName = 'recruiter'
-        );
+        $this->recruiterDb = $factory->getMongoDb(MongoURI::from('mongodb://localhost:27017/recruiter'), []);
         $this->cleanDb();
         $this->files = ['/tmp/recruiter.log', '/tmp/worker.log'];
         $this->cleanLogs();
@@ -31,7 +30,7 @@ abstract class BaseAcceptanceTest extends TestCase
         $this->processWorkers = [];
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->terminateProcesses(SIGKILL);
     }
@@ -66,7 +65,7 @@ abstract class BaseAcceptanceTest extends TestCase
     protected function waitForNumberOfWorkersToBe($expectedNumber)
     {
         Timeout::inSeconds(1, "workers to be $expectedNumber")
-            ->until(function() use ($expectedNumber) {
+            ->until(function () use ($expectedNumber) {
                 return $this->numberOfWorkers() == $expectedNumber;
             });
     }
@@ -79,9 +78,11 @@ abstract class BaseAcceptanceTest extends TestCase
             2 => ['pipe', 'w'],
         ];
         $cwd = __DIR__ . '/../../../';
-        $process = proc_open('exec php bin/recruiter --backoff-to=5s --lease-time 10s --considered-dead-after 20s >> /tmp/recruiter.log 2>&1', $descriptors, $pipes, $cwd);
+        /* $process = proc_open('exec php bin/recruiter --backoff-to=5s --lease-time 10s --considered-dead-after 20s >> /tmp/recruiter.log 2>&1', $descriptors, $pipes, $cwd); */
+
+        $process = proc_open('exec php bin/recruiter start:recruiter --backoff-to 5000ms --lease-time 10s --considered-dead-after 20s >> /tmp/recruiter.log 2>&1', $descriptors, $pipes, $cwd);
         Timeout::inSeconds(1, "recruiter to be up")
-            ->until(function() use ($process) {
+            ->until(function () use ($process) {
                 $status = proc_get_status($process);
                 return $status['running'];
             });
@@ -96,9 +97,9 @@ abstract class BaseAcceptanceTest extends TestCase
             2 => ['pipe', 'w'],
         ];
         $cwd = __DIR__ . '/../../../';
-        $process = proc_open('exec php bin/cleaner --wait-at-least=5s --wait-at-most=1m  >> /tmp/cleaner.log 2>&1', $descriptors, $pipes, $cwd);
+        $process = proc_open('exec php bin/recruiter start:cleaner --wait-at-least=5s --wait-at-most=1m --lease-time 20s >> /tmp/cleaner.log 2>&1', $descriptors, $pipes, $cwd);
         Timeout::inSeconds(1, "cleaner to be up")
-            ->until(function() use ($process) {
+            ->until(function () use ($process) {
                 $status = proc_get_status($process);
                 return $status['running'];
             });
@@ -113,9 +114,10 @@ abstract class BaseAcceptanceTest extends TestCase
             2 => ['pipe', 'w'],
         ];
         $cwd = __DIR__ . '/../../../';
-        $process = proc_open('exec php bin/worker --bootstrap=examples/bootstrap.php --backoff-to 15s >> /tmp/worker.log 2>&1', $descriptors, $pipes, $cwd);
+        $process = proc_open('exec php bin/recruiter start:worker --bootstrap=examples/bootstrap.php --backoff-from 100ms --backoff-to 15000ms >> /tmp/worker.log 2>&1', $descriptors, $pipes, $cwd);
+
         Timeout::inSeconds(1, "worker to be up")
-            ->until(function() use ($process) {
+            ->until(function () use ($process) {
                 $status = proc_get_status($process);
                 return $status['running'];
             });
@@ -129,10 +131,10 @@ abstract class BaseAcceptanceTest extends TestCase
         proc_terminate($process, $signal);
         $this->lastStatus = proc_get_status($process);
         Timeout
-            ::inSeconds(30, function() use ($signal) {
+            ::inSeconds(30, function () use ($signal) {
                 return 'termination of process: ' . var_export($this->lastStatus, true) . " after sending the `$signal` signal to it";
             })
-            ->until(function() use ($process) {
+            ->until(function () use ($process) {
                 $this->lastStatus = proc_get_status($process);
                 return $this->lastStatus['running'] == false;
             });

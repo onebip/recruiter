@@ -18,95 +18,95 @@ class Interval
 
     public function __construct($ms)
     {
-        $this->ms = $ms;
+        $this->ms = intval($ms);
     }
 
-    public function us()
+    public function us(): int
     {
         return $this->ms * 1000;
     }
 
-    public function microseconds()
+    public function microseconds(): int
     {
         return $this->ms * 1000;
     }
 
-    public function ms()
+    public function ms(): int
     {
         return $this->ms;
     }
 
-    public function milliseconds()
+    public function milliseconds(): int
     {
         return $this->ms;
     }
 
-    public function seconds()
+    public function seconds(): int
     {
         return (int) floor($this->ms / self::MILLISECONDS_IN_SECONDS);
     }
 
-    public function minutes()
+    public function minutes(): int
     {
         return (int) floor($this->ms / self::MILLISECONDS_IN_MINUTES);
     }
 
-    public function hours()
+    public function hours(): int
     {
         return (int) floor($this->ms / self::MILLISECONDS_IN_HOURS);
     }
 
-    public function days()
+    public function days(): int
     {
         return (int) floor($this->ms / self::MILLISECONDS_IN_DAYS);
     }
 
-    public function weeks()
+    public function weeks(): int
     {
         return (int) floor($this->ms / self::MILLISECONDS_IN_WEEKS);
     }
 
-    public function months()
+    public function months(): int
     {
         return (int) floor($this->ms / self::MILLISECONDS_IN_MONTHS);
     }
 
-    public function years()
+    public function years(): int
     {
         return (int) floor($this->ms / self::MILLISECONDS_IN_YEARS);
     }
 
-    public function ago()
+    public function ago(): Moment
     {
         return $this->since(now());
     }
 
-    public function sinceNow()
+    public function sinceNow(): Moment
     {
         return $this->since(now());
     }
 
-    public function fromNow()
+    public function fromNow(): Moment
     {
         return $this->from(now());
     }
 
-    public function since(Moment $reference)
+    public function since(Moment $reference): Moment
     {
         return $reference->before($this);
     }
 
-    public function from(Moment $reference)
+    public function from(Moment $reference): Moment
     {
         return $reference->after($this);
     }
 
-    public function multiplyBy($multiplier)
+    public function multiplyBy($multiplier): Self
     {
         return new self($this->ms * $multiplier);
     }
 
-    public function add(Interval $interval)
+    public function add(Interval $interval): Self
     {
         return new self($this->ms + $interval->ms);
     }

@@ -1,129 +1,34 @@
 #!/usr/bin/env php
 <?php
+foreach (array(__DIR__ . '/../../../autoload.php', __DIR__ . '/../../vendor/autoload.php', __DIR__ . '/../vendor/autoload.php') as $file) {
+    if (file_exists($file)) {
+        require $file;
 
-autoload();
-
-use Onebip\Clock\SystemClock;
-use Onebip\Concurrency\PeriodicalCheck;
-use Recruiter\Cli;
-use Recruiter\Option;
-use Recruiter\Recruiter;
-use Recruiter\Worker;
-use Timeless\Interval;
-
-$cli = new Cli();
-$cli->add('recruiter', new Option\TargetHost('target'));
-$cli->add('wait-strategy', new Option\WaitStrategy('backoff-to', '1600ms'));
-$cli->add('lease-time', new Option\LeaseTime('lease-time', '60s'));
-$cli->add('memory-limit', new Option\MemoryLimit('memory-limit', '256MB'));
-$cli->add('considered-dead-after', new Option\ConsideredDeadAfter('considered-dead-after', '30m'));
-$cli->parse();
-
-$recruiter = $cli->get('recruiter');
-$waitStrategy = $cli->get('wait-strategy');
-$leaseTime = $cli->get('lease-time');
-$memoryLimit = $cli->get('memory-limit');
-$consideredDeadAfter = $cli->get('considered-dead-after');
-
-$askedToStop = false;
-foreach ([SIGTERM, SIGQUIT, SIGINT] as $signal) {
-    pcntl_signal($signal, function($signal) use(&$askedToStop) {
-        printf(
-            '[RECRUITER][%d][%s] received the signal: `%s`' . PHP_EOL,
-            posix_getpid(), date('c'), $signal
-        );
-        $askedToStop = true;
-    });
-}
-
-while (!askedToStop()) {
-    if (!$recruiter->becomeMaster($leaseTime, function ($event, $waitingTime) {
-        switch ($event) {
-            case 'lock.notAvailable':
-                printf(
-                    '[RECRUITER][%d][%s] going to sleep for %s because I\'m not the master' . PHP_EOL,
-                    posix_getpid(), date('c'), $waitingTime->format('s')
-                );
-            break;
-            case 'lock.acquired':
-                printf(
-                    '[RECRUITER][%d][%s] ready to recruit!' . PHP_EOL,
-                    posix_getpid(), date('c')
-                );
-            break;
-        }
-    })) {
-        continue;
-    }
-
-    $rollbackStartAt = microtime(true);
-    $rolledBack = $recruiter->rollbackLockedJobs();
-    $rollbackEndAt = microtime(true);
-    printf(
-        '[RECRUITER][%d][%s] rolled back %d jobs in %fms' . PHP_EOL,
-        posix_getpid(), date('c'), $rolledBack, ($rollbackEndAt - $rollbackStartAt) * 1000
-    );
-    $pickStartAt = microtime(true);
-    list ($assignment, $actualNumber) = $recruiter->assignJobsToWorkers();
-    $pickEndAt = microtime(true);
-    foreach ($assignment as $worker => $job) {
-        printf(
-            '[RECRUITER][%d][%s] tried to assign job %s to worker %s' . PHP_EOL,
-            posix_getpid(), date('c'),
-            $job, $worker
-        );
-    }
-    $memoryUsage = ByteUnits\bytes(memory_get_usage());
-    printf(
-        '[RECRUITER][%d][%s][%s] picked jobs for %d workers in %fms, actual assignments were %d' . PHP_EOL,
-        posix_getpid(), date('c'), $memoryUsage->format(),
-        count($assignment), ($pickEndAt - $pickStartAt) * 1000,
-        $actualNumber
-    );
-    $memoryLimit->ensure($memoryUsage);
-    $unlockedJobs = $recruiter->retireDeadWorkers(
-        new SystemClock(),
-        $consideredDeadAfter
-    );
-    printf(
-        '[RECRUITER][%d][%s] unlocked %d jobs due to dead workers' . PHP_EOL,
-        posix_getpid(), date('c'), $unlockedJobs
-    );
-    printf(
-        '[RECRUITER][%d][%s] going to sleep for %s' . PHP_EOL,
-        posix_getpid(), date('c'), $waitStrategy->timeToWait()->format('ms')
-    );
-    (count($assignment) > 0) ?
-        $waitStrategy->reset() :
-        $waitStrategy->wait()->backOff();
-}
-$recruiter->bye();
-printf(
-    '[RECRUITER][%d][%s] ok, see you space cowboy...' . PHP_EOL,
-    posix_getpid(), date('c')
-);
-
-function askedToStop()
-{
-    global $askedToStop;
-    pcntl_signal_dispatch();
-    return $askedToStop;
-}
-
-function autoload() {
-    foreach (['/../vendor', '/../../..'] as $rp) {
-        $file = __DIR__ . $rp . '/autoload.php';
-        if (file_exists($file)) {
-            require_once $file;
-            break;
-        }
-    }
-    if (!class_exists('Composer\Autoload\ClassLoader', false)) {
-        fprintf(STDERR,
-            'You need to set up the project dependencies using the following commands:' . PHP_EOL .
-            'curl -s http://getcomposer.org/installer | php' . PHP_EOL .
-            'php composer.phar install' . PHP_EOL
-        );
-        exit(1);
+        break;
     }
 }
+
+use Geezer\Command\RobustCommandRunner;
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+use Recruiter\Factory;
+use Recruiter\Infrastructure\Command\CleanerCommand;
+use Recruiter\Infrastructure\Command\RecruiterCommand;
+use Recruiter\Infrastructure\Command\WorkerCommand;
+use Symfony\Component\Console\Application;
+
+$output = "[%context.datetime%][%context.hostname%:%context.pid%][%context.program%][%level_name%] %message%\n";
+$formatter = new LineFormatter($output);
+$streamHandler = new StreamHandler('php://stdout', Logger::DEBUG);
+$streamHandler->setFormatter($formatter);
+$logger = new Logger('recruiter');
+$logger->pushHandler($streamHandler);
+
+$application = new Application();
+
+$application->add(RecruiterCommand::toRobustCommand(new Factory(), $logger));
+$application->add(WorkerCommand::toRobustCommand(new Factory(), $logger));
+$application->add(CleanerCommand::toRobustCommand(new Factory(), $logger));
+
+$application->run();

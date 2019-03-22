@@ -1,14 +1,14 @@
 <?php
 namespace Recruiter\Acceptance;
 
+use Recruiter\Infrastructure\Memory\MemoryLimit;
 use Recruiter\Workable\LazyBones;
-use Recruiter\Option\MemoryLimit;
 
 class AssignmentTest extends BaseAcceptanceTest
 {
     public function testAJobCanBeAssignedAndExecuted()
     {
-        $memoryLimit = new MemoryLimit('memory-limit', '64MB');
+        $memoryLimit = new MemoryLimit('64MB');
         LazyBones::waitForMs(200, 100)
             ->asJobOf($this->recruiter)
             ->inBackground()

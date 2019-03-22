@@ -1,7 +1,9 @@
 <?php
 namespace Recruiter\Workable;
 
-class ShellCommandTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class ShellCommandTest extends TestCase
 {
     public function testExecutesACommandOnTheShell()
     {

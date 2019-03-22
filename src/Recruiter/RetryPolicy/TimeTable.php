@@ -17,7 +17,7 @@ class TimeTable implements RetryPolicy
 
     use RetryPolicyBehaviour;
 
-    public function __construct(array $timeTable)
+    public function __construct(?array $timeTable)
     {
         if (is_null($timeTable)) {
             $timeTable = [
@@ -34,22 +34,23 @@ class TimeTable implements RetryPolicy
     {
         foreach ($this->timeTable as $timeSpent => $rescheduleIn) {
             if ($this->hasBeenCreatedLessThan($job, $timeSpent)) {
-                return $this->rescheduleIn($job, $rescheduleIn);
+                $this->rescheduleIn($job, $rescheduleIn);
+                break;
             }
         }
     }
 
-    public function maximumNumberOfRetries()
+    public function maximumNumberOfRetries(): int
     {
         return $this->howManyRetries;
     }
 
-    public function export()
+    public function export(): array
     {
         return ['time_table' => $this->timeTable];
     }
 
-    public static function import($parameters)
+    public static function import(array $parameters): RetryPolicy
     {
         return new self($parameters['time_table']);
     }

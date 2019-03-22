@@ -2,7 +2,9 @@
 
 namespace Recruiter;
 
-class WorkablePersistenceTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class WorkablePersistenceTest extends TestCase
 {
     public function testCanBeExportedAndImported()
     {

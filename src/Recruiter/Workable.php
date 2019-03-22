@@ -7,9 +7,9 @@ interface Workable
     /**
      * Turn this `Recruiter\Workable` instance into a `Recruiter\Job` instance
      *
-     * @param Recruiter\Recruiter $recruiter
+     * @param Recruiter $recruiter
      *
-     * @return Recruiter\Job
+     * @return Job
      */
     public function asJobOf(Recruiter $recruiter);
 
@@ -25,7 +25,7 @@ interface Workable
      *
      * @param array $parameters Previously exported parameters
      *
-     * @return Recruiter\Workable
+     * @return Workable
      */
     public static function import($parameters);
 }

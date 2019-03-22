@@ -2,6 +2,7 @@
 
 namespace Recruiter;
 
+use Exception;
 use Recruiter\RetryPolicy;
 
 class RetryPolicyInJob

@@ -2,12 +2,13 @@
 
 namespace Recruiter;
 
+use PHPUnit\Framework\TestCase;
 use Timeless as T;
 use Recruiter\Taggable;
 
-class TaggableWorkableTest extends \PHPUnit_Framework_TestCase
+class TaggableWorkableTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->repository = $this
                           ->getMockBuilder('Recruiter\Job\Repository')

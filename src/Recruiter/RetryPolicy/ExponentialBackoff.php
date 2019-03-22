@@ -61,7 +61,7 @@ class ExponentialBackoff implements RetryPolicy
         }
     }
 
-    public function export()
+    public function export(): array
     {
         return [
             'retry_how_many_times' => $this->retryHowManyTimes,
@@ -69,7 +69,7 @@ class ExponentialBackoff implements RetryPolicy
         ];
     }
 
-    public static function import($parameters)
+    public static function import(array $parameters): RetryPolicy
     {
         return new self(
             $parameters['retry_how_many_times'],
@@ -77,7 +77,7 @@ class ExponentialBackoff implements RetryPolicy
         );
     }
 
-    public function maximumNumberOfRetries()
+    public function maximumNumberOfRetries(): int
     {
         return $this->retryHowManyTimes;
     }

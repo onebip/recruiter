@@ -2,25 +2,27 @@
 
 namespace Recruiter;
 
+use PHPUnit\Framework\TestCase;
 use Recruiter\Job\Event;
 use Recruiter\Job\EventListener;
 
-class JobSendEventsToWorkableTest extends \PHPUnit_Framework_TestCase
+class JobSendEventsToWorkableTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->repository = $this
             ->getMockBuilder('Recruiter\Job\Repository')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->dispatcher = $this->getMock(
-            'Symfony\Component\EventDispatcher\EventDispatcherInterface');
+        $this->dispatcher = $this->createMock(
+            'Symfony\Component\EventDispatcher\EventDispatcherInterface'
+        );
     }
 
     public function testTakeRetryPolicyFromRetriableInstance()
     {
-        $listener = $this->getMock('StdClass', ['onEvent']);
+        $listener = $this->createPartialMock('StdClass', ['onEvent']);
         $listener
             ->expects($this->exactly(3))
             ->method('onEvent')

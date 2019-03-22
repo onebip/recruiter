@@ -3,8 +3,9 @@
 namespace Timeless;
 
 use DateInterval;
+use PHPUnit\Framework\TestCase;
 
-class IntervalParseTest extends \PHPUnit_Framework_TestCase
+class IntervalParseTest extends TestCase
 {
     public function testParseExtendedFormat()
     {
@@ -92,20 +93,16 @@ class IntervalParseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(days(2)->add(minutes(10)), Interval::fromDateInterval(new DateInterval('P2DT10M')));
     }
 
-    /**
-     * @expectedException Timeless\InvalidIntervalFormat
-     * @expectedExceptionMessage Maybe you mean '5 seconds' or something like that?
-     */
     public function testNumberAsIntervalFormat()
     {
+        $this->expectException(InvalidIntervalFormat::class);
+        $this->expectExceptionMessage("Maybe you mean '5 seconds' or something like that?");
         Interval::parse(5);
     }
 
-    /**
-     * @expectedException Timeless\InvalidIntervalFormat
-     */
     public function testBadString()
     {
+        $this->expectException(InvalidIntervalFormat::class);
         Interval::parse('whatever');
     }
 }
