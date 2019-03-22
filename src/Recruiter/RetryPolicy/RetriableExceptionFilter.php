@@ -5,6 +5,7 @@ namespace Recruiter\RetryPolicy;
 use Onebip;
 use InvalidArgumentException;
 
+use Recruiter\Job;
 use Recruiter\RetryPolicy;
 use Recruiter\JobAfterFailure;
 
@@ -60,9 +61,9 @@ class RetriableExceptionFilter implements RetryPolicy
         );
     }
 
-    public function maximumNumberOfRetries(): int
+    public function isLastRetry(Job $job): bool
     {
-        return $this->filteredRetryPolicy->maximumNumberOfRetries();
+        return $this->filteredRetryPolicy->isLastRetry($job);
     }
 
     private function ensureAreAllExceptions($exceptions)

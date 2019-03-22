@@ -5,8 +5,8 @@ class MongoDate
 {
     public static function from(Moment $moment)
     {
-        $seconds = floor($moment->ms() / 1000);
-        $milliseconds = $moment->ms() - $seconds * 1000;
+        $seconds = intval(floor($moment->ms() / 1000));
+        $milliseconds = intval($moment->ms() - $seconds * 1000);
         $microseconds = $milliseconds * 1000;
         return new \MongoDate($seconds, $microseconds);
     }

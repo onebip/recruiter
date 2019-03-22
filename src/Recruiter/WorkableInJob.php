@@ -23,7 +23,6 @@ class WorkableInJob
                 throw new Exception('Unable to import Workable without method import');
             }
             return $dataAboutWorkableObject['class']::import($dataAboutWorkableObject['parameters']);
-
         } catch (Exception $e) {
             return new RecoverFromException($dataAboutWorkableObject['parameters'], $dataAboutWorkableObject['class'], $e);
         }

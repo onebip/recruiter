@@ -172,7 +172,7 @@ class Interval
             }
         }
         if (is_numeric($string)) {
-            $duration = floor($string);
+            $duration = floor(floatval($string));
             throw new InvalidIntervalFormat("Maybe you mean '{$duration} seconds' or something like that?");
         }
         throw new InvalidIntervalFormat('You need to use strings');

@@ -1,6 +1,7 @@
 <?php
 namespace Recruiter\RetryPolicy;
 
+use Recruiter\Job;
 use Recruiter\RetryPolicy;
 use Recruiter\RetryPolicyBehaviour;
 use Recruiter\JobAfterFailure;
@@ -46,8 +47,8 @@ final class RetryForever implements RetryPolicy
         );
     }
 
-    public function maximumNumberOfRetries(): int
+    public function isLastRetry(Job $job): bool
     {
-        return PHP_INT_MAX;
+        return false;
     }
 }
