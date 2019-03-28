@@ -50,7 +50,6 @@ class BlackHole implements Iterator, ArrayAccess
 
     public function __clone()
     {
-        return new self();
     }
 
     public static function __callStatic($name, $args)

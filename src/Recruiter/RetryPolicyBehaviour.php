@@ -37,6 +37,6 @@ trait RetryPolicyBehaviour
 
     public static function import(array $parameters): RetryPolicy
     {
-        return new self($parameters);
+        return new static($parameters);
     }
 }

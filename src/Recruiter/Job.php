@@ -7,6 +7,7 @@ use MongoCollection;
 use MongoId;
 use MongoWriteConcernException;
 use Onebip;
+use Recruiter\Finalizable;
 use Recruiter\Job\Event;
 use Recruiter\Job\EventListener;
 use Recruiter\Job\Repository;
@@ -126,7 +127,7 @@ class Job
                 $this->afterExecution($result, $eventDispatcher);
                 return $result;
             }
-        } catch(Exception $exception) {
+        } catch (Exception $exception) {
             $this->afterFailure($exception, $eventDispatcher);
         }
     }
@@ -136,7 +137,7 @@ class Job
         return [
             'job_id' => (string) $this->id(),
             'retry_number' => $this->status['attempts'],
-            'maximum' => $this->retryPolicy->maximumNumberOfRetries(),
+            'is_last_retry' => $this->retryPolicy->isLastRetry($this),
             'last_execution' => array_key_exists('last_execution', $this->status)
                 ? $this->status['last_execution']
                 : null,
@@ -184,6 +185,7 @@ class Job
         $this->status['done'] = true;
         $this->lastJobExecution->completedWith($result);
         $this->emit('job.ended', $eventDispatcher);
+        $this->triggerOnWorkable('afterSuccess');
         if ($this->hasBeenScheduled()) {
             $this->archive('done');
         }
@@ -209,10 +211,12 @@ class Job
         $jobAfterFailure = new JobAfterFailure($this, $this->lastJobExecution);
         $this->retryPolicy->schedule($jobAfterFailure);
         $this->emit('job.ended', $eventDispatcher);
+        $this->triggerOnWorkable('afterFailure', $exception);
         $jobAfterFailure->archiveIfNotScheduled();
         $archived = $jobAfterFailure->hasBeenArchived();
         if ($archived) {
             $this->emit('job.failure.last', $eventDispatcher);
+            $this->triggerOnWorkable('afterLastFailure', $exception);
         }
         return $archived;
     }
@@ -223,6 +227,17 @@ class Job
         $eventDispatcher->dispatch($eventType, $event);
         if ($this->workable instanceof EventListener) {
             $this->workable->onEvent($eventType, $event);
+        }
+    }
+
+    private function triggerOnWorkable($method, ?Exception $e = null)
+    {
+        if ($this->workable instanceof Finalizable) {
+            $this->workable->$method($e);
+
+            if (in_array($method, ['afterSuccess', 'afterLastFailure'])) {
+                $this->workable->finalize($e);
+            }
         }
     }
 
