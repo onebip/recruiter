@@ -1,6 +1,7 @@
 <?php
 namespace Recruiter\Acceptance;
 
+use Onebip\Clock\SystemClock;
 use Onebip\Concurrency\Timeout;
 use PHPUnit\Framework\TestCase;
 use Recruiter\Factory;
@@ -8,6 +9,7 @@ use Recruiter\Infrastructure\Persistence\Mongodb\URI as MongoURI;
 use Recruiter\Recruiter;
 use Recruiter\RetryPolicy;
 use Recruiter\Workable\ShellCommand;
+use Timeless as T;
 
 abstract class BaseAcceptanceTest extends TestCase
 {
@@ -62,10 +64,11 @@ abstract class BaseAcceptanceTest extends TestCase
         return $this->roster->count();
     }
 
-    protected function waitForNumberOfWorkersToBe($expectedNumber)
+    protected function waitForNumberOfWorkersToBe($expectedNumber, $howManySeconds = 1)
     {
-        Timeout::inSeconds(1, "workers to be $expectedNumber")
+        Timeout::inSeconds($howManySeconds, "workers to be $expectedNumber")
             ->until(function () use ($expectedNumber) {
+                $this->recruiter->retireDeadWorkers(new SystemClock(), T\seconds(0));
                 return $this->numberOfWorkers() == $expectedNumber;
             });
     }
