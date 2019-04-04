@@ -33,7 +33,7 @@ class FactoryTest extends TestCase
     public function testShouldCreateAMongoDatabaseConnection()
     {
         $this->assertInstanceOf(
-            'MongoDB',
+            'MongoDB\Database',
             $this->creationOfDefaultMongoDb()
         );
     }
@@ -41,7 +41,7 @@ class FactoryTest extends TestCase
     public function testWriteConcernIsMajorityByDefault()
     {
         $mongoDb = $this->creationOfDefaultMongoDb();
-        $this->assertEquals('majority', $mongoDb->getWriteConcern()['w']);
+        $this->assertEquals('majority', $mongoDb->getWriteConcern()->getW());
     }
 
     public function testShouldOverwriteTheWriteConcernPassedInTheOptions()
@@ -54,7 +54,7 @@ class FactoryTest extends TestCase
             ]
         );
 
-        $this->assertEquals('majority', $mongoDb->getWriteConcern()['w']);
+        $this->assertEquals('majority', $mongoDb->getWriteConcern()->getW());
     }
 
     private function creationOfDefaultMongoDb()

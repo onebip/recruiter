@@ -20,7 +20,7 @@ class Recruiter
     private $workers;
     private $eventDispatcher;
 
-    public function __construct(MongoDB $db)
+    public function __construct(MongoDB\Database $db)
     {
         $this->db = $db;
         $this->jobs = new Job\Repository($db);
@@ -145,6 +145,7 @@ class Recruiter
             );
             $totalActualAssignments += $actualAssignmentsNumber;
         }
+
         return [
             array_map(function ($value) {
                 return (string) $value;
@@ -171,8 +172,7 @@ class Recruiter
 
     public function createCollectionsAndIndexes()
     {
-        $this->db->command(['collMod' => 'scheduled', 'usePowerOf2Sizes' => true]);
-        $this->db->selectCollection('scheduled')->ensureIndex(
+        $this->db->selectCollection('scheduled')->createIndex(
             [
                 'group' => 1,
                 'locked' => 1,
@@ -180,55 +180,53 @@ class Recruiter
             ],
             ['background' => true]
         );
-        $this->db->selectCollection('scheduled')->ensureIndex(
+        $this->db->selectCollection('scheduled')->createIndex(
             [
                 'locked' => 1,
                 'scheduled_at' => 1,
             ],
             ['background' => true]
         );
-        $this->db->selectCollection('scheduled')->ensureIndex(
+        $this->db->selectCollection('scheduled')->createIndex(
             [
                 'locked' => 1,
             ],
             ['background' => true]
         );
-        $this->db->selectCollection('scheduled')->ensureIndex(
+        $this->db->selectCollection('scheduled')->createIndex(
             [
                 'tags' => 1,
             ],
             ['background' => true, 'sparse' => true]
         );
 
-        $this->db->command(['collMod' => 'archived', 'usePowerOf2Sizes' => true]);
-        $this->db->selectCollection('archived')->ensureIndex(
+        $this->db->selectCollection('archived')->createIndex(
             [
                 'created_at' => 1,
             ],
             ['background' => true]
         );
-        $this->db->selectCollection('archived')->ensureIndex(
+        $this->db->selectCollection('archived')->createIndex(
             [
                 'created_at' => 1,
                 'group' => 1,
             ],
             ['background' => true]
         );
-        $this->db->selectCollection('archived')->ensureIndex(
+        $this->db->selectCollection('archived')->createIndex(
             [
                 'last_execution.ended_at' => 1,
             ],
             ['background' => true]
         );
 
-        $this->db->command(['collMod' => 'roster', 'usePowerOf2Sizes' => true]);
-        $this->db->selectCollection('roster')->ensureIndex(
+        $this->db->selectCollection('roster')->createIndex(
             [
                 'available' => 1,
             ],
             ['background' => true]
         );
-        $this->db->selectCollection('roster')->ensureIndex(
+        $this->db->selectCollection('roster')->createIndex(
             [
                 'last_seen_at' => 1,
             ],

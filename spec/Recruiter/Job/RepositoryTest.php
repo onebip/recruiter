@@ -2,6 +2,7 @@
 namespace Recruiter\Job;
 
 use DateTime;
+use MongoDB\BSON\ObjectId;
 use PHPUnit\Framework\TestCase;
 use Recruiter\Factory;
 use Recruiter\Infrastructure\Persistence\Mongodb\URI as MongoURI;
@@ -459,7 +460,7 @@ class RepositoryTest extends TestCase
         array $workableParameters = null
     ) {
         $parameters = [
-            '_id' => new \MongoId(),
+            '_id' => new ObjectId(),
             'created_at' => T\MongoDate::from($createdAt),
             "done" => false,
             "attempts" => 10,

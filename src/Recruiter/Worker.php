@@ -3,8 +3,8 @@
 namespace Recruiter;
 
 use DateInterval;
-use MongoCollection;
-use MongoId;
+use MongoDB\Collection as MongoCollection;
+use MongoDB\BSON\ObjectId;
 use Onebip;
 use Onebip\Clock;
 use Recruiter\Infrastructure\Memory\MemoryLimit;
@@ -184,7 +184,7 @@ class Worker
     private static function initialize()
     {
         return [
-            '_id' => new MongoId(),
+            '_id' => new ObjectId(),
             'work_on' => '*',
             'available' => true,
             'available_since' => T\MongoDate::now(),
@@ -203,7 +203,7 @@ class Worker
     public static function pickAvailableWorkers(MongoCollection $collection, $workersPerUnit)
     {
         $result = [];
-        $workers = iterator_to_array($collection->find(['available' => true], ['_id' => 1, 'work_on' => 1]));
+        $workers = iterator_to_array($collection->find(['available' => true], ['projection' => ['_id' => 1, 'work_on' => 1]]));
         if (count($workers) > 0) {
             $unitsOfWorkers = Onebip\array_group_by(
                 $workers,
@@ -228,24 +228,25 @@ class Worker
             }),
             $jobs
         );
-        $result = $collection->update(
+
+        $result = $collection->updateMany(
             $where = ['_id' => ['$in' => array_values($workers)]],
             $update = ['$set' => [
                 'available' => false,
                 'assigned_to' => $assignment,
                 'assigned_since' => T\MongoDate::now()
-            ]],
-            ['multiple' => true]
+            ]]
         );
-        return [$assignment, $result['n']];
+
+        return [$assignment, $result->getModifiedCount()];
     }
 
     /**
-     * @return array  of MongoId
+     * @return ObjectId[]
      */
     public static function assignedJobs(MongoCollection $collection)
     {
-        $cursor = $collection->find([], ['assigned_to' => 1]);
+        $cursor = $collection->find([], ['projection' => ['assigned_to' => 1]]);
         $jobs = [];
         foreach ($cursor as $document) {
             if (array_key_exists('assigned_to', $document)) {

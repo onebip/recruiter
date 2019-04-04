@@ -37,7 +37,7 @@ class FaultToleranceTest extends BaseAcceptanceTest
         list ($assignments, $_) = $this->recruiter->assignJobsToWorkers();
         $this->assertEquals(1, count($assignments));
         sleep(2);
-        $jobDocument = $this->scheduled->find()->getNext();
+        $jobDocument = current($this->scheduled->find()->toArray());
         $this->assertEquals(1, $jobDocument['attempts']);
         $this->assertEquals('Recruiter\\Workable\\FailsInConstructor', $jobDocument['workable']['class']);
         $this->assertStringContainsString('This job failed while instantiating a workable', $jobDocument['last_execution']['message']);
@@ -46,7 +46,7 @@ class FaultToleranceTest extends BaseAcceptanceTest
         list ($assignments, $_) = $this->recruiter->assignJobsToWorkers();
         $this->assertEquals(1, count($assignments));
         sleep(2);
-        $jobDocument = $this->archived->find()->getNext();
+        $jobDocument = current($this->archived->find()->toArray());
         $this->assertEquals(2, $jobDocument['attempts']);
         $this->assertEquals('Recruiter\\Workable\\FailsInConstructor', $jobDocument['workable']['class']);
         $this->assertStringContainsString('This job failed while instantiating a workable', $jobDocument['last_execution']['message']);

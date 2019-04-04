@@ -3,8 +3,8 @@ namespace Recruiter;
 
 use Exception;
 use InvalidArgumentException;
-use MongoCollection;
-use MongoId;
+use MongoDB\BSON\ObjectId;
+use MongoDB\Collection as MongoCollection;
 use MongoWriteConcernException;
 use Onebip;
 use Recruiter\Finalizable;
@@ -272,7 +272,7 @@ class Job
     {
         return array_merge(
             [
-                '_id' => new MongoId(),
+                '_id' => new ObjectId(),
                 'done' => false,
                 'created_at' => T\MongoDate::now(),
                 'locked' => false,
@@ -299,11 +299,12 @@ class Job
                                 'group' => $worksOn,
                             ]
                         ),
-                        [   '_id' => 1
+                        [
+                            'projection' => ['_id' => 1],
+                            'sort' => ['scheduled_at' => 1],
+                            'limit' => count($workers),
                         ]
                     )
-                    ->sort(['scheduled_at' => 1])
-                    ->limit(count($workers))
             ),
             '_id'
         );
@@ -315,7 +316,7 @@ class Job
     public static function rollbackLockedNotIn(MongoCollection $collection, array $excluded)
     {
         try {
-            $result = $collection->update(
+            $result = $collection->updateMany(
                 [
                     'locked' => true,
                     '_id' => ['$nin' => $excluded],
@@ -325,12 +326,10 @@ class Job
                         'locked' => false,
                         'last_execution.crashed' => true,
                     ]
-                ],
-                [
-                    'multiple' => true,
                 ]
             );
-            return $result['n'];
+
+            return $result->getModifiedCount();
         } catch (MongoWriteConcernException $e) {
             throw new InvalidArgumentException("Not valid excluded jobs filter: " . var_export($excluded, true), -1, $e);
         }
@@ -338,10 +337,9 @@ class Job
 
     public static function lockAll(MongoCollection $collection, $jobs)
     {
-        $collection->update(
+        $collection->updateMany(
             ['_id' => ['$in' => array_values($jobs)]],
-            ['$set' => ['locked' => true]],
-            ['multiple' => true]
+            ['$set' => ['locked' => true]]
         );
     }
 }

@@ -15,6 +15,11 @@ abstract class BaseAcceptanceTest extends TestCase
 {
     protected $recruiterDb;
 
+    protected $recruiter;
+    protected $scheduled;
+    protected $archived;
+    protected $roster;
+
     public function setUp(): void
     {
         $factory = new Factory();

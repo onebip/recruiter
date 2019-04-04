@@ -11,99 +11,35 @@ use UnexpectedValueException;
  */
 class URI
 {
-    const DEFAULT_DB_NAME = 'recruiter';
+    const DEFAULT_URI = 'mongodb://127.0.0.1:27017/recruiter';
 
     /**
      * @var string
      */
-    private $host;
+    private $uri;
 
-    /**
-     * @var array
-     */
-    private $options;
-
-    /**
-     * @var string
-     */
-    private $dbName;
-
-    /**
-     * @param string $host
-     * @param array $options
-     * @param string $dbName
-     */
-    public function __construct(string $host, string $dbName, array $options = [])
+    public function __construct(string $uri)
     {
-        $this->host = $host;
-        $this->dbName = $dbName;
-        $this->options = $options;
+        $this->uri = $uri;
     }
 
-    public static function from(string $uri): self
+    public static function from(?string $uri): self
     {
-        $mongoUriFormat =
-            '/^'
-            . '(mongodb:\/\/)?'
-            . '(?P<hosts>[^\/]+)'
-            . '(?:\/(?P<db>\w+))?'
-            . '(\?(?P<qs>.*))?'
-            . '/';
-
-        if (preg_match($mongoUriFormat, $uri, $matches)) {
-            if (empty($matches['db'])) {
-                $matches['db'] = self::DEFAULT_DB_NAME;
-            }
-
-            if (empty($matches['qs'])) {
-                $matches['qs'] = '';
-            }
-
-            $options = self::optionsFrom($matches['qs']);
-
-            return new self($matches['hosts'], $matches['db'], $options);
+        if (!$uri) {
+            $uri = self::DEFAULT_URI;
         }
 
-        throw new UnexpectedValueException(
-            sprintf(
-                "Sorry, I don't recognize '%s' as valid MongoDB coordinates",
-                $uri
-            )
-        );
+        return new self($uri);
     }
 
-    private static function optionsFrom(string $queryString): array
+    public function database()
     {
-        parse_str($queryString, $options);
-        foreach ($options as $key => $value) {
-            if (preg_match('/^\d+$/', $value)) {
-                $options[$key] = intval($value);
-            }
-            if (empty($options[$key])) {
-                unset($options[$key]);
-            }
-        }
-
-        return $options;
-    }
-
-    public function host(): string
-    {
-        return $this->host;
-    }
-
-    public function dbName(): string
-    {
-        return $this->dbName;
-    }
-
-    public function options(): array
-    {
-        return $this->options;
+        $parsed = parse_url($this->uri);
+        return substr($parsed['path'], 1);
     }
 
     public function __toString()
     {
-        return "$this->host/$this->dbName";
+        return $this->uri;
     }
 }

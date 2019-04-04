@@ -2,8 +2,8 @@
 
 namespace Recruiter;
 
-use MongoId;
 use ArrayIterator;
+use MongoDB\BSON\ObjectId;
 use PHPUnit\Framework\TestCase;
 
 class PickAvailableWorkersTest extends TestCase
@@ -11,7 +11,7 @@ class PickAvailableWorkersTest extends TestCase
     public function setUp(): void
     {
         $this->repository = $this
-            ->getMockBuilder('MongoCollection')
+            ->getMockBuilder('MongoDB\Collection')
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -86,7 +86,7 @@ class PickAvailableWorkersTest extends TestCase
         $workersThatShouldBeFound = [];
         foreach ($workers as $skill => $quantity) {
             for ($counter = 0; $counter < $quantity; $counter++) {
-                $workerId = new MongoId();
+                $workerId = new ObjectId();
                 $workersThatShouldBeFound[(string)$workerId] = [
                     '_id' => $workerId,
                     'work_on' => $skill

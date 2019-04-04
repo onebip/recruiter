@@ -2,10 +2,8 @@
 
 namespace Recruiter\Worker;
 
-use MongoId;
 use MongoDB;
-use MongoCollection;
-use MongoDate;
+use MongoDB\BSON\UTCDateTime as MongoUTCDateTime;
 use Recruiter\Recruiter;
 use Recruiter\Worker;
 
@@ -14,7 +12,7 @@ class Repository
     private $roster;
     private $recruiter;
 
-    public function __construct(MongoDB $db, Recruiter $recruiter)
+    public function __construct(MongoDB\Database $db, Recruiter $recruiter)
     {
         $this->roster = $db->selectCollection('roster');
         $this->recruiter = $recruiter;
@@ -23,12 +21,16 @@ class Repository
     public function save($worker)
     {
         $document = $worker->export();
-        $this->roster->save($document);
+        $result = $this->roster->replaceOne(
+            ['_id' => $document['_id']],
+            $document,
+            ['upsert' => true]
+        );
     }
 
     public function atomicUpdate($worker, array $changeSet)
     {
-        $this->roster->update(
+        $this->roster->updateOne(
             ['_id' => $worker->id()],
             ['$set' => $changeSet]
         );
@@ -45,24 +47,26 @@ class Repository
     {
         return $this->roster->find(
             ['last_seen_at' => [
-                '$lt' => new MongoDate($consideredDeadAt->getTimestamp())]
+                '$lt' => new MongoUTCDateTime($consideredDeadAt->format('U') * 1000)]
             ],
-            ['_id' => true, 'assigned_to' => true]
+            ['projection' => ['_id' => true, 'assigned_to' => true]]
         );
     }
 
     public function retireWorkerWithIdIfNotAssigned($id)
     {
-        return $this->roster->remove(['_id' => $id, 'available' => true])['n'] > 0;
+        $result = $this->roster->deleteOne(['_id' => $id, 'available' => true]);
+
+        return $result->getDeletedCount() > 0;
     }
 
     public function retireWorkerWithId($id)
     {
-        $this->roster->remove(['_id' => $id]);
+        $this->roster->deleteOne(['_id' => $id]);
     }
 
     public function retireWorkerWithPid($pid)
     {
-        $this->roster->remove(['pid' => intval($pid)]);
+        $this->roster->deleteOne(['pid' => intval($pid)]);
     }
 }

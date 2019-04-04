@@ -14,7 +14,7 @@ class Repository
     private $scheduled;
     private $archived;
 
-    public function __construct(MongoDB $db)
+    public function __construct(MongoDB\Database $db)
     {
         $this->scheduled = $db->selectCollection('scheduled');
         $this->archived = $db->selectCollection('archived');
@@ -46,23 +46,28 @@ class Repository
     public function save(Job $job)
     {
         $document = $job->export();
-        $this->scheduled->save($document);
+        $this->scheduled->replaceOne(
+            ['_id' => $document['_id']],
+            $document,
+            ['upsert' => true]
+        );
     }
 
     public function archive(Job $job)
     {
         $document = $job->export();
-        $this->scheduled->remove(array('_id' => $document['_id']));
-        $this->archived->save($document);
+        $this->scheduled->deleteOne(['_id' => $document['_id']]);
+        $this->archived->replaceOne(['_id' => $document['_id']], $document, ['upsert' => true]);
     }
 
     public function releaseAll($jobIds)
     {
-        return $this->scheduled->update(
+        $result = $this->scheduled->updateMany(
             ['_id' => ['$in' => $jobIds]],
-            ['$set' => ['locked' => false, 'last_execution.crashed' => true]],
-            ['multiple' => true]
-        )['n'];
+            ['$set' => ['locked' => false, 'last_execution.crashed' => true]]
+        );
+
+        return $result->getModifiedCount();
     }
 
     public function countArchived(): int
@@ -78,12 +83,12 @@ class Repository
                     '$lte' => T\MongoDate::from($upperLimit),
                 ]
             ],
-            ['_id' => 1]
+            ['projection' => ['_id' => 1]]
         );
 
         $deleted = 0;
         foreach ($documents as $document) {
-            $this->archived->remove(['_id' => $document['_id']]);
+            $this->archived->deleteOne(['_id' => $document['_id']]);
             $deleted++;
         }
 
@@ -154,7 +159,7 @@ class Repository
             $query['group'] = $group;
         }
 
-        $document = $this->scheduled->aggregate($pipeline = [
+        $cursor = $this->scheduled->aggregate($pipeline = [
             ['$match' => $query],
             ['$group' => [
                 '_id' => '$' . $field,
@@ -162,12 +167,8 @@ class Repository
             ]],
         ]);
 
-        if (!$document['ok']) {
-            throw new RuntimeException("Pipeline failed: " . var_export($pipeline, true));
-        }
-
         $distinctAndCount = [];
-        foreach ($document['result'] as $r) {
+        foreach ($cursor as $r) {
             $distinctAndCount[$r['_id']] = $r['count'];
         }
 
@@ -191,7 +192,7 @@ class Repository
         if ($group !== null) {
             $lastMinute['group'] = $group;
         }
-        $document = $this->archived->aggregate($pipeline = [
+        $cursor = $this->archived->aggregate($pipeline = [
             ['$match' => $lastMinute],
             ['$project' => [
                 'latency' => ['$subtract' => [
@@ -210,20 +211,20 @@ class Repository
                 'execution_time' => ['$avg' => '$execution_time'],
             ]],
         ]);
-        if (!$document['ok']) {
-            throw new RuntimeException("Pipeline failed: " . var_export($pipeline, true));
-        }
-        if (count($document['result']) === 0) {
+
+        $documents = $cursor->toArray();
+        if (count($documents) === 0) {
             $throughputPerMinute = 0.0;
             $averageLatency = 0.0;
             $averageExecutionTime = 0;
-        } elseif (count($document['result']) === 1) {
-            $throughputPerMinute = (float) $document['result'][0]['throughput'];
-            $averageLatency = $document['result'][0]['latency'] / 1000;
-            $averageExecutionTime = $document['result'][0]['execution_time'] / 1000;
+        } elseif (count($documents) === 1) {
+            $throughputPerMinute = (float) $documents[0]['throughput'];
+            $averageLatency = $documents[0]['latency'] / 1000;
+            $averageExecutionTime = $documents[0]['execution_time'] / 1000;
         } else {
-            throw new RuntimeException("Result was not ok: " . var_export($document, true));
+            throw new RuntimeException("Result was not ok: " . var_export($documents, true));
         }
+
         return [
             'throughput' => [
                 'value' => $throughputPerMinute,
@@ -381,7 +382,7 @@ class Repository
                     ]
                 ],
             ],
-        ])['result'];
+        ])->toArray();
     }
 
     private function slowScheduledRecentJobs(
@@ -432,7 +433,7 @@ class Repository
                     ]
                 ],
             ],
-        ])['result'];
+        ])->toArray();
     }
 
     private function countRecentArchivedOrScheduledJobsWithManyAttempts(
@@ -440,11 +441,11 @@ class Repository
         T\Moment $upperLimit,
         $collectionName
     ) {
-        return $this->recentArchivedOrScheduledJobsWithManyAttempts(
+        return count($this->recentArchivedOrScheduledJobsWithManyAttempts(
             $lowerLimit,
             $upperLimit,
             $collectionName
-        )->count();
+        )->toArray());
     }
 
     private function recentArchivedOrScheduledJobsWithManyAttempts(
@@ -466,9 +467,10 @@ class Repository
     private function map($cursor)
     {
         $jobs = [];
-        while ($cursor->hasNext()) {
-            $jobs[] = Job::import($cursor->getNext(), $this);
+        foreach ($cursor->toArray() as $document) {
+            $jobs[] = Job::import($document, $this);
         }
+
         return $jobs;
     }
 }
