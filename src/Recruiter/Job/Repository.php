@@ -2,7 +2,6 @@
 namespace Recruiter\Job;
 
 use Exception;
-use MongoCollection;
 use MongoDB;
 use Recruiter\Job;
 use Recruiter\Recruiter;

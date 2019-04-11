@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Recruiter\Infrastructure\Persistence\Mongodb;
 
-use MongoConnectionException;
 use UnexpectedValueException;
 
 /**

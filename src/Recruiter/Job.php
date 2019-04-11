@@ -5,7 +5,7 @@ use Exception;
 use InvalidArgumentException;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Collection as MongoCollection;
-use MongoWriteConcernException;
+use MongoDB\Driver\Exception\BulkWriteException;
 use Onebip;
 use Recruiter\Finalizable;
 use Recruiter\Job\Event;
@@ -330,7 +330,7 @@ class Job
             );
 
             return $result->getModifiedCount();
-        } catch (MongoWriteConcernException $e) {
+        } catch (BulkWriteException $e) {
             throw new InvalidArgumentException("Not valid excluded jobs filter: " . var_export($excluded, true), -1, $e);
         }
     }
