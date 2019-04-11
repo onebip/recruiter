@@ -167,7 +167,9 @@ class RecruiterCommand implements RobustCommand
 
     public function init(InputInterface $input): void
     {
-        $db = $this->factory->getMongoDb(MongoURI::from($input->getOption('target')));
+        /** @var string */
+        $mongoTarget = $input->getOption('target');
+        $db = $this->factory->getMongoDb(MongoURI::from($mongoTarget));
         $lock = MongoLock::forProgram('RECRUITER', $db->selectCollection('metadata'));
 
         $this->leadershipStrategy = new Dictatorship($lock, Interval::parse($input->getOption('lease-time'))->seconds());

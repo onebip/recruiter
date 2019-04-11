@@ -101,12 +101,12 @@ class Interval
         return $reference->after($this);
     }
 
-    public function multiplyBy($multiplier): Self
+    public function multiplyBy($multiplier): self
     {
         return new self($this->ms * $multiplier);
     }
 
-    public function add(Interval $interval): Self
+    public function add(Interval $interval): self
     {
         return new self($this->ms + $interval->ms);
     }
@@ -134,7 +134,12 @@ class Interval
             ];
             $format = trim($format);
             if (array_key_exists($format, $availableFormatsTable)) {
-                $amountOfTime = call_user_func([$this, $availableFormatsTable[$format][0]]);
+                $callable = [$this, $availableFormatsTable[$format][0]];
+                if (!is_callable($callable)) {
+                    throw new \RuntimeException("function `{$availableFormatsTable[$format][0]}` does not exists");
+                }
+
+                $amountOfTime = call_user_func($callable);
                 $unitOfTime = $amountOfTime === 1 ?
                     $availableFormatsTable[$format][2] :
                     $availableFormatsTable[$format][1];
@@ -165,7 +170,12 @@ class Interval
             ];
             $units = implode('|', array_keys($tokenToFunction));
             if (preg_match("/^[^\d]*(?P<quantity>\d+)\s*(?P<unit>{$units})(?:\W.*|$)/", $string, $matches)) {
-                return call_user_func('Timeless\\' . $tokenToFunction[$matches['unit']], $matches['quantity']);
+                $callable = 'Timeless\\' . $tokenToFunction[$matches['unit']];
+                if (is_callable($callable)) {
+                    return call_user_func($callable, $matches['quantity']);
+                }
+
+                throw new \RuntimeException("function `$callable` does not exists");
             }
             if (!preg_match('/^\d+$/', $string)) {
                 throw new InvalidIntervalFormat("'{$string}' is not a valid Interval format");

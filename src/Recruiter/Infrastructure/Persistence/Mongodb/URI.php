@@ -35,6 +35,10 @@ class URI
     public function database()
     {
         $parsed = parse_url($this->uri);
+        if (!$parsed) {
+            throw new \InvalidArgumentException("$this->uri is not a valid mongo uri");
+        }
+
         return substr($parsed['path'], 1);
     }
 

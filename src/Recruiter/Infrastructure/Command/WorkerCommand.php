@@ -125,7 +125,9 @@ class WorkerCommand implements RobustCommand
 
     public function init(InputInterface $input): void
     {
-        $db = $this->factory->getMongoDb(MongoURI::from($input->getOption('target')));
+        /** @var string $target */
+        $target = $input->getOption('target');
+        $db = $this->factory->getMongoDb(MongoURI::from($target));
 
         $this->waitStrategy = new ExponentialBackoffStrategy(
             Interval::parse($input->getOption('backoff-from'))->ms(),
@@ -139,7 +141,9 @@ class WorkerCommand implements RobustCommand
         $recruiter = new Recruiter($db);
 
         if ($input->getOption('bootstrap')) {
-            BootstrapFile::fromFilePath($input->getOption('bootstrap'))->load($recruiter);
+            /** @var string */
+            $bootstrap = $input->getOption('bootstrap');
+            BootstrapFile::fromFilePath($bootstrap)->load($recruiter);
         }
 
         $this->worker = $recruiter->hire($memoryLimit);

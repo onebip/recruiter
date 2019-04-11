@@ -134,7 +134,9 @@ class CleanerCommand implements RobustCommand
 
     public function init(InputInterface $input): void
     {
-        $db = $this->factory->getMongoDb(MongoURI::from($input->getOption('target')));
+        /** @var string */
+        $mongoTarget = $input->getOption('target');
+        $db = $this->factory->getMongoDb(MongoURI::from($mongoTarget));
 
         $this->waitStrategy = new ExponentialBackoffStrategy(
             Interval::parse($input->getOption('wait-at-least'))->ms(),

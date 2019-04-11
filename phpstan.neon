@@ -1,0 +1,12 @@
+parameters:
+  level: max
+  paths:
+    - src
+  excludes_analyse:
+    - %currentWorkingDirectory%/vendor/
+  autoload_directories:
+    - %currentWorkingDirectory%/spec
+  ignoreErrors:
+    - '#Instantiated class Recruiter\\Workable\\ThisClassDoesnNotExists not found.#'
+    - '#Constructor of class Recruiter\\Workable\\FailsInConstructor has an unused parameter \$parameters.#'
+    - '#Static call to instance method stdClass::import()#'
