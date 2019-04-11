@@ -113,7 +113,6 @@ class EnduranceTest extends BaseAcceptanceTest
                     $this->assertInvariantsOnStatistics($statisticsByTag[$tag]);
                     $cumulativeThroughput += $statisticsByTag[$tag]['throughput']['value'];
                 }
-                var_dump($statistics, $statisticsByTag);
                 // TODO: add tolerance
                 $this->assertEquals($statistics['throughput']['value'], $cumulativeThroughput);
             });
