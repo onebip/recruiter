@@ -89,12 +89,15 @@ abstract class BaseAcceptanceTest extends TestCase
         /* $process = proc_open('exec php bin/recruiter --backoff-to=5s --lease-time 10s --considered-dead-after 20s >> /tmp/recruiter.log 2>&1', $descriptors, $pipes, $cwd); */
 
         $process = proc_open('exec php bin/recruiter start:recruiter --backoff-to 5000ms --lease-time 10s --considered-dead-after 20s >> /tmp/recruiter.log 2>&1', $descriptors, $pipes, $cwd);
+
         Timeout::inSeconds(1, "recruiter to be up")
             ->until(function () use ($process) {
                 $status = proc_get_status($process);
                 return $status['running'];
             });
-        return [$process, $pipes, 'recruiter'];
+
+        $this->processRecruiter = [$process, $pipes, 'recruiter'];
+        return $this->processRecruiter;
     }
 
     protected function startCleaner()
@@ -111,18 +114,27 @@ abstract class BaseAcceptanceTest extends TestCase
                 $status = proc_get_status($process);
                 return $status['running'];
             });
-        return [$process, $pipes, 'cleaner'];
+        $this->processCleaner = [$process, $pipes, 'cleaner'];
+
+        return $this->processCleaner;
     }
 
-    protected function startWorker()
+    protected function startWorker(array $additionalOptions = [])
     {
         $descriptors = [
             0 => ['pipe', 'r'],
             1 => ['pipe', 'w'],
             2 => ['pipe', 'w'],
         ];
+
+        $options = $this->optionsToString(array_merge([
+            'bootstrap' => 'examples/bootstrap.php',
+            'backoff-from' => '100ms',
+            'backoff-to' => '15000ms',
+        ], $additionalOptions));
+
         $cwd = __DIR__ . '/../../../';
-        $process = proc_open('exec php bin/recruiter start:worker --bootstrap=examples/bootstrap.php --backoff-from 100ms --backoff-to 15000ms >> /tmp/worker.log 2>&1', $descriptors, $pipes, $cwd);
+        $process = proc_open("exec php bin/recruiter start:worker $options >> /tmp/worker.log 2>&1", $descriptors, $pipes, $cwd);
 
         Timeout::inSeconds(1, "worker to be up")
             ->until(function () use ($process) {
@@ -130,7 +142,9 @@ abstract class BaseAcceptanceTest extends TestCase
                 return $status['running'];
             });
         // proc_get_status($process);
-        return [$process, $pipes, 'worker'];
+
+        $this->processWorkers[] = [$process, $pipes, 'worker'];
+        return end($this->processWorkers);
     }
 
     protected function stopProcessWithSignal(array $processAndPipes, $signal)
@@ -175,11 +189,10 @@ abstract class BaseAcceptanceTest extends TestCase
 
     protected function start($workers)
     {
-        $this->processRecruiter = $this->startRecruiter();
-        $this->processCleaner = $this->startCleaner();
-        $this->processWorkers = [];
+        $this->startRecruiter();
+        $this->startCleaner();
         for ($i = 0; $i < $workers; $i++) {
-            $this->processWorkers[$i] = $this->startWorker();
+            $this->startWorker();
         }
     }
 
@@ -214,13 +227,13 @@ abstract class BaseAcceptanceTest extends TestCase
     protected function restartRecruiterGracefully()
     {
         $this->stopProcessWithSignal($this->processRecruiter, SIGTERM);
-        $this->processRecruiter = $this->startRecruiter();
+        $this->startRecruiter();
     }
 
     protected function restartRecruiterByKilling()
     {
         $this->stopProcessWithSignal($this->processRecruiter, SIGKILL);
-        $this->processRecruiter = $this->startRecruiter();
+        $this->startRecruiter();
     }
 
     protected function files()
@@ -235,5 +248,16 @@ abstract class BaseAcceptanceTest extends TestCase
             $logs .= var_export($this->files, true);
         }
         return $logs;
+    }
+
+    private function optionsToString(array $options = [])
+    {
+        $optionsString = '';
+
+        foreach ($options as $option => $value) {
+            $optionsString .= " --$option=$value";
+        };
+
+        return $optionsString;
     }
 }
