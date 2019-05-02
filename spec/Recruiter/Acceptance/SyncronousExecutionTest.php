@@ -36,7 +36,7 @@ class SyncronousExecutionTest extends BaseAcceptanceTest
     private function enqueueAnAnswerJob($answer, $scheduledAt)
     {
         FactoryMethodCommand::from('Recruiter\Acceptance\SyncronousExecutionTestDummyObject::create')
-            ->myMethod('answer', $answer)
+            ->answer($answer)
             ->asJobOf($this->recruiter)
             ->scheduleAt($scheduledAt)
             ->inBackground()
@@ -51,7 +51,7 @@ class SyncronousExecutionTestDummyObject
         return new self();
     }
 
-    public function myMethod($what, $value)
+    public function answer($value)
     {
         return $value;
     }
