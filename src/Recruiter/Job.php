@@ -125,11 +125,12 @@ class Job
                 $this->beforeExecution($eventDispatcher);
                 $result = $this->workable->$methodToCall($this->retryStatistics());
                 $this->afterExecution($result, $eventDispatcher);
-                return $result;
             }
         } catch (Exception $exception) {
             $this->afterFailure($exception, $eventDispatcher);
         }
+
+        return $this->lastJobExecution;
     }
 
     public function retryStatistics()
