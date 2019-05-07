@@ -31,7 +31,9 @@ class Factory
                 sprintf(
                     "'No MongoDB running at '%s'",
                     $uri->__toString()
-                )
+                ),
+                $e->getCode(),
+                $e
             );
         }
     }
