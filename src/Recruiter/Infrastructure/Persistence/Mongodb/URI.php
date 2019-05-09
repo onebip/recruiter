@@ -31,7 +31,7 @@ class URI
         return new self($uri);
     }
 
-    public function database()
+    public function database(): string
     {
         $parsed = parse_url($this->uri);
         if (!$parsed) {

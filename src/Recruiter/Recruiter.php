@@ -170,6 +170,17 @@ class Recruiter
         );
     }
 
+    public function flushJobsSynchronously(): SynchronousExecutionReport
+    {
+        $report = [];
+
+        foreach ($this->jobs->all() as $job) {
+            $report[(string) $job->id()] = $job->execute($this->eventDispatcher);
+        }
+
+        return SynchronousExecutionReport::fromArray($report);
+    }
+
     public function createCollectionsAndIndexes()
     {
         $this->db->selectCollection('scheduled')->createIndex(

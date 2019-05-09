@@ -22,7 +22,9 @@ class Repository
     public function all()
     {
         return $this->map(
-            $this->scheduled->find()
+            $this->scheduled->find([], [
+                'sort' => ['scheduled_at' => -1],
+            ])
         );
     }
 
@@ -466,7 +468,7 @@ class Repository
     private function map($cursor)
     {
         $jobs = [];
-        foreach ($cursor->toArray() as $document) {
+        foreach ($cursor as $document) {
             $jobs[] = Job::import($document, $this);
         }
 

@@ -37,9 +37,19 @@ class JobExecution
         $this->completedWith = $result;
     }
 
+    public function result()
+    {
+        return $this->completedWith;
+    }
+
     public function causeOfFailure()
     {
         return $this->failedWith;
+    }
+
+    public function isFailed()
+    {
+        return !is_null($this->failedWith) || $this->isCrashed();
     }
 
     public function duration()
@@ -103,11 +113,11 @@ class JobExecution
         $trace = 'ok';
         if ($result instanceof \Exception) {
             $trace = $result->getTraceAsString();
-        } else if (is_object($result) && method_exists($result, 'trace')) {
+        } elseif (is_object($result) && method_exists($result, 'trace')) {
             $trace = $result->trace();
-        } else if (is_object($result)) {
+        } elseif (is_object($result)) {
             $trace = get_class($result);
-        } else if (is_string($result) || is_numeric($result)) {
+        } elseif (is_string($result) || is_numeric($result)) {
             $trace = $result;
         }
         return substr($trace, 0, 4096);
