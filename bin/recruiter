@@ -18,7 +18,7 @@ use Recruiter\Infrastructure\Command\RecruiterCommand;
 use Recruiter\Infrastructure\Command\WorkerCommand;
 use Symfony\Component\Console\Application;
 
-$output = "[%context.datetime%][%context.hostname%:%context.pid%][%context.program%][%level_name%] %message%\n";
+$output = "[%context.datetime%][%context.hostname%:%context.pid%][%context.program%][%level_name%][%context.workerId%] %message%\n";
 $formatter = new LineFormatter($output);
 $streamHandler = new StreamHandler('php://stdout', Logger::DEBUG);
 $streamHandler->setFormatter($formatter);

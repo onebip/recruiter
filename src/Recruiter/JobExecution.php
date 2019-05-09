@@ -110,6 +110,6 @@ class JobExecution
         } else if (is_string($result) || is_numeric($result)) {
             $trace = $result;
         }
-        return substr($trace, 0, 512);
+        return substr($trace, 0, 4096);
     }
 }

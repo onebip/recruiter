@@ -126,10 +126,11 @@ class Worker
             $this->memoryLimit->ensure(memory_get_usage());
         } catch (MemoryLimitExceededException $e) {
             printf(
-                '[WORKER][%d][%s] worker %s retired after exception: `%s - %s`' . PHP_EOL,
+                '[WORKER][%d][%s] worker %s retired during execution of job `%s` after exception: `%s - %s`' . PHP_EOL,
                 posix_getpid(),
                 date('c'),
                 $this->id(),
+                $job->id(),
                 get_class($e),
                 $e->getMessage()
             );

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Recruiter\Infrastructure\Command;
 
+use ByteUnits;
 use Exception;
 use Geezer\Command\RobustCommand;
 use Geezer\Command\RobustCommandRunner;
@@ -10,8 +11,8 @@ use Geezer\Leadership\Anarchy;
 use Geezer\Leadership\LeadershipStrategy;
 use Geezer\Timing\ExponentialBackoffStrategy;
 use Geezer\Timing\WaitStrategy;
-use Psr\Log\LogLevel;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use Recruiter\Factory;
 use Recruiter\Infrastructure\Filesystem\BootstrapFile;
 use Recruiter\Infrastructure\Memory\MemoryLimit;
@@ -66,12 +67,11 @@ class WorkerCommand implements RobustCommand
 
     public function execute(): bool
     {
-        /* $this->log(sprintf('worker `%s` ready to work!', $this->worker->id())); */
-
         $doneSomeWork = $this->worker->work();
 
         if ($doneSomeWork) {
             $this->log(sprintf('executed job `%s`', $doneSomeWork));
+            $this->log(sprintf('current memory usage `%s`', ByteUnits\bytes(memory_get_usage())->format('MB', ' ')));
         }
 
         $this->log(sprintf('going to sleep for %sms', $this->waitStrategy->current()));
@@ -162,6 +162,7 @@ class WorkerCommand implements RobustCommand
                 'program' => $this->name(),
                 'datetime' => date('c'),
                 'pid' => posix_getpid(),
+                'workerId' => (string) $this->worker->id(),
             ]
         );
     }
