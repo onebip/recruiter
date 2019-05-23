@@ -71,11 +71,11 @@ class WorkerCommand implements RobustCommand
         $doneSomeWork = $this->worker->work();
 
         if ($doneSomeWork) {
-            $this->log(sprintf('executed job `%s`', $doneSomeWork));
-            $this->log(sprintf('current memory usage `%s`', ByteUnits\bytes(memory_get_usage())->format('MB', ' ')));
+            $this->log(sprintf('executed job `%s`', $doneSomeWork), LogLevel::INFO);
+            $this->log(sprintf('current memory usage `%s`', ByteUnits\bytes(memory_get_usage())->format('MB', ' ')), LogLevel::INFO);
         }
 
-        $this->log(sprintf('going to sleep for %sms', $this->waitStrategy->current()));
+        $this->log(sprintf('going to sleep for %sms', $this->waitStrategy->current()), LogLevel::DEBUG);
 
         return (bool) $doneSomeWork;
     }
@@ -83,8 +83,7 @@ class WorkerCommand implements RobustCommand
     public function shutdown(?Exception $e = null): bool
     {
         if ($this->worker->retireIfNotAssigned()) {
-            $this->log(sprintf('worker `%s` retired', $this->worker->id()));
-            $this->log(sprintf('ok, see you space cowboy...'));
+            $this->log(sprintf('worker `%s` retired', $this->worker->id()), LogLevel::INFO);
 
             return true;
         }

@@ -90,7 +90,9 @@ class RecruiterCommand implements RobustCommand
         $rollbackStartAt = microtime(true);
         $rolledBack = $this->recruiter->rollbackLockedJobs();
         $rollbackEndAt = microtime(true);
-        $this->log(sprintf('rolled back %d jobs in %fms', $rolledBack, ($rollbackEndAt - $rollbackStartAt) * 1000));
+
+        $logLevel = $rolledBack > 0 ? LogLevel::INFO : LogLevel::DEBUG;
+        $this->log(sprintf('rolled back %d jobs in %fms', $rolledBack, ($rollbackEndAt - $rollbackStartAt) * 1000), $logLevel);
     }
 
     private function assignJobsToWorkers(): array
@@ -99,7 +101,7 @@ class RecruiterCommand implements RobustCommand
         list ($assignment, $actualNumber) = $this->recruiter->assignJobsToWorkers();
         $pickEndAt = microtime(true);
         foreach ($assignment as $worker => $job) {
-            $this->log(sprintf(' tried to assign job `%s` to worker `%s`', $job, $worker));
+            $this->log(sprintf(' tried to assign job `%s` to worker `%s`', $job, $worker), LogLevel::INFO);
         }
         $memoryUsage = ByteUnits\bytes(memory_get_usage());
 
@@ -109,7 +111,7 @@ class RecruiterCommand implements RobustCommand
             count($assignment),
             ($pickEndAt - $pickStartAt) * 1000,
             $actualNumber
-        ));
+        ), LogLevel::DEBUG);
 
         $this->memoryLimit->ensure($memoryUsage);
 
@@ -122,13 +124,13 @@ class RecruiterCommand implements RobustCommand
             new SystemClock(),
             $this->consideredDeadAfter
         );
-        $this->log(sprintf('unlocked %d jobs due to dead workers', $unlockedJobs));
+        $this->log(sprintf('unlocked %d jobs due to dead workers', $unlockedJobs), LogLevel::DEBUG);
     }
 
     public function shutdown(?Exception $e = null): bool
     {
         $this->recruiter->bye();
-        $this->log('ok, see you space cowboy...');
+        $this->log('ok, see you space cowboy...', LogLevel::INFO);
 
         return true;
     }

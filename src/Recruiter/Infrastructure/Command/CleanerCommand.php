@@ -77,7 +77,6 @@ class CleanerCommand implements RobustCommand
 
     public function execute(): bool
     {
-        /* $this->log('cready to clean!'); */
         $numberOfJobsCleaned = $this->cleaner->cleanArchived($this->gracePeriod);
         $memoryUsage = ByteUnits\bytes(memory_get_usage());
 
@@ -85,9 +84,9 @@ class CleanerCommand implements RobustCommand
             '[%s] cleaned up %d old jobs from the archive' . PHP_EOL,
             $memoryUsage->format(),
             $numberOfJobsCleaned
-        ));
+        ), LogLevel::INFO);
 
-        $this->log(sprintf('going to sleep for %sms', $this->waitStrategy->current()));
+        $this->log(sprintf('going to sleep for %sms', $this->waitStrategy->current()), LogLevel::DEBUG);
 
         $this->memoryLimit->ensure($memoryUsage);
 
@@ -96,7 +95,7 @@ class CleanerCommand implements RobustCommand
 
     public function shutdown(?Exception $e = null): bool
     {
-        $this->log('ok, see you space cowboy...');
+        $this->log('ok, see you space cowboy...', LogLevel::INFO);
         return true;
     }
 
