@@ -129,6 +129,7 @@ class CleanerCommand implements RobustCommand
             new InputOption('wait-at-most', null, InputOption::VALUE_REQUIRED, 'Upper limit of time to wait before next polling', '3m'),
             new InputOption('memory-limit', 'm', InputOption::VALUE_REQUIRED, 'Maximum amount of memory allocable', '256MB'),
             new InputOption('lease-time', 'l', InputOption::VALUE_REQUIRED, 'Maximum time to hold a lock before a refresh (seconds)', 60),
+            new InputOption('log-level', null, InputOption::VALUE_REQUIRED, 'The logging level: `emergency|alert|critical|error|warning|notice|info|debug`'),
         ]);
     }
 

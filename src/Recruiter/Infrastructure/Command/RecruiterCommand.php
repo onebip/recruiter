@@ -156,12 +156,13 @@ class RecruiterCommand implements RobustCommand
     public function definition(): InputDefinition
     {
         return new InputDefinition([
-        new InputOption('target', 't', InputOption::VALUE_REQUIRED, 'HOSTNAME[:PORT][/DB] MongoDB coordinates', 'mongodb://localhost:27017/recruiter'),
-        new InputOption('backoff-to', 'b', InputOption::VALUE_REQUIRED, 'Upper limit of time to wait before next polling (milliseconds)', '1600ms'),
-        new InputOption('backoff-from', 'f', InputOption::VALUE_REQUIRED, 'Time to wait at least before to search for new jobs (milliseconds)', '200ms'),
-        new InputOption('lease-time', 'l', InputOption::VALUE_REQUIRED, 'Maximum time to hold a lock before a refresh', '60s'),
-        new InputOption('memory-limit', 'm', InputOption::VALUE_REQUIRED, 'Maximum amount of memory allocable', '256MB'),
-        new InputOption('considered-dead-after', 'd', InputOption::VALUE_REQUIRED, 'Upper limit of time to wait before considering a worker dead', '30m'),
+            new InputOption('target', 't', InputOption::VALUE_REQUIRED, 'HOSTNAME[:PORT][/DB] MongoDB coordinates', 'mongodb://localhost:27017/recruiter'),
+            new InputOption('backoff-to', 'b', InputOption::VALUE_REQUIRED, 'Upper limit of time to wait before next polling (milliseconds)', '1600ms'),
+            new InputOption('backoff-from', 'f', InputOption::VALUE_REQUIRED, 'Time to wait at least before to search for new jobs (milliseconds)', '200ms'),
+            new InputOption('lease-time', 'l', InputOption::VALUE_REQUIRED, 'Maximum time to hold a lock before a refresh', '60s'),
+            new InputOption('memory-limit', 'm', InputOption::VALUE_REQUIRED, 'Maximum amount of memory allocable', '256MB'),
+            new InputOption('considered-dead-after', 'd', InputOption::VALUE_REQUIRED, 'Upper limit of time to wait before considering a worker dead', '30m'),
+            new InputOption('log-level', null, InputOption::VALUE_REQUIRED, 'The logging level: `emergency|alert|critical|error|warning|notice|info|debug`'),
         ]);
     }
 

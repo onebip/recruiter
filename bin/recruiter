@@ -20,7 +20,7 @@ use Symfony\Component\Console\Application;
 
 $output = "[%context.datetime%][%context.hostname%:%context.pid%][%context.program%][%level_name%][%context.workerId%] %message%\n";
 $formatter = new LineFormatter($output);
-$streamHandler = new StreamHandler('php://stdout', Logger::DEBUG);
+$streamHandler = new StreamHandler('php://stdout', getLogLevel($argv, Logger::DEBUG));
 $streamHandler->setFormatter($formatter);
 $logger = new Logger('recruiter');
 $logger->pushHandler($streamHandler);
@@ -32,3 +32,30 @@ $application->add(WorkerCommand::toRobustCommand(new Factory(), $logger));
 $application->add(CleanerCommand::toRobustCommand(new Factory(), $logger));
 
 $application->run();
+
+function getLogLevel(array $arguments, $default)
+{
+    $allowedValues = [
+        'DEBUG',
+        'INFO',
+        'NOTICE',
+        'WARNING',
+        'ERROR',
+        'CRITICAL',
+        'ALERT',
+        'EMERGENCY',
+    ];
+
+    $logLevelArgumentPosition = array_search('--log-level', $arguments);
+    if (false === $logLevelArgumentPosition) {
+        return $default;
+    }
+
+    $logLevelValue = strtoupper($arguments[$logLevelArgumentPosition + 1]);
+
+    if (!in_array($logLevelValue, $allowedValues)) {
+        throw new \InvalidArgumentException("Log level `$logLevelValue` is not a valid logging level, use one of: " . var_export($allowedValues, true));
+    }
+
+    return constant("Monolog\Logger::" . $logLevelValue);
+}

@@ -15,6 +15,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Recruiter\Factory;
 use Recruiter\Infrastructure\Filesystem\BootstrapFile;
+use Recruiter\Infrastructure\Logger\FilterLogger;
 use Recruiter\Infrastructure\Memory\MemoryLimit;
 use Recruiter\Infrastructure\Persistence\Mongodb\URI as MongoURI;
 use Recruiter\Recruiter;
@@ -120,6 +121,7 @@ class WorkerCommand implements RobustCommand
             new InputOption('memory-limit', 'm', InputOption::VALUE_REQUIRED, 'Maximum amount of memory allocable', '64MB'),
             new InputOption('work-on', 'g', InputOption::VALUE_REQUIRED, 'Work only on jobs grouped with this label [%s]'),
             new InputOption('bootstrap', 's', InputOption::VALUE_REQUIRED, 'A PHP file that loads the worker environment'),
+            new InputOption('log-level', null, InputOption::VALUE_REQUIRED, 'The logging level: `emergency|alert|critical|error|warning|notice|info|debug`'),
         ]);
     }
 
