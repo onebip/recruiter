@@ -196,7 +196,7 @@ class Repository
         if ($group !== null) {
             $lastMinute['group'] = $group;
         }
-        $document = $this->archived->aggregate($pipeline = [
+        $documents = $this->archived->aggregateCursor($pipeline = [
             ['$match' => $lastMinute],
             ['$project' => [
                 'latency' => ['$subtract' => [
@@ -215,20 +215,23 @@ class Repository
                 'execution_time' => ['$avg' => '$execution_time'],
             ]],
         ]);
-        if (!$document['ok']) {
-            throw new RuntimeException("Pipeline failed: " . var_export($pipeline, true));
-        }
-        if (count($document['result']) === 0) {
-            $throughputPerMinute = 0.0;
-            $averageLatency = 0.0;
-            $averageExecutionTime = 0;
-        } else if (count($document['result']) === 1) {
-            $throughputPerMinute = (float) $document['result'][0]['throughput'];
-            $averageLatency = $document['result'][0]['latency'] / 1000;
-            $averageExecutionTime = $document['result'][0]['execution_time'] / 1000;
-        } else {
-            throw new RuntimeException("Result was not ok: " . var_export($document, true));
-        }
+	foreach ( $documents as $document )
+	{
+          if (!$document['ok']) {
+              throw new RuntimeException("Pipeline failed: " . var_export($pipeline, true));
+          }
+	  if (count($document['result']) === 0) {
+              $throughputPerMinute = 0.0;
+              $averageLatency = 0.0;
+              $averageExecutionTime = 0;
+          } else if (count($document['result']) === 1) {
+              $throughputPerMinute = (float) $document['result'][0]['throughput'];
+              $averageLatency = $document['result'][0]['latency'] / 1000;
+              $averageExecutionTime = $document['result'][0]['execution_time'] / 1000;
+          } else {
+              throw new RuntimeException("Result was not ok: " . var_export($document, true));
+	  }
+	}
         return [
             'throughput' => [
                 'value' => $throughputPerMinute,
