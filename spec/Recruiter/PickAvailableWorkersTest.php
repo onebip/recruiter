@@ -4,10 +4,11 @@ namespace Recruiter;
 
 use MongoId;
 use ArrayIterator;
+use PHPUnit\Framework\TestCase;
 
-class PickAvailableWorkersTest extends \PHPUnit_Framework_TestCase
+class PickAvailableWorkersTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->repository = $this
             ->getMockBuilder('MongoCollection')

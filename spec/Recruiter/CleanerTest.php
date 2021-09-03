@@ -4,10 +4,11 @@ namespace Recruiter;
 
 use Timeless\Interval;
 use Timeless as T;
+use PHPUnit\Framework\TestCase;
 
-class CleanerTest extends \PHPUnit_Framework_TestCase
+class CleanerTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->clock = T\clock()->stop();
         $this->now = $this->clock->now();
@@ -27,7 +28,7 @@ class CleanerTest extends \PHPUnit_Framework_TestCase
         $this->interval = Interval::parse('10s');
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         T\clock()->start();
     }

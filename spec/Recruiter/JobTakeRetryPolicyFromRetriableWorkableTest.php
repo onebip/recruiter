@@ -4,10 +4,11 @@ namespace Recruiter;
 
 use Timeless as T;
 use Recruiter\RetryPolicy;
+use PHPUnit\Framework\TestCase;
 
-class JobTakeRetryPolicyFromRetriableWorkableTest extends \PHPUnit_Framework_TestCase
+class JobTakeRetryPolicyFromRetriableWorkableTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->repository = $this
             ->getMockBuilder('Recruiter\Job\Repository')

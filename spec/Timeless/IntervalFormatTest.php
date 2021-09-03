@@ -2,7 +2,9 @@
 
 namespace Timeless;
 
-class IntervalFormatTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class IntervalFormatTest extends TestCase
 {
     public function testFormatExtended()
     {

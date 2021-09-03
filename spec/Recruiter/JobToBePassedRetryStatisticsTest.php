@@ -4,10 +4,11 @@ namespace Recruiter;
 
 use Timeless as T;
 use Recruiter\RetryPolicy\DoNotDoItAgain;
+use PHPUnit\Framework\TestCase;
 
-class JobToBePassedRetryStatisticsTest extends \PHPUnit_Framework_TestCase
+class JobToBePassedRetryStatisticsTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->repository = $this
             ->getMockBuilder('Recruiter\Job\Repository')

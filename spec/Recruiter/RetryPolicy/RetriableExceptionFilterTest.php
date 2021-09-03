@@ -3,10 +3,11 @@
 namespace Recruiter\RetryPolicy;
 
 use Exception;
+use PHPUnit\Framework\TestCase;
 
-class RetriableExceptionFilterTest extends \PHPUnit_Framework_TestCase
+class RetriableExceptionFilterTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->filteredRetryPolicy = $this->getMock('Recruiter\RetryPolicy');
     }

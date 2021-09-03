@@ -1,7 +1,9 @@
 <?php
 namespace Recruiter\Workable;
 
-class FactoryMethodCommandTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class FactoryMethodCommandTest extends TestCase
 {
     public function testExecutedACommandReachableFromAStaticFactoryMethod()
     {

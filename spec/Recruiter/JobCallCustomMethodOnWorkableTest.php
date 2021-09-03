@@ -1,10 +1,11 @@
 <?php
 
 namespace Recruiter;
+use PHPUnit\Framework\TestCase;
 
-class JobCallCustomMethodOnWorkableTest extends \PHPUnit_Framework_TestCase
+class JobCallCustomMethodOnWorkableTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->workable = $this
             ->getMockBuilder('Recruiter\Workable')

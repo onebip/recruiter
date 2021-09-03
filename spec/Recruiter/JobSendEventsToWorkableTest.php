@@ -4,10 +4,11 @@ namespace Recruiter;
 
 use Recruiter\Job\Event;
 use Recruiter\Job\EventListener;
+use PHPUnit\Framework\TestCase;
 
-class JobSendEventsToWorkableTest extends \PHPUnit_Framework_TestCase
+class JobSendEventsToWorkableTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->repository = $this
             ->getMockBuilder('Recruiter\Job\Repository')

@@ -4,10 +4,11 @@ namespace Recruiter;
 
 use Timeless as T;
 use Recruiter\RetryPolicy;
+use PHPUnit\Framework\TestCase;
 
-class JobToScheduleTest extends \PHPUnit_Framework_TestCase
+class JobToScheduleTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->clock = T\clock()->stop();
         $this->job = $this
@@ -16,7 +17,7 @@ class JobToScheduleTest extends \PHPUnit_Framework_TestCase
             ->getMock();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->clock->start();
     }

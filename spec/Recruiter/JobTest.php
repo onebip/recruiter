@@ -2,10 +2,11 @@
 namespace Recruiter;
 
 use Recruiter\Workable\AlwaysFail;
+use PHPUnit\Framework\TestCase;
 
-class JobTest extends \PHPUnit_Framework_TestCase
+class JobTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->repository = $this
             ->getMockBuilder('Recruiter\Job\Repository')

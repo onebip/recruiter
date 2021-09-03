@@ -1,7 +1,9 @@
 <?php
 namespace Recruiter\Option;
 
-class MemoryLimitTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class MemoryLimitTest extends TestCase
 {
     /**
      * @expectedException Recruiter\Option\MemoryLimitExceededException

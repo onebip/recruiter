@@ -3,8 +3,9 @@ namespace Timeless;
 
 use Eris;
 use Eris\Generator;
+use PHPUnit\Framework\TestCase;
 
-class MongoDateTest extends \PHPUnit_Framework_TestCase
+class MongoDateTest extends TestCase
 {
     use Eris\TestTrait;
 

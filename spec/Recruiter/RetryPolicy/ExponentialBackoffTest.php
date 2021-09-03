@@ -2,8 +2,9 @@
 namespace Recruiter\RetryPolicy;
 
 use Timeless as T;
+use PHPUnit\Framework\TestCase;
 
-class ExponentialBackoffTest extends \PHPUnit_Framework_TestCase
+class ExponentialBackoffTest extends TestCase
 {
     public function testOnTheFirstFailureUsesTheSpecifiedInterval()
     {

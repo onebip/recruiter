@@ -9,12 +9,13 @@ use Timeless as T;
 use Timeless\Interval;
 use Timeless\Moment;
 use Recruiter\RetryPolicy\ExponentialBackoff;
+use PHPUnit\Framework\TestCase;
 
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-class RepositoryTest extends \PHPUnit_Framework_TestCase
+class RepositoryTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $factory = new Factory();
         $this->recruiterDb = $factory->getMongoDb(
@@ -28,7 +29,7 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->eventDispatcher = $this->getMock('Symfony\Component\EventDispatcher\EventDispatcherInterface');
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         T\clock()->start();
     }

@@ -2,9 +2,11 @@
 
 namespace Recruiter;
 
-class WorkerProcessTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class WorkerProcessTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->pid = 4242;
 

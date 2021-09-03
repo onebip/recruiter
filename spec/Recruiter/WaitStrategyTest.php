@@ -3,10 +3,11 @@
 namespace Recruiter;
 
 use Timeless as T;
+use PHPUnit\Framework\TestCase;
 
-class WaitStrategyTest extends \PHPUnit_Framework_TestCase
+class WaitStrategyTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->waited = 0;
         $this->howToWait = function($microseconds) {

@@ -3,8 +3,9 @@
 namespace Timeless;
 
 use DateInterval;
+use PHPUnit\Framework\TestCase;
 
-class IntervalParseTest extends \PHPUnit_Framework_TestCase
+class IntervalParseTest extends TestCase
 {
     public function testParseExtendedFormat()
     {

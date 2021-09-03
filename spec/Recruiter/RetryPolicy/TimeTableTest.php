@@ -3,10 +3,11 @@
 namespace Recruiter\RetryPolicy;
 
 use Timeless as T;
+use PHPUnit\Framework\TestCase;
 
-class TimeTableTest extends \PHPUnit_Framework_TestCase
+class TimeTableTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->clock = T\clock()->stop();
         $this->scheduler = new TimeTable([
