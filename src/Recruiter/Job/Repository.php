@@ -196,7 +196,7 @@ class Repository
         if ($group !== null) {
             $lastMinute['group'] = $group;
         }
-        $documents = $this->archived->aggregateCursor($pipeline = [
+        $document = $this->archived->aggregate($pipeline = [
             ['$match' => $lastMinute],
             ['$project' => [
                 'latency' => ['$subtract' => [
@@ -214,24 +214,21 @@ class Repository
                 'latency' => ['$avg' => '$latency'],
                 'execution_time' => ['$avg' => '$execution_time'],
             ]],
-        ]);
-	foreach ( $documents as $document )
-	{
-          if (!$document['ok']) {
-              throw new RuntimeException("Pipeline failed: " . var_export($pipeline, true));
-          }
-	  if (count($document['result']) === 0) {
-              $throughputPerMinute = 0.0;
-              $averageLatency = 0.0;
-              $averageExecutionTime = 0;
-          } else if (count($document['result']) === 1) {
-              $throughputPerMinute = (float) $document['result'][0]['throughput'];
-              $averageLatency = $document['result'][0]['latency'] / 1000;
-              $averageExecutionTime = $document['result'][0]['execution_time'] / 1000;
-          } else {
-              throw new RuntimeException("Result was not ok: " . var_export($document, true));
-	  }
-	}
+        ], ['cursor' => true]);
+        if (!$document['ok']) {
+            throw new RuntimeException("Pipeline failed: " . var_export($pipeline, true));
+        }
+        if (count($document['result']) === 0) {
+            $throughputPerMinute = 0.0;
+            $averageLatency = 0.0;
+            $averageExecutionTime = 0;
+        } else if (count($document['result']) === 1) {
+            $throughputPerMinute = (float) $document['result'][0]['throughput'];
+            $averageLatency = $document['result'][0]['latency'] / 1000;
+            $averageExecutionTime = $document['result'][0]['execution_time'] / 1000;
+        } else {
+            throw new RuntimeException("Result was not ok: " . var_export($document, true));
+        }
         return [
             'throughput' => [
                 'value' => $throughputPerMinute,

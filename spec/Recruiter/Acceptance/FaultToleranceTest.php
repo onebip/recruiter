@@ -40,8 +40,8 @@ class FaultToleranceTest extends BaseAcceptanceTest
         $jobDocument = $this->scheduled->find()->getNext();
         $this->assertEquals(1, $jobDocument['attempts']);
         $this->assertEquals('Recruiter\\Workable\\FailsInConstructor', $jobDocument['workable']['class']);
-        $this->assertContains('This job failed while instantiating a workable', $jobDocument['last_execution']['message']);
-        $this->assertContains('I am supposed to fail in constructor code for testing purpose', $jobDocument['last_execution']['message']);
+        $this->assertStringContainsString('This job failed while instantiating a workable', $jobDocument['last_execution']['message']);
+        $this->assertStringContainsString('I am supposed to fail in constructor code for testing purpose', $jobDocument['last_execution']['message']);
 
         list ($assignments, $_) = $this->recruiter->assignJobsToWorkers();
         $this->assertEquals(1, count($assignments));
@@ -49,8 +49,8 @@ class FaultToleranceTest extends BaseAcceptanceTest
         $jobDocument = $this->archived->find()->getNext();
         $this->assertEquals(2, $jobDocument['attempts']);
         $this->assertEquals('Recruiter\\Workable\\FailsInConstructor', $jobDocument['workable']['class']);
-        $this->assertContains('This job failed while instantiating a workable', $jobDocument['last_execution']['message']);
-        $this->assertContains('I am supposed to fail in constructor code for testing purpose', $jobDocument['last_execution']['message']);
+        $this->assertStringContainsString('This job failed while instantiating a workable', $jobDocument['last_execution']['message']);
+        $this->assertStringContainsString('I am supposed to fail in constructor code for testing purpose', $jobDocument['last_execution']['message']);
 
         list ($assignments, $_) = $this->recruiter->assignJobsToWorkers();
         $this->assertEquals(0, count($assignments));
