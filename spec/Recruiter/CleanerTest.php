@@ -5,6 +5,7 @@ namespace Recruiter;
 use Timeless\Interval;
 use Timeless as T;
 use PHPUnit\Framework\TestCase;
+use Onebip\Concurrency\Lock;
 
 class CleanerTest extends TestCase
 {
@@ -18,7 +19,7 @@ class CleanerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->mongoLock = $this->getMock('Onebip\Concurrency\Lock');
+        $this->mongoLock = $this->createMock(Lock::class);
 
         $this->cleaner = new Cleaner(
             $this->jobRepository,

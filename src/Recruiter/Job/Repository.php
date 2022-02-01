@@ -165,7 +165,7 @@ class Repository
                 '_id' => '$' . $field,
                 'count' => ['$sum' => 1],
             ]],
-        ]);
+        ], ['cursor' => true]);
 
         if (!$document['ok']) {
             throw new RuntimeException("Pipeline failed: " . var_export($pipeline, true));
@@ -400,7 +400,7 @@ class Repository
                     ]
                 ],
             ],
-        ])['result'];
+        ], ['cursor' => true])['result'];
     }
 
     private function slowScheduledRecentJobs(
@@ -452,7 +452,7 @@ class Repository
                     ]
                 ],
             ],
-        ])['result'];
+        ], ['cursor' => true])['result'];
     }
 
     private function countRecentArchivedOrScheduledJobsWithManyAttempts(
