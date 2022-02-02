@@ -5,6 +5,7 @@ namespace Recruiter;
 use Timeless as T;
 use Recruiter\RetryPolicy\DoNotDoItAgain;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class JobToBePassedRetryStatisticsTest extends TestCase
 {
@@ -21,7 +22,7 @@ class JobToBePassedRetryStatisticsTest extends TestCase
         $workable = new WorkableThatUsesRetryStatistics();
 
         $job = Job::around($workable, $this->repository);
-        $job->execute($this->getMock('Symfony\Component\EventDispatcher\EventDispatcherInterface'));
+        $job->execute($this->createMock(EventDispatcherInterface::class));
         $this->assertTrue($job->done(), "Job requiring retry statistics was not executed correctly: " . var_export($job->export(), true));
     }
 }

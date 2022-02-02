@@ -66,6 +66,6 @@ class BlackHoleTest extends TestCase
     public function testIsAccessibleAsAnArrayExists()
     {
         $instance = new BlackHole();
-        $this->assertFalse(array_key_exists(42, $instance));
+        $this->assertFalse(array_key_exists(42, (array) $instance));
     }
 }

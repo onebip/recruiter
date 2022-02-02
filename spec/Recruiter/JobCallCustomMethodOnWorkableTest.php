@@ -1,7 +1,10 @@
 <?php
 
 namespace Recruiter;
+
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Exception;
 
 class JobCallCustomMethodOnWorkableTest extends TestCase
 {
@@ -24,14 +27,13 @@ class JobCallCustomMethodOnWorkableTest extends TestCase
     {
         $this->workable->expects($this->once())->method('send');
         $this->job->methodToCallOnWorkable('send');
-        $this->job->execute($this->getMock('Symfony\Component\EventDispatcher\EventDispatcherInterface'));
+        $this->job->execute($this->createMock(EventDispatcherInterface::class));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testRaiseExceptionWhenConfigureMethodToCallOnWorkableThatDoNotExists()
     {
+        $this->expectException(Exception::class);
+
         $this->job->methodToCallOnWorkable('methodThatDoNotExists');
     }
 

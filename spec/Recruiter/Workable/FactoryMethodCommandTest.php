@@ -29,7 +29,9 @@ class FactoryMethodCommandTest extends TestCase
         $workable = FactoryMethodCommand::from('Recruiter\Workable\DummyFactory::create')
             ->myObject()
             ->myNeedyMethod();
-        $workable->execute(['retry_number' => 0]);
+
+        $expectedValue = $workable->execute(['retry_number' => 0]);
+        $this->assertEquals('42', $expectedValue);
     }
 }
 

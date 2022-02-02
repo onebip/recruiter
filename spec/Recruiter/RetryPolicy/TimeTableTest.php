@@ -2,6 +2,7 @@
 
 namespace Recruiter\RetryPolicy;
 
+use Exception;
 use Timeless as T;
 use PHPUnit\Framework\TestCase;
 
@@ -9,7 +10,6 @@ class TimeTableTest extends TestCase
 {
     public function setUp(): void
     {
-        $this->clock = T\clock()->stop();
         $this->scheduler = new TimeTable([
             '5 minutes ago' => '1 minute',
             '1 hour ago' => '5 minutes',
@@ -69,27 +69,24 @@ class TimeTableTest extends TestCase
         $this->assertEquals(182, $tt->maximumNumberOfRetries());
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testInvalidTimeTableBecauseTimeWindow()
     {
+        $this->expectException(Exception::class);
+
         $tt = new TimeTable(['1 minute' => '1 second']);
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testInvalidTimeTableBecauseRescheduleTime()
     {
+        $this->expectException(Exception::class);
+
         $tt = new TimeTable(['1 minute ago' => '1 second ago']);
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testInvalidTimeTableBecauseRescheduleTimeIsGreaterThanTimeWindow()
     {
+        $this->expectException(Exception::class);
+
         $tt = new TimeTable(['1 minute ago' => '2 minutes']);
     }
 

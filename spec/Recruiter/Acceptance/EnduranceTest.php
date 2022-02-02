@@ -26,7 +26,6 @@ class EnduranceTest extends BaseAcceptanceTest
 
     public function testNotWithstandingCrashesJobsAreEventuallyPerformed()
     {
-        $this->markTestSkipped('Check this endurance test with master branch');
         $this
             ->limitTo(100)
             ->forAll(
