@@ -1,7 +1,7 @@
 <?php
 namespace Recruiter\Job;
 
-use Symfony\Component\EventDispatcher;
+use Symfony\Contracts\EventDispatcher;
 
 class Event extends EventDispatcher\Event
 {

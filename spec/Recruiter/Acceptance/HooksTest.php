@@ -5,7 +5,7 @@ use Recruiter\Workable\AlwaysFail;
 use Recruiter\Workable\AlwaysSucceed;
 use Recruiter\Option\MemoryLimit;
 use Recruiter\RetryPolicy\RetryManyTimes;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 class HooksTest extends BaseAcceptanceTest
 {
