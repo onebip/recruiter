@@ -2,7 +2,9 @@
 
 namespace Sink;
 
-class BlackHoleTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class BlackHoleTest extends TestCase
 {
     public function testMethodCall()
     {
@@ -64,6 +66,6 @@ class BlackHoleTest extends \PHPUnit_Framework_TestCase
     public function testIsAccessibleAsAnArrayExists()
     {
         $instance = new BlackHole();
-        $this->assertFalse(array_key_exists(42, $instance));
+        $this->assertFalse(array_key_exists(42, (array) $instance));
     }
 }

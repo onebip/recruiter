@@ -220,7 +220,7 @@ class Job
     private function emit($eventType, $eventDispatcher)
     {
         $event = new Event($this->export());
-        $eventDispatcher->dispatch($eventType, $event);
+        $eventDispatcher->dispatch($event, $eventType);
         if ($this->workable instanceof EventListener) {
             $this->workable->onEvent($eventType, $event);
         }

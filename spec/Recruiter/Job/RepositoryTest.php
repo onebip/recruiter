@@ -9,12 +9,12 @@ use Timeless as T;
 use Timeless\Interval;
 use Timeless\Moment;
 use Recruiter\RetryPolicy\ExponentialBackoff;
-
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-class RepositoryTest extends \PHPUnit_Framework_TestCase
+class RepositoryTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $factory = new Factory();
         $this->recruiterDb = $factory->getMongoDb(
@@ -25,10 +25,10 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $this->recruiterDb->drop();
         $this->repository = new Repository($this->recruiterDb);
         $this->clock = T\clock()->stop();
-        $this->eventDispatcher = $this->getMock('Symfony\Component\EventDispatcher\EventDispatcherInterface');
+        $this->eventDispatcher = $this->createMock(EventDispatcherInterface::class);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         T\clock()->start();
     }
@@ -230,7 +230,7 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $jobs = $this->repository->recentJobsWithManyAttempts($lowerLimit, $upperLimit);
         $jobsFounds = 0;
         foreach ($jobs as $job) {
-            $this->assertRegExp(
+            $this->assertMatchesRegularExpression(
                 '/many_attempts_and_archived|many_attempts_and_scheduled/',
                 reset($job->export()['workable']['parameters'])
             );
@@ -380,7 +380,7 @@ class RepositoryTest extends \PHPUnit_Framework_TestCase
         $jobs = $this->repository->slowRecentJobs($lowerLimit, $upperLimit);
         $jobsFounds = 0;
         foreach ($jobs as $job) {
-            $this->assertRegExp(
+            $this->assertMatchesRegularExpression(
                 '/slow_job_recent_archived|slow_job_recent_scheduled/',
                 reset($job->export()['workable']['parameters'])
             );

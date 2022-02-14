@@ -4,10 +4,12 @@ namespace Recruiter;
 
 use Timeless as T;
 use Recruiter\RetryPolicy;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-class JobToScheduleTest extends \PHPUnit_Framework_TestCase
+class JobToScheduleTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $this->clock = T\clock()->stop();
         $this->job = $this
@@ -16,7 +18,7 @@ class JobToScheduleTest extends \PHPUnit_Framework_TestCase
             ->getMock();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->clock->start();
     }
@@ -97,7 +99,7 @@ class JobToScheduleTest extends \PHPUnit_Framework_TestCase
     {
         $this->job
             ->expects($this->never())
-            ->method('schedule');
+            ->method('scheduleAt');
 
         $this->job
             ->expects($this->once())
@@ -105,7 +107,7 @@ class JobToScheduleTest extends \PHPUnit_Framework_TestCase
 
         (new JobToSchedule($this->job))
             ->execute(
-                $this->getMock('Symfony\Component\EventDispatcher\EventDispatcherInterface')
+                $this->createMock(EventDispatcherInterface::class)
             );
     }
 
@@ -131,7 +133,7 @@ class JobToScheduleTest extends \PHPUnit_Framework_TestCase
             '42',
             (new JobToSchedule($this->job))
                 ->execute(
-                    $this->getMock('Symfony\Component\EventDispatcher\EventDispatcherInterface')
+                    $this->createMock(EventDispatcherInterface::class)
                 )
         );
     }

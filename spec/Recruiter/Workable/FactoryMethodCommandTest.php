@@ -1,7 +1,9 @@
 <?php
 namespace Recruiter\Workable;
 
-class FactoryMethodCommandTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class FactoryMethodCommandTest extends TestCase
 {
     public function testExecutedACommandReachableFromAStaticFactoryMethod()
     {
@@ -27,7 +29,9 @@ class FactoryMethodCommandTest extends \PHPUnit_Framework_TestCase
         $workable = FactoryMethodCommand::from('Recruiter\Workable\DummyFactory::create')
             ->myObject()
             ->myNeedyMethod();
-        $workable->execute(['retry_number' => 0]);
+
+        $expectedValue = $workable->execute(['retry_number' => 0]);
+        $this->assertEquals('42', $expectedValue);
     }
 }
 

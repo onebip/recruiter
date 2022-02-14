@@ -1,7 +1,9 @@
 <?php
 namespace Recruiter\Option;
 
-class TargetHostTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class TargetHostTest extends TestCase
 {
     public function testAcceptsTheMostBasicMongoDbFormat()
     {

@@ -10,7 +10,7 @@ use Recruiter\Workable\ShellCommand;
 
 abstract class BaseAcceptanceTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $factory = new Factory();
         $this->recruiterDb = $factory->getMongoDb(
@@ -31,7 +31,7 @@ abstract class BaseAcceptanceTest extends TestCase
         $this->processWorkers = [];
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->terminateProcesses(SIGKILL);
     }
